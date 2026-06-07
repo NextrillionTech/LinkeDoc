@@ -21,7 +21,8 @@ import {
   PenTool,
   Square,
   RefreshCw,
-  Info
+  Info,
+  Film
 } from 'lucide-react';
 
 interface Author {
@@ -956,51 +957,8 @@ export const Feed: React.FC = () => {
           line-height: 1.4;
         }
 
-        /* Modal screens */
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.75);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          backdrop-filter: blur(4px);
-        }
+        /* Modal styles now in App.css */
 
-        .modal-container {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-md);
-          width: 90%;
-          max-width: 640px;
-          overflow: hidden;
-          box-shadow: var(--shadow-lg);
-        }
-
-        .modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 16px 24px;
-          border-bottom: 1px solid var(--border);
-        }
-
-        .modal-body {
-          padding: 24px;
-        }
-
-        .modal-footer {
-          display: flex;
-          justify-content: flex-end;
-          gap: 12px;
-          padding: 16px 24px;
-          border-top: 1px solid var(--border);
-          background: var(--bg-tertiary);
-        }
 
         /* Canvas drawing workspace */
         .canvas-workspace {
@@ -1170,10 +1128,10 @@ export const Feed: React.FC = () => {
                     }}
                     title="Select post visibility"
                   >
-                    <option value="">🌎 Anyone (Public Feed)</option>
+                    <option value="">● Anyone (Public Feed)</option>
                     {joinedGroups.map((g) => (
                       <option key={g.id} value={g.id}>
-                        👥 Group: {g.name}
+                        ● Group: {g.name}
                       </option>
                     ))}
                   </select>
@@ -1450,7 +1408,7 @@ export const Feed: React.FC = () => {
                 {/* Research paper card attachment */}
                 {post.isResearch && post.researchTitle && (
                   <div className="research-attachment-box">
-                    <span className="research-tag">🔬 Research Publication</span>
+                    <span className="research-tag"><Layers size={10} /> Research Publication</span>
                     <h4 className="research-card-title">{post.researchTitle}</h4>
                     {post.researchAbstract && (
                       <div className="research-card-abstract">
@@ -1625,8 +1583,8 @@ export const Feed: React.FC = () => {
               <h3 style={{ margin: 0, fontSize: '18px' }}>Attach Case Photo or Clinical Video</h3>
               <button
                 type="button"
+                className="modal-close-btn"
                 onClick={() => setMediaModalOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
               >
                 <X size={20} />
               </button>
@@ -1691,8 +1649,8 @@ export const Feed: React.FC = () => {
                       }}
                     >
                       <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{m.name}</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                        {m.type === 'video' ? '📽️ Click to attach video directly' : '🖌️ Click to annotate/draw'}
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {m.type === 'video' ? <><Film size={12} /> Click to attach video directly</> : <><PenTool size={12} /> Click to annotate &amp; draw</>}
                       </span>
                     </div>
                   ))}
@@ -1704,7 +1662,6 @@ export const Feed: React.FC = () => {
               <button
                 type="button"
                 className="btn-secondary"
-                style={{ background: 'none', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}
                 onClick={() => setMediaModalOpen(false)}
               >
                 Close
@@ -1725,8 +1682,8 @@ export const Feed: React.FC = () => {
               </h3>
               <button
                 type="button"
+                className="modal-close-btn"
                 onClick={() => setCanvasModalOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
               >
                 <X size={20} />
               </button>
@@ -1842,7 +1799,6 @@ export const Feed: React.FC = () => {
               <button
                 type="button"
                 className="btn-secondary"
-                style={{ background: 'none', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}
                 onClick={() => setCanvasModalOpen(false)}
               >
                 Cancel

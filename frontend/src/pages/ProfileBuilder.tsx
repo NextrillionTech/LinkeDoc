@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { Edit2, MapPin, Building, GraduationCap } from 'lucide-react';
+import { Edit2, MapPin, Building, GraduationCap, X, Plus, Trash2, MoreHorizontal } from 'lucide-react';
 
 interface EducationEntry {
   degree: string;
@@ -300,56 +300,8 @@ export const ProfileBuilder: React.FC = () => {
           font-weight: 600;
         }
 
-        /* Full Screen Edit Modal Overlay */
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          background: rgba(0, 0, 0, 0.6);
-          backdrop-filter: blur(8px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1100;
-        }
+        /* Modal styles now in App.css */
 
-        .modal-container {
-          width: 100%;
-          max-width: 650px;
-          max-height: 85vh;
-          overflow-y: auto;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-md);
-          box-shadow: var(--shadow-lg);
-          display: flex;
-          flex-direction: column;
-        }
-
-        .modal-header {
-          padding: 16px 24px;
-          border-bottom: 1px solid var(--border);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .modal-body {
-          padding: 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .modal-footer {
-          padding: 16px 24px;
-          border-top: 1px solid var(--border);
-          display: flex;
-          justify-content: flex-end;
-          gap: 12px;
-        }
       `}</style>
 
       {/* 1. Header Intro Card */}
@@ -396,15 +348,15 @@ export const ProfileBuilder: React.FC = () => {
               Add profile section
             </button>
             <button className="btn-profile-sec" style={{ width: '40px', padding: '8px 0', display: 'flex', justifyContent: 'center' }}>
-              •••
+              <MoreHorizontal size={18} />
             </button>
           </div>
         </div>
       </div>
 
       {/* Feedbacks */}
-      {message && <div style={{ color: 'var(--success)', padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: 'var(--radius-sm)', fontSize: '14px', textAlign: 'left' }}>{message}</div>}
-      {error && <div style={{ color: 'var(--danger)', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 'var(--radius-sm)', fontSize: '14px', textAlign: 'left' }}>{error}</div>}
+      {message && <div className="alert-success">{message}</div>}
+      {error && <div className="alert-error">{error}</div>}
 
       {/* 2. About Card */}
       <div className="card-glass profile-section-card">
@@ -510,12 +462,12 @@ export const ProfileBuilder: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container">
             <div className="modal-header">
-              <h3 style={{ fontSize: '18px', margin: 0 }}>Edit Intro & Professional History</h3>
+              <h3>Edit Intro & Professional History</h3>
               <button
+                className="modal-close-btn"
                 onClick={() => setIsEditModalOpen(false)}
-                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-muted)' }}
               >
-                ✕
+                <X size={20} />
               </button>
             </div>
 
@@ -605,21 +557,20 @@ export const ProfileBuilder: React.FC = () => {
                         />
                         <button
                           type="button"
-                          className="btn-primary"
-                          style={{ background: 'var(--danger)', padding: '8px 12px', boxShadow: 'none', borderRadius: '4px', fontSize: '12px' }}
+                          className="btn-danger"
                           onClick={() => setEducationInput(educationInput.filter((_: any, i: number) => i !== idx))}
                         >
-                          Delete
+                          <Trash2 size={12} /> Delete
                         </button>
                       </div>
                     ))}
                     <button
                       type="button"
-                      className="btn-primary"
-                      style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', width: 'fit-content', padding: '6px 12px', fontSize: '12px', boxShadow: 'none' }}
+                      className="btn-ghost"
+                      style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}
                       onClick={() => setEducationInput([...educationInput, { degree: '', school: '', year: 2022 }])}
                     >
-                      + Add Education
+                      <Plus size={14} /> Add Education
                     </button>
                   </div>
                 </div>
@@ -668,21 +619,20 @@ export const ProfileBuilder: React.FC = () => {
                         />
                         <button
                           type="button"
-                          className="btn-primary"
-                          style={{ background: 'var(--danger)', padding: '8px 12px', boxShadow: 'none', borderRadius: '4px', fontSize: '12px' }}
+                          className="btn-danger"
                           onClick={() => setExperienceInput(experienceInput.filter((_: any, i: number) => i !== idx))}
                         >
-                          Delete
+                          <Trash2 size={12} /> Delete
                         </button>
                       </div>
                     ))}
                     <button
                       type="button"
-                      className="btn-primary"
-                      style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', width: 'fit-content', padding: '6px 12px', fontSize: '12px', boxShadow: 'none' }}
+                      className="btn-ghost"
+                      style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}
                       onClick={() => setExperienceInput([...experienceInput, { title: '', company: '', year: '' }])}
                     >
-                      + Add Experience
+                      <Plus size={14} /> Add Experience
                     </button>
                   </div>
                 </div>

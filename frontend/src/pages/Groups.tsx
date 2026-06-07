@@ -13,7 +13,8 @@ import {
   FolderOpen,
   ArrowRight,
   LogOut,
-  ChevronLeft
+  ChevronLeft,
+  FileText
 } from 'lucide-react';
 
 interface Group {
@@ -542,8 +543,8 @@ export const Groups: React.FC = () => {
                   <p style={{ margin: '0 0 12px 0', color: 'var(--text-secondary)', fontSize: '13px' }}>{activeGroup.description}</p>
                   
                   <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>
-                    <span>👥 {activeGroup.memberCount} members</span>
-                    <span>📝 {activeGroup.postCount} posts</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Users size={13} /> {activeGroup.memberCount} members</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><FileText size={13} /> {activeGroup.postCount} posts</span>
                     <span>Created by: <strong>{activeGroup.creatorName}</strong></span>
                   </div>
                 </div>
@@ -553,7 +554,7 @@ export const Groups: React.FC = () => {
                     <button
                       type="button"
                       className="btn-secondary"
-                      style={{ padding: '8px 18px', fontSize: '13px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: '1px solid var(--border)' }}
+                      style={{ padding: '8px 18px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
                       onClick={() => handleLeaveGroup(activeGroup.id)}
                       disabled={activeGroup.creatorId === currentUser.id}
                       title={activeGroup.creatorId === currentUser.id ? "Creators cannot leave their own group" : ""}
@@ -778,11 +779,11 @@ export const Groups: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container">
             <div className="modal-header">
-              <h3 style={{ margin: 0, fontSize: '18px' }}>Create Clinical Group</h3>
+              <h3>Create Clinical Group</h3>
               <button
                 type="button"
+                className="modal-close-btn"
                 onClick={() => setCreateModalOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
               >
                 <X size={20} />
               </button>
@@ -791,30 +792,30 @@ export const Groups: React.FC = () => {
             <form onSubmit={handleCreateGroup}>
               <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {createError && (
-                  <div style={{ color: 'var(--danger)', fontSize: '13px', background: 'rgba(239, 68, 68, 0.1)', padding: '8px 12px', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '4px' }}>
+                  <div className="alert-error">
                     {createError}
                   </div>
                 )}
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label htmlFor="groupName" style={{ fontSize: '13px', fontWeight: 600 }}>Group Name *</label>
+                <div className="form-group">
+                  <label htmlFor="groupName" className="form-label">Group Name *</label>
                   <input
                     id="groupName"
                     type="text"
                     placeholder="e.g., Cardiology Peer Focus"
-                    className="research-input"
+                    className="input-glass"
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
                     required
                   />
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label htmlFor="groupDesc" style={{ fontSize: '13px', fontWeight: 600 }}>Description *</label>
+                <div className="form-group">
+                  <label htmlFor="groupDesc" className="form-label">Description *</label>
                   <textarea
                     id="groupDesc"
                     placeholder="e.g., Collaborative review of cardiology case findings, papers, and diagnostics."
-                    className="research-input"
+                    className="input-glass"
                     style={{ minHeight: '80px', resize: 'vertical' }}
                     value={newGroupDesc}
                     onChange={(e) => setNewGroupDesc(e.target.value)}
@@ -827,7 +828,6 @@ export const Groups: React.FC = () => {
                 <button
                   type="button"
                   className="btn-secondary"
-                  style={{ background: 'none', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}
                   onClick={() => setCreateModalOpen(false)}
                 >
                   Cancel
