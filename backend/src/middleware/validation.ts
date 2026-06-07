@@ -19,6 +19,23 @@ export const connectionSchema = z.object({
   receiverId: z.string().uuid('Invalid user ID format'),
 });
 
+export const threadSchema = z.object({
+  categoryId: z.string().uuid('Invalid category ID format'),
+  title: z.string().min(3, 'Title must be at least 3 characters'),
+  body: z.string().min(5, 'Body must be at least 5 characters'),
+});
+
+export const replySchema = z.object({
+  threadId: z.string().uuid('Invalid thread ID format'),
+  body: z.string().min(1, 'Reply content cannot be empty'),
+});
+
+export const reportSchema = z.object({
+  contentType: z.enum(['THREAD', 'REPLY']),
+  contentId: z.string().uuid('Invalid content ID format'),
+  reason: z.string().min(5, 'Reason must be at least 5 characters'),
+});
+
 export const validateBody = (schema: z.ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

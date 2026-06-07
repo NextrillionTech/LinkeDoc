@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Auth } from './pages/Auth';
 import { ProfileBuilder } from './pages/ProfileBuilder';
 import { Network } from './pages/Network';
+import { Forums } from './pages/Forums';
 import { api } from './services/api';
 import './App.css';
 
@@ -31,6 +32,9 @@ export const App: React.FC = () => {
                 <Link to="/network" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
                   Network
                 </Link>
+                <Link to="/forums" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+                  Forums
+                </Link>
                 <span style={{ fontSize: '14px', color: 'var(--accent)' }}>
                   (Dr. {user.name})
                 </span>
@@ -55,6 +59,7 @@ export const App: React.FC = () => {
             <Route path="/" element={user ? <ProfileBuilder /> : <Auth />} />
             <Route path="/profile" element={<ProfileBuilder />} />
             <Route path="/network" element={<Network />} />
+            <Route path="/forums" element={<Forums />} />
           </Routes>
         </main>
       </div>

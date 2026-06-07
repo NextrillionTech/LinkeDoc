@@ -6,6 +6,7 @@ import { errorHandler } from '../middleware/errorHandler';
 import authRoutes from '../routes/authRoutes';
 import userRoutes from '../routes/userRoutes';
 import adminRoutes from '../routes/adminRoutes';
+import forumRoutes from '../routes/forumRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/forums', forumRoutes);
 
 // Base Health Check
 app.get('/health', (req, res) => {

@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000/api'
+  : '/api';
 
 // Helper to get auth token
 const getHeaders = () => {
@@ -95,6 +97,58 @@ export const api = {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify({ status }),
+    });
+    return res.json();
+  },
+
+  // Forums & Discussions
+  async getCategories() {
+    const res = await fetch(`${API_BASE_URL}/forums/categories`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async getThreads(categoryId: string) {
+    const res = await fetch(`${API_BASE_URL}/forums/categories/${categoryId}/threads`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async getThread(threadId: string) {
+    const res = await fetch(`${API_BASE_URL}/forums/threads/${threadId}`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async createThread(categoryId: string, title: string, body: string) {
+    const res = await fetch(`${API_BASE_URL}/forums/threads`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ categoryId, title, body }),
+    });
+    return res.json();
+  },
+
+  async createReply(threadId: string, body: string) {
+    const res = await fetch(`${API_BASE_URL}/forums/replies`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ threadId, body }),
+    });
+    return res.json();
+  },
+
+  async reportContent(contentType: 'THREAD' | 'REPLY', contentId: string, reason: string) {
+    const res = await fetch(`${API_BASE_URL}/forums/report`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ contentType, contentId, reason }),
     });
     return res.json();
   },
