@@ -353,28 +353,36 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
                     padding: '0 8px',
                     cursor: 'pointer',
                     display: 'flex',
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: '8px',
                     height: '36px',
+                    width: 'auto',
                     borderRadius: '20px',
                     color: 'var(--text-muted)'
                   }}
                 >
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
-                    alt="Me"
-                    className="linkedin-me-avatar-img"
+                  <span className="linkedin-me-label-row" style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '13px', color: 'var(--text-muted)', marginTop: 0 }}>
+                    Me <ChevronDown size={14} />
+                  </span>
+                  <div
+                    className="linkedin-me-avatar"
                     style={{
                       width: '24px',
                       height: '24px',
                       borderRadius: '50%',
-                      objectFit: 'cover',
+                      background: 'var(--primary-glow)',
+                      color: 'var(--primary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 700,
+                      fontSize: '10px',
                       border: '1px solid var(--border)'
                     }}
-                  />
-                  <span className="linkedin-me-label-row" style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '13px', color: 'var(--text-muted)' }}>
-                    Me <ChevronDown size={14} />
-                  </span>
+                  >
+                    {getInitials(user.name)}
+                  </div>
                 </button>
 
                 {dropdownOpen && (

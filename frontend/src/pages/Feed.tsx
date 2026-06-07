@@ -1421,11 +1421,24 @@ export const Feed: React.FC = () => {
                 <div className="modal-body" style={{ maxHeight: '65vh', overflowY: 'auto', padding: '20px' }}>
                   {/* Author info row */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                    <img
-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
-                      alt="Me"
-                      style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
-                    />
+                    <div
+                      className="composer-avatar"
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'var(--primary-glow)',
+                        color: 'var(--primary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: '14px',
+                        border: '1px solid var(--border)'
+                      }}
+                    >
+                      {getInitials(currentUser.name)}
+                    </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{currentUser.name}</span>
                       <select
