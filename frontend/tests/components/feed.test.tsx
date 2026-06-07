@@ -45,6 +45,7 @@ vi.mock('../../src/services/api', () => ({
     ]),
     createPost: vi.fn().mockResolvedValue({ success: true }),
     toggleLike: vi.fn().mockResolvedValue({ success: true, liked: true, likeCount: 4 }),
+    getGroups: vi.fn().mockResolvedValue([]),
     addComment: vi.fn().mockResolvedValue({
       success: true,
       comment: {

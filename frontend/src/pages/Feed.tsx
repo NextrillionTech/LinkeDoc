@@ -75,6 +75,9 @@ export const Feed: React.FC = () => {
   const [postSubmitting, setPostSubmitting] = useState(false);
   const [postError, setPostError] = useState('');
   const [postSuccess, setPostSuccess] = useState('');
+  const [hipaaConsentConfirmed, setHipaaConsentConfirmed] = useState(false);
+  const [joinedGroups, setJoinedGroups] = useState<any[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('');
 
   // PubMed search state
   const [pubmedQuery, setPubmedQuery] = useState('');
@@ -146,9 +149,21 @@ export const Feed: React.FC = () => {
     }
   };
 
+  const fetchJoinedGroups = async () => {
+    try {
+      const res = await api.getGroups();
+      if (Array.isArray(res)) {
+        setJoinedGroups(res.filter((g: any) => g.isMember));
+      }
+    } catch (e) {
+      console.error('Failed to fetch user groups for composer', e);
+    }
+  };
+
   useEffect(() => {
     if (currentUser) {
       fetchFeed();
+      fetchJoinedGroups();
     }
   }, []);
 
@@ -161,12 +176,17 @@ export const Feed: React.FC = () => {
       return;
     }
 
+    if (mediaUrls.length > 0 && !hipaaConsentConfirmed) {
+      setPostError('You must confirm HIPAA compliance for clinical image/video attachments.');
+      return;
+    }
+
     try {
       setPostSubmitting(true);
       setPostError('');
       setPostSuccess('');
 
-      const payload = {
+      const payload: any = {
         content: content.trim(),
         isResearch,
         mediaUrls,
@@ -177,6 +197,10 @@ export const Feed: React.FC = () => {
         } : {}),
       };
 
+      if (selectedGroupId) {
+        payload.groupId = selectedGroupId;
+      }
+
       const res = await api.createPost(payload);
       if (res.success) {
         setPostSuccess('Post published successfully!');
@@ -186,6 +210,8 @@ export const Feed: React.FC = () => {
         setResearchAbstract('');
         setResearchLink('');
         setMediaUrls([]);
+        setHipaaConsentConfirmed(false);
+        setSelectedGroupId('');
         fetchFeed();
       } else {
         setPostError(res.error || 'Failed to publish post');
@@ -1120,9 +1146,38 @@ export const Feed: React.FC = () => {
         {/* Start a Post Composer */}
         <div className="card-glass post-composer-card">
           <form onSubmit={handleCreatePost}>
-            <div className="composer-trigger-row">
-              <div className="composer-avatar">
-                {getInitials(currentUser.name)}
+             <div className="composer-trigger-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', alignItems: 'stretch' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+                <div className="composer-avatar">
+                  {getInitials(currentUser.name)}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--text-primary)' }}>{currentUser.name}</span>
+                  <select
+                    value={selectedGroupId}
+                    onChange={(e) => setSelectedGroupId(e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: 'var(--text-secondary)',
+                      background: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-sm)',
+                      cursor: 'pointer',
+                      width: 'fit-content',
+                      outline: 'none',
+                    }}
+                    title="Select post visibility"
+                  >
+                    <option value="">🌎 Anyone (Public Feed)</option>
+                    {joinedGroups.map((g) => (
+                      <option key={g.id} value={g.id}>
+                        👥 Group: {g.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <textarea
                 className="composer-textarea"
@@ -1131,6 +1186,7 @@ export const Feed: React.FC = () => {
                 onChange={(e) => setContent(e.target.value)}
                 disabled={!isApproved}
                 required={mediaUrls.length === 0}
+                style={{ width: '100%', marginTop: '6px' }}
               />
             </div>
 
@@ -1153,6 +1209,23 @@ export const Feed: React.FC = () => {
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* HIPAA Compliance Checkbox for media uploads */}
+            {mediaUrls.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingLeft: '56px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                <input
+                  type="checkbox"
+                  id="hipaa-consent-checkbox"
+                  checked={hipaaConsentConfirmed}
+                  onChange={(e) => setHipaaConsentConfirmed(e.target.checked)}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  required
+                />
+                <label htmlFor="hipaa-consent-checkbox" style={{ cursor: 'pointer', fontWeight: 500 }}>
+                  I confirm that all Patient Identifiable Information (PHI) has been anonymized/redacted from this image.
+                </label>
               </div>
             )}
 

@@ -13,13 +13,7 @@ import {
   MessageSquare,
   Lock,
   Send,
-  Video,
-  PhoneOff,
-  Mic,
-  MicOff,
-  VideoOff,
   ShieldAlert,
-  Activity,
   Compass,
   Users
 } from 'lucide-react';
@@ -73,14 +67,6 @@ export const Messaging: React.FC = () => {
   const [keyGenerating, setKeyGenerating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Video Call Simulation State
-  const [callOpen, setCallOpen] = useState(false);
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const [callDuration, setCallDuration] = useState(0);
-  const [callMuted, setCallMuted] = useState(false);
-  const [callVideoStopped, setCallVideoStopped] = useState(false);
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Keep derived shared keys in memory for active sessions: Record<conversationId, CryptoKey>
   const sharedKeysRef = useRef<Record<string, CryptoKey>>({});
@@ -156,10 +142,6 @@ export const Messaging: React.FC = () => {
     };
 
     initializeE2EEAndLoadConversations();
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
   }, []);
 
   // Set up Pusher WebSocket subscription on active conversation change
@@ -341,70 +323,6 @@ export const Messaging: React.FC = () => {
     }
   };
 
-  // WebRTC Video Call Actions
-  const startVideoCall = async () => {
-    setCallOpen(true);
-    setCallDuration(0);
-    setCallMuted(false);
-    setCallVideoStopped(false);
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setLocalStream(stream);
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-      }
-    } catch (err) {
-      console.warn('Camera access not allowed or unavailable. Operating in simulation mode.', err);
-    }
-
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setCallDuration(prev => prev + 1);
-    }, 1000);
-  };
-
-  const endVideoCall = () => {
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-      setLocalStream(null);
-    }
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setCallOpen(false);
-  };
-
-  const toggleMute = () => {
-    if (localStream) {
-      localStream.getAudioTracks().forEach(track => {
-        track.enabled = !track.enabled;
-      });
-      setCallMuted(!callMuted);
-    }
-  };
-
-  const toggleVideo = () => {
-    if (localStream) {
-      localStream.getVideoTracks().forEach(track => {
-        track.enabled = !track.enabled;
-      });
-      setCallVideoStopped(!callVideoStopped);
-    }
-  };
-
-  useEffect(() => {
-    if (callOpen && localVideoRef.current && localStream) {
-      localVideoRef.current.srcObject = localStream;
-    }
-  }, [localStream, callOpen]);
-
-  const formatDuration = (sec: number) => {
-    const m = Math.floor(sec / 60).toString().padStart(2, '0');
-    const s = (sec % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
 
   // Helper to extract initials for user avatars
   const getInitials = (name: string) => {
@@ -656,31 +574,6 @@ export const Messaging: React.FC = () => {
                     {activeConv.participant.specialty || 'General Practitioner'}
                   </div>
                 </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  {/* WebRTC calling button */}
-                  <button
-                    onClick={startVideoCall}
-                    style={{
-                      background: 'var(--primary-glow)',
-                      border: '1px solid var(--primary)',
-                      borderRadius: 'var(--radius-sm)',
-                      padding: '8px 14px',
-                      color: 'var(--primary)',
-                      fontWeight: 600,
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      transition: 'background-color var(--transition-fast)'
-                    }}
-                    title="Initiate E2EE Clinical Consultation Video Call"
-                  >
-                    <Video size={16} />
-                    <span>Video Consult</span>
-                  </button>
-
                   <div
                     style={{
                       display: 'flex',
@@ -694,7 +587,6 @@ export const Messaging: React.FC = () => {
                     <Lock size={14} />
                     <span>E2EE Secure</span>
                   </div>
-                </div>
               </div>
 
               {/* Chat Message Stream */}
@@ -837,190 +729,7 @@ export const Messaging: React.FC = () => {
         </div>
       </div>
 
-      {/* WebRTC Video Consultation Calling overlay Modal */}
-      {callOpen && activeConv && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: '#090d16',
-            zIndex: 9999,
-            display: 'flex',
-            flexDirection: 'column',
-            color: '#fff',
-            fontFamily: 'var(--font-body)'
-          }}
-        >
-          {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: '#0d1321' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: 'var(--success)', width: '8px', height: '8px', borderRadius: '50%', boxShadow: '0 0 8px var(--success)' }}></div>
-              <span style={{ fontSize: '14px', fontWeight: 600, color: '#94a3b8' }}>Secure Consultation: Dr. {activeConv.participant.name}</span>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '6px 14px', borderRadius: '4px', color: '#38bdf8' }}>
-                <Lock size={14} />
-                <span>AES-256 E2E Encrypted</span>
-              </div>
-              <span style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 600, color: '#f8fafc' }}>
-                {formatDuration(callDuration)}
-              </span>
-            </div>
-          </div>
 
-          {/* Main call screens */}
-          <div style={{ flex: 1, position: 'relative', display: 'flex', background: '#070a13', overflow: 'hidden' }}>
-            
-            {/* Main view: Simulated Remote Colleague Stream */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-              
-              {/* Simulated high-fidelity UI overlay of remote peer */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', zIndex: 5, padding: '30px', borderRadius: '12px', background: 'rgba(13,19,33,0.85)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
-                <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: getAvatarBgColor(activeConv.participant.id), color: '#fff', fontSize: '32px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}>
-                  {getInitials(activeConv.participant.name)}
-                </div>
-                <div>
-                  <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700 }}>Dr. {activeConv.participant.name}</h2>
-                  <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>{activeConv.participant.specialty || 'General Practitioner'}</p>
-                </div>
-                
-                {/* Simulated WebRTC E2EE connection telemetry graph */}
-                <div style={{ width: '220px', height: '50px', borderTop: '1px solid rgba(56, 189, 248, 0.2)', position: 'relative', overflow: 'hidden', marginTop: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center', color: '#38bdf8', fontSize: '11px', fontWeight: 600, marginBottom: '6px' }}>
-                    <Activity size={12} />
-                    <span>Real-time Audio Stream</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '3px', height: '20px' }}>
-                    {[12, 24, 18, 30, 10, 42, 20, 15, 33, 19, 8, 25, 14].map((h, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          width: '4px',
-                          height: `${h}px`,
-                          background: 'linear-gradient(to top, var(--primary), #38bdf8)',
-                          borderRadius: '2px',
-                          animation: 'pulse 1s infinite alternate',
-                          animationDelay: `${i * 0.1}s`
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Looping Heartbeat SVG graph in background */}
-              <div style={{ position: 'absolute', top: '10%', left: '10%', right: '10%', bottom: '10%', opacity: 0.05, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="100%" height="200" viewBox="0 0 1000 200" fill="none">
-                  <path d="M0 100 H300 L320 70 L340 130 L360 30 L380 170 L400 100 H600 L620 60 L640 140 L660 100 H1000" stroke="#38bdf8" strokeWidth="3" strokeLinecap="round" />
-                </svg>
-              </div>
-            </div>
-
-            {/* PIP View: Local User Camera Stream */}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '30px',
-                right: '30px',
-                width: '240px',
-                height: '160px',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                border: '2px solid rgba(255,255,255,0.15)',
-                background: '#000',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                zIndex: 20
-              }}
-            >
-              {localStream && !callVideoStopped ? (
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }}
-                />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1e293b', color: '#94a3b8', fontSize: '12px', gap: '8px' }}>
-                  <VideoOff size={24} />
-                  <span>Your Camera is Off</span>
-                </div>
-              )}
-            </div>
-
-          </div>
-
-          {/* Bottom call control controls panel */}
-          <div style={{ padding: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', background: '#0d1321', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-            <button
-              onClick={toggleMute}
-              style={{
-                background: callMuted ? '#ef4444' : 'rgba(255,255,255,0.08)',
-                border: 'none',
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s'
-              }}
-              title={callMuted ? 'Unmute Audio' : 'Mute Audio'}
-            >
-              {callMuted ? <MicOff size={22} /> : <Mic size={22} />}
-            </button>
-
-            <button
-              onClick={endVideoCall}
-              style={{
-                background: '#ef4444',
-                border: 'none',
-                padding: '0 32px',
-                height: '56px',
-                borderRadius: '28px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: '15px',
-                cursor: 'pointer',
-                gap: '10px',
-                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)'
-              }}
-            >
-              <PhoneOff size={20} />
-              <span>End Consultation</span>
-            </button>
-
-            <button
-              onClick={toggleVideo}
-              style={{
-                background: callVideoStopped ? '#ef4444' : 'rgba(255,255,255,0.08)',
-                border: 'none',
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s'
-              }}
-              title={callVideoStopped ? 'Start Video' : 'Stop Video'}
-            >
-              {callVideoStopped ? <VideoOff size={22} /> : <Video size={22} />}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
