@@ -22,7 +22,6 @@ import {
   MessageSquare,
   Shield,
   Search,
-  ChevronDown,
   User,
   LogOut,
   FolderOpen,
@@ -362,9 +361,6 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
                     color: 'var(--text-muted)'
                   }}
                 >
-                  <span className="linkedin-me-label-row" style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '13px', color: 'var(--text-muted)', marginTop: 0 }}>
-                    Me <ChevronDown size={14} />
-                  </span>
                   <div
                     className="linkedin-me-avatar"
                     style={{
