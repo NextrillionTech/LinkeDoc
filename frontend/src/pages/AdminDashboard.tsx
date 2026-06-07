@@ -8,6 +8,8 @@ interface PendingUser {
   role: string;
   specialty: string | null;
   licenseNumber: string | null;
+  medicalRegistrationNumber: string | null;
+  stateMedicalCouncil: string | null;
   createdAt: string;
 }
 
@@ -22,7 +24,7 @@ export const AdminDashboard: React.FC = () => {
       setLoading(true);
       const res = await api.getPendingUsers();
       if (res && !res.error) {
-        setUsers(res);
+        setUsers(res.pendingUsers || []);
       } else {
         setError(res.error || 'Failed to fetch pending users queue.');
       }
@@ -91,7 +93,7 @@ export const AdminDashboard: React.FC = () => {
                   border: '1px solid var(--border)',
                 }}
               >
-                <div>
+                <div style={{ textAlign: 'left' }}>
                   <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>{u.name}</div>
                   <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
                     Email: <span style={{ color: 'var(--text-secondary)' }}>{u.email}</span>
@@ -104,7 +106,29 @@ export const AdminDashboard: React.FC = () => {
                       Specialty: <span style={{ color: 'var(--text-secondary)' }}>{u.specialty}</span>
                     </div>
                   )}
-                  {u.licenseNumber && (
+                  {u.role === 'DOCTOR' && u.medicalRegistrationNumber && (
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                      Medical Registration Number (MRN): <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{u.medicalRegistrationNumber}</span>
+                    </div>
+                  )}
+                  {u.role === 'DOCTOR' && u.stateMedicalCouncil && (
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                      State Medical Council: <span style={{ color: 'var(--text-secondary)' }}>{u.stateMedicalCouncil}</span>
+                    </div>
+                  )}
+                  {u.role === 'DOCTOR' && u.medicalRegistrationNumber && (
+                    <div style={{ fontSize: '13px', marginTop: '6px' }}>
+                      <a
+                        href="https://www.nmc.org.in/information-desk/indian-medical-register/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        Verify on NMC Register Search ↗
+                      </a>
+                    </div>
+                  )}
+                  {u.role !== 'DOCTOR' && u.licenseNumber && (
                     <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                       License: <span style={{ color: 'var(--text-secondary)' }}>{u.licenseNumber}</span>
                     </div>

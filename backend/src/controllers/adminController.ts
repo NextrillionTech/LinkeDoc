@@ -15,6 +15,8 @@ export const getPendingUsers = async (req: AuthRequest, res: Response, next: Nex
         role: true,
         specialty: true,
         licenseNumber: true,
+        medicalRegistrationNumber: true,
+        stateMedicalCouncil: true,
         createdAt: true,
       },
     });

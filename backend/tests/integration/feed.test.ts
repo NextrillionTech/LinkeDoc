@@ -142,6 +142,8 @@ describe('Medical Feed API Integration Tests', () => {
           content: 'Pending post',
         });
 
+      console.log('FEED TEST PENDING RESPONSE:', res.status, res.body, res.text);
+
       expect(res.status).toBe(403);
       expect(res.body.success).toBe(false);
     });

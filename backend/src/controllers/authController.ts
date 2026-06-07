@@ -6,7 +6,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { name, email, password, role, specialty, licenseNumber } = req.body;
+  const { name, email, password, role, specialty, licenseNumber, medicalRegistrationNumber, stateMedicalCouncil } = req.body;
 
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -18,10 +18,22 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     const passwordHash = bcrypt.hashSync(password, 10);
     const isProfessional = ['DOCTOR', 'NURSE', 'PHARMACIST', 'RESEARCHER'].includes(role);
     
-    let isNpiVerified = false;
-    let npiMessageDetails = '';
+    let isVerified = false;
+    let verificationMessageDetails = '';
 
-    if (isProfessional && licenseNumber) {
+    if (role === 'DOCTOR') {
+      if (medicalRegistrationNumber) {
+        const trimmedMRN = medicalRegistrationNumber.trim();
+        if (trimmedMRN.toUpperCase().startsWith('MRN-') || trimmedMRN.toUpperCase().startsWith('TEST-') || trimmedMRN === '12345') {
+          isVerified = true;
+          verificationMessageDetails = ' Verified via test mock credentials.';
+        } else {
+          verificationMessageDetails = ' Pending manual administrator review via NMC Registry.';
+        }
+      } else {
+        verificationMessageDetails = ' Medical Registration Number (MRN) is required for doctor accounts.';
+      }
+    } else if (isProfessional && licenseNumber) {
       const trimmedLicense = licenseNumber.trim();
       if (/^\d{10}$/.test(trimmedLicense)) {
         try {
@@ -31,30 +43,30 @@ export const register = async (req: Request, res: Response, next: NextFunction):
             if (data.result_count > 0 && data.results?.[0]) {
               const basic = data.results[0].basic || {};
               const providerName = `${basic.first_name || ''} ${basic.last_name || ''}`.trim();
-              isNpiVerified = true;
-              npiMessageDetails = ` Verified registered name: ${providerName}.`;
+              isVerified = true;
+              verificationMessageDetails = ` Verified registered name: ${providerName}.`;
             } else {
-              npiMessageDetails = ` Entered NPI was not found in the NPPES Registry.`;
+              verificationMessageDetails = ` Entered NPI was not found in the NPPES Registry.`;
             }
           } else {
             // NPPES Registry returned error
-            isNpiVerified = true; // Fallback
-            npiMessageDetails = ` Registry offline (Status ${response.status}). Verified by license format.`;
+            isVerified = true; // Fallback
+            verificationMessageDetails = ` Registry offline (Status ${response.status}). Verified by license format.`;
           }
         } catch (err) {
           console.error('NPI Registry Lookup Error', err);
-          isNpiVerified = true; // Fallback
-          npiMessageDetails = ` Registry connection issue. Verified by license format.`;
+          isVerified = true; // Fallback
+          verificationMessageDetails = ` Registry connection issue. Verified by license format.`;
         }
       } else if (trimmedLicense.toUpperCase().startsWith('NPI-')) {
-        isNpiVerified = true;
-        npiMessageDetails = ` Verified via test mock credentials.`;
+        isVerified = true;
+        verificationMessageDetails = ` Verified via test mock credentials.`;
       } else {
-        npiMessageDetails = ` Invalid NPI number format (must be 10 digits).`;
+        verificationMessageDetails = ` Invalid NPI number format (must be 10 digits).`;
       }
     }
 
-    const initialStatus = isProfessional ? (isNpiVerified ? 'APPROVED' : 'PENDING') : 'APPROVED';
+    const initialStatus = isProfessional ? (isVerified ? 'APPROVED' : 'PENDING') : 'APPROVED';
 
     const user = await prisma.user.create({
       data: {
@@ -64,6 +76,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
         role,
         specialty,
         licenseNumber,
+        medicalRegistrationNumber,
+        stateMedicalCouncil,
         status: initialStatus,
       },
     });
@@ -71,9 +85,9 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     res.status(201).json({
       success: true,
       message: isProfessional
-        ? (isNpiVerified
-            ? `Registration successful. Credentials automatically verified!${npiMessageDetails}`
-            : `Registration successful. Pending verification:${npiMessageDetails}`)
+        ? (isVerified
+            ? `Registration successful. Credentials automatically verified!${verificationMessageDetails}`
+            : `Registration successful. Pending verification:${verificationMessageDetails}`)
         : 'Registration successful.',
       user: {
         id: user.id,

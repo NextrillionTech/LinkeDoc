@@ -17,6 +17,9 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
         email: true,
         role: true,
         specialty: true,
+        licenseNumber: true,
+        medicalRegistrationNumber: true,
+        stateMedicalCouncil: true,
         education: true,
         experience: true,
         skills: true,
@@ -38,7 +41,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
 
 export const updateProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
-  const { specialty, education, experience, skills } = req.body;
+  const { specialty, education, experience, skills, licenseNumber, medicalRegistrationNumber, stateMedicalCouncil } = req.body;
 
   if (!req.user || req.user.id !== id) {
     res.status(403).json({ success: false, error: 'Access denied: can only update your own profile' });
@@ -53,6 +56,9 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
         education,
         experience,
         skills,
+        licenseNumber,
+        medicalRegistrationNumber,
+        stateMedicalCouncil,
       },
     });
 
@@ -65,6 +71,9 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
         education: updatedUser.education,
         experience: updatedUser.experience,
         skills: updatedUser.skills,
+        licenseNumber: updatedUser.licenseNumber,
+        medicalRegistrationNumber: updatedUser.medicalRegistrationNumber,
+        stateMedicalCouncil: updatedUser.stateMedicalCouncil,
       },
     });
   } catch (err) {

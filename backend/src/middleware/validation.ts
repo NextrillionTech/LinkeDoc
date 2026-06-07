@@ -8,6 +8,8 @@ export const registerSchema = z.object({
   role: z.enum(['DOCTOR', 'NURSE', 'PHARMACIST', 'RESEARCHER', 'RECRUITER', 'ADMIN']),
   specialty: z.string().optional(),
   licenseNumber: z.string().optional(),
+  medicalRegistrationNumber: z.string().optional(),
+  stateMedicalCouncil: z.string().optional(),
 });
 
 export const loginSchema = z.object({

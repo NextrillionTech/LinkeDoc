@@ -46,6 +46,8 @@ model User {
   role          Role
   specialty     String?
   licenseNumber String?
+  medicalRegistrationNumber String?
+  stateMedicalCouncil       String?
   education     Json?              // Array of degrees, schools, years
   experience    Json?              // Array of jobs, companies, years
   skills        String[]           // Array of strings
