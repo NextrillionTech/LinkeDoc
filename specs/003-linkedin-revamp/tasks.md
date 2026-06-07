@@ -61,7 +61,7 @@
 - [ ] T009 [US1] Implement post creation (`createPost` enforcing roles validation) and feed retrieval (`getFeed`) logic in `backend/src/controllers/feedController.ts`
 - [ ] T010 [US1] Register feed route handlers in `backend/src/routes/feedRoutes.ts` and mount the router in `backend/src/config/server.ts`
 - [ ] T011 [US1] Create feed API integration client methods (`createPost`, `getFeed`) in `frontend/src/services/api.ts`
-- [ ] T012 [US1] Build the Feed page component (3-column layout with left sidebar profile, central feed list, and right sidebar news) in `frontend/src/pages/Feed.tsx`
+- [ ] T012 [US1] Build the Feed page component (3-column layout with left sidebar profile, central feed list, and trending discussions right sidebar) in `frontend/src/pages/Feed.tsx`
 - [ ] T013 [US1] Map `/` to render `<Feed />` for authenticated users and update the navigation header navbar to LinkedIn header style in `frontend/src/App.tsx`
 
 **Checkpoint**: User Story 1 is fully functional. Users can post text/research updates and view the timeline.

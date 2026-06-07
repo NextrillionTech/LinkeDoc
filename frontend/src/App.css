@@ -1,81 +1,79 @@
-@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=Noto+Sans:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   /* Fonts & Radius & Animations */
-  --font-display: 'Figtree', 'Outfit', sans-serif;
-  --font-body: 'Noto Sans', 'Plus Jakarta Sans', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   
   --radius-sm: 8px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
+  --radius-md: 10px;
+  --radius-lg: 20px;
   --radius-full: 9999px;
   
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Dark Mode Palette (Default) */
+  --bg-primary: #000000;
+  --bg-secondary: #1d2226;
+  --bg-tertiary: #2f353a;
   
-  /* Light Mode Palette (Default) */
-  --bg-primary: #f8fafc;
+  --primary: #70b5f9;
+  --primary-glow: rgba(112, 181, 249, 0.2);
+  --primary-hover: #a0cffc;
+  
+  --accent: #70b5f9;
+  --accent-glow: rgba(112, 181, 249, 0.1);
+  
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  
+  --border: rgba(255, 255, 255, 0.15);
+  --border-hover: rgba(255, 255, 255, 0.25);
+  
+  --success: #057642;
+  --warning: #ca8a04;
+  --danger: #dc2626;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 24px 0 rgba(0, 0, 0, 0.4);
+  
+  --glass-bg: #1d2226;
+  --glass-border: rgba(255, 255, 255, 0.15);
+}
+
+/* Light Mode Overrides */
+.theme-light {
+  --bg-primary: #eef3f8;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9;
+  --bg-tertiary: #eef3f8;
   
-  --primary: #0284c7;
-  --primary-glow: rgba(2, 132, 199, 0.15);
-  --primary-hover: #0369a1;
+  --primary: #0a66c2;
+  --primary-glow: rgba(10, 102, 194, 0.1);
+  --primary-hover: #004182;
   
-  --accent: #16a34a;
-  --accent-glow: rgba(22, 163, 74, 0.15);
+  --accent: #0a66c2;
+  --accent-glow: rgba(10, 102, 194, 0.08);
   
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-primary: rgba(0, 0, 0, 0.9);
+  --text-secondary: rgba(0, 0, 0, 0.7);
+  --text-muted: rgba(0, 0, 0, 0.6);
   
-  --border: #e2e8f0;
-  --border-hover: #cbd5e1;
+  --border: #dcdcdc;
+  --border-hover: #b0b0b0;
   
-  --success: #16a34a;
+  --success: #057642;
   --warning: #ca8a04;
   --danger: #dc2626;
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 24px 0 rgba(0, 0, 0, 0.08);
   
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(2, 132, 199, 0.08);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark Mode Palette */
-    --bg-primary: #0f172a;
-    --bg-secondary: rgba(30, 41, 59, 0.7);
-    --bg-tertiary: rgba(51, 65, 85, 0.5);
-    
-    --primary: #38bdf8;
-    --primary-glow: rgba(56, 189, 248, 0.25);
-    --primary-hover: #0ea5e9;
-    
-    --accent: #4ade80;
-    --accent-glow: rgba(74, 222, 128, 0.2);
-    
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    
-    --border: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(255, 255, 255, 0.16);
-    
-    --success: #4ade80;
-    --warning: #facc15;
-    --danger: #f87171;
-    
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-    
-    --glass-bg: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.08);
-  }
+  --glass-bg: #ffffff;
+  --glass-border: #dcdcdc;
 }
 
 /* Base Body Styles */
@@ -88,12 +86,6 @@ body {
   transition: background-color var(--transition-smooth), color var(--transition-smooth);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  
-  /* Modern ambient background glow */
-  background-image: 
-    radial-gradient(at 0% 0%, var(--primary-glow) 0px, transparent 55%),
-    radial-gradient(at 100% 100%, var(--accent-glow) 0px, transparent 55%);
-  background-attachment: fixed;
 }
 
 /* Typography spacing and details */
@@ -101,50 +93,45 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   color: var(--text-primary);
   margin-top: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   font-weight: 700;
 }
 
 p {
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 /* Glassmorphism Card Style */
 .card-glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 32px;
-  box-shadow: var(--shadow-lg);
-  transition: border-color var(--transition-fast), transform var(--transition-smooth), box-shadow var(--transition-smooth), background-color var(--transition-smooth);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast), background-color var(--transition-smooth);
 }
 
 .card-glass:hover {
   border-color: var(--border-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px 0 var(--primary-glow);
 }
 
 /* Glowing Interactive Button */
 .btn-primary {
   font-family: var(--font-display);
   font-weight: 600;
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  background: var(--primary);
   color: #ffffff;
   border: none;
   border-radius: var(--radius-sm);
-  padding: 12px 24px;
+  padding: 10px 20px;
   cursor: pointer;
-  box-shadow: 0 4px 14px var(--primary-glow);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  transition: opacity var(--transition-fast);
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--primary-glow);
+  opacity: 0.9;
 }
 
 .btn-primary:active {
@@ -156,7 +143,7 @@ p {
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 16px;
+  padding: 10px 14px;
   color: var(--text-primary);
   font-family: var(--font-body);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
@@ -165,24 +152,26 @@ p {
 .input-glass:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
-/* LinkedIn Header Layout */
+/* LinkedIn Header Layout - Floating Pill Style */
 .linkedin-header {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 30px;
   position: sticky;
-  top: 0;
+  top: 15px;
   z-index: 100;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   transition: background-color var(--transition-smooth), border-color var(--transition-smooth);
   height: 52px;
   display: flex;
   align-items: center;
   padding: 0 24px;
+  margin: 15px auto;
+  width: calc(100% - 40px);
+  max-width: 1128px;
+  box-sizing: border-box;
 }
 
 .linkedin-header-content {
@@ -190,14 +179,12 @@ p {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 1128px;
-  margin: 0 auto;
 }
 
 .linkedin-header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
   max-width: 450px;
 }
@@ -205,11 +192,25 @@ p {
 .linkedin-brand-logo {
   display: flex;
   align-items: center;
+  text-decoration: none;
 }
 
-.linkedin-brand-logo img {
-  height: 32px;
-  display: block;
+.linkedin-logo-box {
+  background-color: #0a66c2;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  text-transform: lowercase;
+  letter-spacing: -1.5px;
+  padding-right: 1px;
+  box-sizing: border-box;
 }
 
 /* LinkedIn-style Search */
@@ -217,9 +218,9 @@ p {
   display: flex;
   align-items: center;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0 8px;
+  border: none;
+  border-radius: 20px;
+  padding: 0 12px;
   height: 34px;
   width: 100%;
   max-width: 240px;
@@ -227,7 +228,6 @@ p {
 }
 
 .linkedin-search-container:focus-within {
-  border-color: var(--primary);
   background: var(--bg-secondary);
   box-shadow: 0 0 0 1px var(--primary);
   max-width: 280px;
@@ -259,46 +259,49 @@ p {
 .linkedin-nav-menu {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
-/* LinkedIn navigation items with text beneath icon */
+/* LinkedIn navigation items with text beside icon (pill outline) */
 .linkedin-nav-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
   color: var(--text-muted);
   text-decoration: none;
-  width: 80px;
-  height: 52px;
+  padding: 6px 14px;
+  height: 36px;
+  border-radius: 20px;
   cursor: pointer;
   position: relative;
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
 }
 
 .linkedin-nav-item:hover {
+  background-color: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
 .linkedin-nav-item.active {
-  color: var(--text-primary);
+  background-color: #0a66c2 !important;
+  color: #ffffff !important;
 }
 
-.linkedin-nav-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: var(--text-primary);
+.linkedin-nav-item.active .linkedin-nav-icon {
+  color: #ffffff !important;
+}
+
+.linkedin-nav-item.active .linkedin-nav-label {
+  color: #ffffff !important;
+  font-weight: 600;
 }
 
 .linkedin-nav-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 2px;
 }
 
 .linkedin-nav-icon svg {
@@ -307,16 +310,16 @@ p {
 }
 
 .linkedin-nav-label {
-  font-size: 11px;
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 /* Me dropdown styling */
 .linkedin-me-menu-container {
   position: relative;
-  margin-left: 12px;
-  border-left: 1px solid var(--border);
-  padding-left: 12px;
+  margin-left: 0;
+  border-left: none;
+  padding-left: 0;
 }
 
 .linkedin-me-trigger-btn {
@@ -722,3 +725,270 @@ p {
   margin: 0 auto;
   padding: 20px;
 }
+
+/* ===== Notifications System ===== */
+.linkedin-notif-dropdown-card {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 340px;
+  max-height: 420px;
+  margin-top: 8px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalSlideUp 0.2s ease-out;
+}
+
+.notif-dropdown-header {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.notif-dropdown-list {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  max-height: 360px;
+}
+
+.notif-empty-state {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.notif-item-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color var(--transition-fast);
+  gap: 12px;
+}
+
+.notif-item-link:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.notif-item-link.unread {
+  background-color: var(--primary-glow);
+}
+
+.notif-content-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.notif-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.notif-time {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--primary);
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background-color: var(--danger);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  min-width: 14px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--bg-primary);
+}
+
+/* ===== Interactive Polls ===== */
+.poll-container {
+  margin-top: 14px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.poll-question {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.poll-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.poll-option-row {
+  position: relative;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.poll-option-row:hover:not(.voted) {
+  border-color: var(--primary);
+}
+
+.poll-option-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background-color: var(--primary-glow);
+  transition: width 0.4s ease-out;
+  z-index: 1;
+}
+
+.poll-option-content {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.poll-option-percent {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.poll-footer-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ===== Upgraded Canvas Tools ===== */
+.canvas-tool-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.canvas-tool-slider input {
+  cursor: pointer;
+}
+
+/* ===== Redesign Custom Extensions ===== */
+.linkedin-nav-divider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--border);
+  margin: 0 8px;
+  align-self: center;
+}
+
+.linkedin-icon-only-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.linkedin-icon-only-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.linkedin-icon-only-btn.active {
+  color: var(--primary) !important;
+}
+
+.profile-card-avatar-img {
+  transition: transform var(--transition-smooth);
+}
+
+.profile-summary-card:hover .profile-card-avatar-img {
+  transform: scale(1.05);
+}
+
+.profile-card-stats {
+  transition: background-color var(--transition-fast);
+}
+
+.profile-card-stats:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.hashtag-pill {
+  transition: all var(--transition-fast);
+}
+
+.hashtag-pill:hover {
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+  background-color: var(--primary-glow) !important;
+}
+
+.sidebar-group-name {
+  transition: color var(--transition-fast);
+}
+
+.sidebar-group-name:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.composer-action-btn {
+  transition: background-color var(--transition-fast);
+}
+
+.composer-action-btn:hover {
+  background-color: var(--bg-tertiary) !important;
+}
+

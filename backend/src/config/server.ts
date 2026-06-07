@@ -11,6 +11,7 @@ import jobRoutes from '../routes/jobRoutes';
 import messagingRoutes from '../routes/messagingRoutes';
 import feedRoutes from '../routes/feedRoutes';
 import groupRoutes from '../routes/groupRoutes';
+import notificationRoutes from '../routes/notificationRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +32,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/conversations', messagingRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Base Health Check
 app.get('/health', (req, res) => {

@@ -345,5 +345,67 @@ export const api = {
       authors: 'Carter J, Watson L, Smith A.',
       journal: 'Journal of Medical Case Reports'
     };
+  },
+
+  // Polls API
+  async votePoll(pollId: string, optionId: string) {
+    const res = await fetch(`${API_BASE_URL}/feed/polls/vote`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ pollId, optionId }),
+    });
+    return res.json();
+  },
+
+  // Notifications API
+  async getNotifications() {
+    const res = await fetch(`${API_BASE_URL}/notifications`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async markNotificationRead(id: string) {
+    const res = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async markAllNotificationsRead() {
+    const res = await fetch(`${API_BASE_URL}/notifications/read-all`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  // Group Admin API
+  async getGroupRequests(groupId: string) {
+    const res = await fetch(`${API_BASE_URL}/groups/${groupId}/requests`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async approveGroupRequest(groupId: string, requestUserId: string) {
+    const res = await fetch(`${API_BASE_URL}/groups/${groupId}/approve`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ requestUserId }),
+    });
+    return res.json();
+  },
+
+  async rejectGroupRequest(groupId: string, requestUserId: string) {
+    const res = await fetch(`${API_BASE_URL}/groups/${groupId}/reject`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ requestUserId }),
+    });
+    return res.json();
   }
 };

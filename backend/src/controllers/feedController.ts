@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { createNotification } from './notificationController';
 
 const prisma = new PrismaClient();
 
@@ -13,7 +14,7 @@ interface AuthRequest extends Request {
 }
 
 export const createPost = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
-  const { content, isResearch, researchTitle, researchAbstract, researchLink, mediaUrls, groupId } = req.body;
+  const { content, isResearch, researchTitle, researchAbstract, researchLink, mediaUrls, groupId, poll } = req.body;
   const userId = req.user?.id;
   const userRole = req.user?.role;
 
@@ -43,6 +44,17 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
         researchLink: isResearch ? researchLink : null,
         mediaUrls: mediaUrls || [],
         groupId: groupId || null,
+        ...(poll && poll.question && Array.isArray(poll.options) && poll.options.length >= 2 ? {
+          poll: {
+            create: {
+              question: poll.question,
+              expiresAt: new Date(Date.now() + (poll.durationHours || 24) * 60 * 60 * 1000),
+              options: {
+                create: poll.options.map((opt: string) => ({ text: opt })),
+              },
+            },
+          },
+        } : {}),
       },
       include: {
         author: {
@@ -51,6 +63,12 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
             name: true,
             role: true,
             specialty: true,
+          },
+        },
+        poll: {
+          include: {
+            options: true,
+            votes: true,
           },
         },
       },
@@ -99,6 +117,16 @@ export const getFeed = async (req: AuthRequest, res: Response, next: NextFunctio
             },
           },
         },
+        poll: {
+          include: {
+            options: {
+              include: {
+                votes: true,
+              },
+            },
+            votes: true,
+          },
+        },
       },
     });
 
@@ -122,6 +150,7 @@ export const getFeed = async (req: AuthRequest, res: Response, next: NextFunctio
         commentsCount,
         hasLiked,
         comments: p.comments,
+        poll: p.poll,
       };
     });
 
@@ -174,6 +203,8 @@ export const toggleLike = async (req: AuthRequest, res: Response, next: NextFunc
         },
       });
       liked = true;
+      // Trigger notification
+      await createNotification(post.authorId, userId, 'POST_LIKE', post.id);
     }
 
     const likeCount = await prisma.postLike.count({ where: { postId } });
@@ -217,6 +248,9 @@ export const addComment = async (req: AuthRequest, res: Response, next: NextFunc
         },
       },
     });
+
+    // Trigger notification
+    await createNotification(post.authorId, userId, 'POST_COMMENT', post.id);
 
     res.status(201).json({ success: true, comment });
   } catch (err) {
@@ -335,5 +369,81 @@ export const searchPubMed = async (req: AuthRequest, res: Response, next: NextFu
     // Graceful fallback to mock data on error/network outage
     const fallback = getSimulatedRecord(query);
     res.status(200).json(fallback);
+  }
+};
+
+export const votePoll = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const { pollId, optionId } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return;
+  }
+
+  if (!pollId || !optionId) {
+    res.status(400).json({ success: false, error: 'Poll ID and Option ID are required' });
+    return;
+  }
+
+  try {
+    const poll = await prisma.poll.findUnique({
+      where: { id: pollId },
+      include: {
+        post: true,
+      },
+    });
+
+    if (!poll) {
+      res.status(404).json({ success: false, error: 'Poll not found' });
+      return;
+    }
+
+    if (new Date() > new Date(poll.expiresAt)) {
+      res.status(400).json({ success: false, error: 'This poll has expired' });
+      return;
+    }
+
+    // Check if the user already voted on this poll
+    const existingVote = await prisma.pollVote.findUnique({
+      where: {
+        pollId_userId: {
+          pollId,
+          userId,
+        },
+      },
+    });
+
+    if (existingVote) {
+      res.status(400).json({ success: false, error: 'You have already voted in this poll' });
+      return;
+    }
+
+    // Verify option belongs to this poll
+    const option = await prisma.pollOption.findFirst({
+      where: { id: optionId, pollId },
+    });
+
+    if (!option) {
+      res.status(400).json({ success: false, error: 'Invalid poll option' });
+      return;
+    }
+
+    const vote = await prisma.pollVote.create({
+      data: {
+        pollId,
+        optionId,
+        userId,
+      },
+    });
+
+    // Optionally notify the post author
+    if (poll.post.authorId !== userId) {
+      await createNotification(poll.post.authorId, userId, 'POLL_VOTE', poll.post.id);
+    }
+
+    res.status(201).json({ success: true, vote });
+  } catch (err) {
+    next(err);
   }
 };

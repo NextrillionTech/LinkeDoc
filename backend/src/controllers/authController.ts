@@ -18,8 +18,42 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     const passwordHash = bcrypt.hashSync(password, 10);
     const isProfessional = ['DOCTOR', 'NURSE', 'PHARMACIST', 'RESEARCHER'].includes(role);
     
-    // NPI lookup mockup: check if licenseNumber is a 10-digit code or starts with NPI-
-    const isNpiVerified = isProfessional && licenseNumber && (/^\d{10}$/.test(licenseNumber.trim()) || licenseNumber.trim().toUpperCase().startsWith('NPI-'));
+    let isNpiVerified = false;
+    let npiMessageDetails = '';
+
+    if (isProfessional && licenseNumber) {
+      const trimmedLicense = licenseNumber.trim();
+      if (/^\d{10}$/.test(trimmedLicense)) {
+        try {
+          const response = await fetch(`https://npiregistry.cms.hhs.gov/api/?version=2.1&number=${trimmedLicense}`);
+          if (response.ok) {
+            const data = (await response.json()) as any;
+            if (data.result_count > 0 && data.results?.[0]) {
+              const basic = data.results[0].basic || {};
+              const providerName = `${basic.first_name || ''} ${basic.last_name || ''}`.trim();
+              isNpiVerified = true;
+              npiMessageDetails = ` Verified registered name: ${providerName}.`;
+            } else {
+              npiMessageDetails = ` Entered NPI was not found in the NPPES Registry.`;
+            }
+          } else {
+            // NPPES Registry returned error
+            isNpiVerified = true; // Fallback
+            npiMessageDetails = ` Registry offline (Status ${response.status}). Verified by license format.`;
+          }
+        } catch (err) {
+          console.error('NPI Registry Lookup Error', err);
+          isNpiVerified = true; // Fallback
+          npiMessageDetails = ` Registry connection issue. Verified by license format.`;
+        }
+      } else if (trimmedLicense.toUpperCase().startsWith('NPI-')) {
+        isNpiVerified = true;
+        npiMessageDetails = ` Verified via test mock credentials.`;
+      } else {
+        npiMessageDetails = ` Invalid NPI number format (must be 10 digits).`;
+      }
+    }
+
     const initialStatus = isProfessional ? (isNpiVerified ? 'APPROVED' : 'PENDING') : 'APPROVED';
 
     const user = await prisma.user.create({
@@ -38,8 +72,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
       success: true,
       message: isProfessional
         ? (isNpiVerified
-            ? 'Registration successful. Your credentials have been automatically verified via NPI database mockup!'
-            : 'Registration successful. Your account is pending verification by administration.')
+            ? `Registration successful. Credentials automatically verified!${npiMessageDetails}`
+            : `Registration successful. Pending verification:${npiMessageDetails}`)
         : 'Registration successful.',
       user: {
         id: user.id,

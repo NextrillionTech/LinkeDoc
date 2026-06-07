@@ -26,6 +26,8 @@ interface Group {
   memberCount: number;
   postCount: number;
   isMember: boolean;
+  isPending?: boolean;
+  membershipRole?: string | null;
   createdAt: string;
 }
 
@@ -88,6 +90,10 @@ export const Groups: React.FC = () => {
   const [commentInputs, setCommentInputs] = useState<{ [postId: string]: string }>({});
   const [commentSubmitting, setCommentSubmitting] = useState<{ [postId: string]: boolean }>({});
 
+  // Requests Admin Panel state
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+
   const fetchGroups = async () => {
     try {
       setLoadingGroups(true);
@@ -104,6 +110,22 @@ export const Groups: React.FC = () => {
       console.error('Failed to load groups:', e);
     } finally {
       setLoadingGroups(false);
+    }
+  };
+
+  const fetchGroupRequests = async (groupId: string) => {
+    try {
+      setLoadingRequests(true);
+      const res = await api.getGroupRequests(groupId);
+      if (Array.isArray(res)) {
+        setPendingRequests(res);
+      } else {
+        setPendingRequests([]);
+      }
+    } catch (e) {
+      console.error('Failed to fetch group requests:', e);
+    } finally {
+      setLoadingRequests(false);
     }
   };
 
@@ -135,6 +157,12 @@ export const Groups: React.FC = () => {
         fetchGroupFeed(activeGroup.id);
       } else {
         setPosts([]);
+      }
+
+      if (activeGroup.creatorId === currentUser.id) {
+        fetchGroupRequests(activeGroup.id);
+      } else {
+        setPendingRequests([]);
       }
     }
   }, [activeGroup]);
@@ -169,7 +197,7 @@ export const Groups: React.FC = () => {
       if (res.success) {
         fetchGroups();
         if (activeGroup && activeGroup.id === groupId) {
-          setActiveGroup(prev => prev ? { ...prev, isMember: true, memberCount: prev.memberCount + 1 } : null);
+          setActiveGroup(prev => prev ? { ...prev, isPending: true } : null);
         }
       }
     } catch (e) {
@@ -184,8 +212,37 @@ export const Groups: React.FC = () => {
       if (res.success) {
         fetchGroups();
         if (activeGroup && activeGroup.id === groupId) {
-          setActiveGroup(prev => prev ? { ...prev, isMember: false, memberCount: prev.memberCount - 1 } : null);
+          setActiveGroup(prev => prev ? { ...prev, isMember: false, isPending: false, memberCount: prev.memberCount - 1 } : null);
         }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleApproveRequest = async (requestUserId: string) => {
+    if (!activeGroup) return;
+    try {
+      const res = await api.approveGroupRequest(activeGroup.id, requestUserId);
+      if (res.success) {
+        fetchGroupRequests(activeGroup.id);
+        fetchGroups();
+      } else {
+        alert(res.error || 'Failed to approve request');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRejectRequest = async (requestUserId: string) => {
+    if (!activeGroup) return;
+    try {
+      const res = await api.rejectGroupRequest(activeGroup.id, requestUserId);
+      if (res.success) {
+        fetchGroupRequests(activeGroup.id);
+      } else {
+        alert(res.error || 'Failed to reject request');
       }
     } catch (e) {
       console.error(e);
@@ -500,16 +557,20 @@ export const Groups: React.FC = () => {
                   <div className="group-item-name">{g.name}</div>
                   <div className="group-item-desc">{g.description}</div>
                 </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleJoinGroup(g.id);
-                  }}
-                  style={{ padding: '4px 10px', fontSize: '11px', background: 'var(--primary-glow)', border: '1px solid var(--primary)', color: 'var(--primary)', borderRadius: '3px', cursor: 'pointer' }}
-                >
-                  Join
-                </button>
+                {g.isPending ? (
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>Pending</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleJoinGroup(g.id);
+                    }}
+                    style={{ padding: '4px 10px', fontSize: '11px', background: 'var(--primary-glow)', border: '1px solid var(--primary)', color: 'var(--primary)', borderRadius: '3px', cursor: 'pointer' }}
+                  >
+                    Join
+                  </button>
+                )}
               </div>
             ))
           )}
@@ -561,6 +622,15 @@ export const Groups: React.FC = () => {
                     >
                       <LogOut size={14} /> Leave Group
                     </button>
+                  ) : activeGroup.isPending ? (
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      style={{ padding: '8px 18px', fontSize: '13px', cursor: 'default' }}
+                      disabled
+                    >
+                      Request Pending
+                    </button>
                   ) : (
                     <button
                       type="button"
@@ -568,7 +638,7 @@ export const Groups: React.FC = () => {
                       style={{ padding: '8px 18px', fontSize: '13px', borderRadius: '4px' }}
                       onClick={() => handleJoinGroup(activeGroup.id)}
                     >
-                      Join Group
+                      Request to Join
                     </button>
                   )}
                 </div>
@@ -579,6 +649,57 @@ export const Groups: React.FC = () => {
             <div className="group-feed-container">
               {activeGroup.isMember ? (
                 <>
+                  {/* Group Creator Admin Requests Dashboard */}
+                  {activeGroup.creatorId === currentUser.id && (pendingRequests.length > 0 || loadingRequests) && (
+                    <div style={{
+                      background: 'rgba(59, 130, 246, 0.08)',
+                      border: '1px solid rgba(59, 130, 246, 0.2)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '16px',
+                      marginBottom: '20px',
+                    }}>
+                      <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Users size={16} /> Pending Join Requests ({pendingRequests.length})
+                      </h4>
+                      {loadingRequests ? (
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Loading requests...</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {pendingRequests.map((req) => (
+                            <div key={req.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-tertiary)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                              <div>
+                                <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)' }}>
+                                  {req.user.role === 'ADMIN' ? req.user.name : req.user.role === 'RECRUITER' ? req.user.name : `Dr. ${req.user.name}`}
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                  {req.user.role} {req.user.specialty ? `• ${req.user.specialty}` : ''}
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <button
+                                  type="button"
+                                  className="btn-primary"
+                                  style={{ padding: '4px 10px', fontSize: '11px', borderRadius: '3px' }}
+                                  onClick={() => handleApproveRequest(req.user.id)}
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn-secondary"
+                                  style={{ padding: '4px 10px', fontSize: '11px', borderRadius: '3px' }}
+                                  onClick={() => handleRejectRequest(req.user.id)}
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Group Post Composer */}
                   <div className="group-post-composer">
                     <form onSubmit={handleCreatePost}>
@@ -737,18 +858,24 @@ export const Groups: React.FC = () => {
               ) : (
                 <div style={{ textAlign: 'center', padding: '60px 40px', background: 'var(--glass-bg)', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                   <Users size={48} style={{ color: 'var(--primary)' }} />
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>You are not a member</h3>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>
+                    {activeGroup.isPending ? 'Membership Pending' : 'You are not a member'}
+                  </h3>
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '14px', maxWidth: '360px' }}>
-                    Join this group to browse the feed, see active discussions, and post professional cases with peers.
+                    {activeGroup.isPending
+                      ? 'Your request to join this group has been submitted. You will be able to browse and post once approved by an administrator.'
+                      : 'Join this group to browse the feed, see active discussions, and post professional cases with peers.'}
                   </p>
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    style={{ padding: '8px 24px', borderRadius: '4px' }}
-                    onClick={() => handleJoinGroup(activeGroup.id)}
-                  >
-                    Join {activeGroup.name}
-                  </button>
+                  {!activeGroup.isPending && (
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={{ padding: '8px 24px', borderRadius: '4px' }}
+                      onClick={() => handleJoinGroup(activeGroup.id)}
+                    >
+                      Request to Join
+                    </button>
+                  )}
                 </div>
               )}
             </div>

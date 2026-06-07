@@ -76,10 +76,10 @@ describe('Home Feed Component Tests', () => {
 
     // Left Profile Card
     expect(screen.getByText('Connections')).toBeInTheDocument();
-    expect(screen.getByText('Dr. Jane Smith')).toBeInTheDocument();
+    expect(screen.getByText('Hanif Al Hafizh')).toBeInTheDocument();
 
-    // Center Composer
-    expect(screen.getByPlaceholderText(/What medical update or clinical finding/i)).toBeInTheDocument();
+    // Center Composer Trigger
+    expect(screen.getByText("What's on your mind?")).toBeInTheDocument();
 
     // Right Trending Card
     expect(screen.getByText('Trending Discussions')).toBeInTheDocument();
@@ -98,7 +98,12 @@ describe('Home Feed Component Tests', () => {
       </BrowserRouter>
     );
 
-    const toggleButton = screen.getByRole('button', { name: /Attach Research Paper/i });
+    // Click the composer trigger to open the modal
+    const composerTrigger = screen.getByText("What's on your mind?");
+    fireEvent.click(composerTrigger);
+
+    // Find the Attach Paper option inside the modal
+    const toggleButton = screen.getByRole('button', { name: /Attach Paper/i });
     fireEvent.click(toggleButton);
 
     // Research paper input fields should appear
@@ -106,7 +111,7 @@ describe('Home Feed Component Tests', () => {
     expect(screen.getByPlaceholderText('Abstract / Summary Outline *')).toBeInTheDocument();
 
     // Input values
-    const textarea = screen.getByPlaceholderText(/What medical update or clinical finding/i);
+    const textarea = screen.getByPlaceholderText(/What do you want to talk about?/i);
     fireEvent.change(textarea, { target: { value: 'New paper abstract' } });
 
     fireEvent.change(screen.getByPlaceholderText('Paper Title *'), { target: { value: 'COVID-19 Analysis' } });
@@ -173,7 +178,9 @@ describe('Home Feed Component Tests', () => {
     const commentInput = screen.getByPlaceholderText('Add a professional reply...');
     fireEvent.change(commentInput, { target: { value: 'Inspiring!' } });
 
-    const submitCommentButton = screen.getAllByRole('button', { name: 'Post' })[1];
+    // Find the submit button inside the comment form
+    const commentForm = screen.getByPlaceholderText('Add a professional reply...').closest('form')!;
+    const submitCommentButton = commentForm.querySelector('button[type="submit"]')!;
     fireEvent.click(submitCommentButton);
 
     await waitFor(() => {

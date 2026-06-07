@@ -18,8 +18,6 @@
     "react-router-dom": "^6.23.1"
   },
   "devDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.61.1",
-    "@rollup/rollup-linux-x64-musl": "^4.61.1",
     "@testing-library/jest-dom": "^6.4.5",
     "@testing-library/react": "^15.0.7",
     "@types/react": "^18.3.3",

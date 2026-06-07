@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { createNotification } from './notificationController';
 
 const prisma = new PrismaClient();
 
@@ -36,6 +37,8 @@ export const createGroup = async (req: AuthRequest, res: Response, next: NextFun
         members: {
           create: {
             userId,
+            role: 'ADMIN',
+            status: 'APPROVED',
           },
         },
       },
@@ -83,18 +86,23 @@ export const getGroups = async (req: AuthRequest, res: Response, next: NextFunct
       },
     });
 
-    // Format list and check if current user is a member
     const formatted = groups.map((g) => {
-      const isMember = g.members.some((m) => m.userId === userId);
+      const membership = g.members.find((m) => m.userId === userId);
+      const isMember = membership ? membership.status === 'APPROVED' : false;
+      const isPending = membership ? membership.status === 'PENDING' : false;
+      const role = membership ? membership.role : null;
+
       return {
         id: g.id,
         name: g.name,
         description: g.description,
         creatorId: g.creatorId,
         creatorName: g.creator.name,
-        memberCount: g.members.length,
+        memberCount: g.members.filter((m) => m.status === 'APPROVED').length,
         postCount: g._count.posts,
         isMember,
+        isPending,
+        membershipRole: role,
         createdAt: g.createdAt,
       };
     });
@@ -131,7 +139,7 @@ export const joinGroup = async (req: AuthRequest, res: Response, next: NextFunct
     });
 
     if (member) {
-      res.status(400).json({ success: false, error: 'Already a member of this group' });
+      res.status(400).json({ success: false, error: 'Already a member or requested to join this group' });
       return;
     }
 
@@ -139,10 +147,15 @@ export const joinGroup = async (req: AuthRequest, res: Response, next: NextFunct
       data: {
         groupId,
         userId,
+        role: 'MEMBER',
+        status: 'PENDING',
       },
     });
 
-    res.status(200).json({ success: true, message: 'Joined group successfully' });
+    // Notify creator of new request
+    await createNotification(group.creatorId, userId, 'GROUP_REQUEST', group.id);
+
+    res.status(200).json({ success: true, message: 'Join request sent successfully' });
   } catch (err) {
     next(err);
   }
@@ -208,7 +221,6 @@ export const getGroupFeed = async (req: AuthRequest, res: Response, next: NextFu
   }
 
   try {
-    // Check if user is a member of the group
     const member = await prisma.groupMember.findUnique({
       where: {
         groupId_userId: {
@@ -218,8 +230,8 @@ export const getGroupFeed = async (req: AuthRequest, res: Response, next: NextFu
       },
     });
 
-    if (!member) {
-      res.status(403).json({ success: false, error: 'You must join this group to view its feed.' });
+    if (!member || member.status !== 'APPROVED') {
+      res.status(403).json({ success: false, error: 'You must join this group and be approved to view its feed.' });
       return;
     }
 
@@ -249,6 +261,16 @@ export const getGroupFeed = async (req: AuthRequest, res: Response, next: NextFu
             },
           },
         },
+        poll: {
+          include: {
+            options: {
+              include: {
+                votes: true,
+              },
+            },
+            votes: true,
+          },
+        },
       },
     });
 
@@ -272,10 +294,147 @@ export const getGroupFeed = async (req: AuthRequest, res: Response, next: NextFu
         commentsCount,
         hasLiked,
         comments: p.comments,
+        poll: p.poll,
       };
     });
 
     res.status(200).json(feed);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getGroupRequests = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const groupId = req.params.id;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return;
+  }
+
+  try {
+    const group = await prisma.group.findUnique({ where: { id: groupId } });
+    if (!group) {
+      res.status(404).json({ success: false, error: 'Group not found' });
+      return;
+    }
+
+    const member = await prisma.groupMember.findUnique({
+      where: { groupId_userId: { groupId, userId } },
+    });
+
+    if (group.creatorId !== userId && (!member || member.role !== 'ADMIN')) {
+      res.status(403).json({ success: false, error: 'Only group admins can view pending requests' });
+      return;
+    }
+
+    const requests = await prisma.groupMember.findMany({
+      where: {
+        groupId,
+        status: 'PENDING',
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+            specialty: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json(requests);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const approveGroupRequest = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const groupId = req.params.id;
+  const { requestUserId } = req.body;
+  const adminUserId = req.user?.id;
+
+  if (!adminUserId) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return;
+  }
+
+  try {
+    const group = await prisma.group.findUnique({ where: { id: groupId } });
+    if (!group) {
+      res.status(404).json({ success: false, error: 'Group not found' });
+      return;
+    }
+
+    const adminMember = await prisma.groupMember.findUnique({
+      where: { groupId_userId: { groupId, userId: adminUserId } },
+    });
+
+    if (group.creatorId !== adminUserId && (!adminMember || adminMember.role !== 'ADMIN')) {
+      res.status(403).json({ success: false, error: 'Only group admins can approve requests' });
+      return;
+    }
+
+    await prisma.groupMember.update({
+      where: {
+        groupId_userId: {
+          groupId,
+          userId: requestUserId,
+        },
+      },
+      data: {
+        status: 'APPROVED',
+      },
+    });
+
+    // Notify user of group approval
+    await createNotification(requestUserId, adminUserId, 'GROUP_APPROVED', groupId);
+
+    res.status(200).json({ success: true, message: 'Join request approved' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const rejectGroupRequest = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const groupId = req.params.id;
+  const { requestUserId } = req.body;
+  const adminUserId = req.user?.id;
+
+  if (!adminUserId) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return;
+  }
+
+  try {
+    const group = await prisma.group.findUnique({ where: { id: groupId } });
+    if (!group) {
+      res.status(404).json({ success: false, error: 'Group not found' });
+      return;
+    }
+
+    const adminMember = await prisma.groupMember.findUnique({
+      where: { groupId_userId: { groupId, userId: adminUserId } },
+    });
+
+    if (group.creatorId !== adminUserId && (!adminMember || adminMember.role !== 'ADMIN')) {
+      res.status(403).json({ success: false, error: 'Only group admins can reject requests' });
+      return;
+    }
+
+    await prisma.groupMember.delete({
+      where: {
+        groupId_userId: {
+          groupId,
+          userId: requestUserId,
+        },
+      },
+    });
+
+    res.status(200).json({ success: true, message: 'Join request rejected' });
   } catch (err) {
     next(err);
   }

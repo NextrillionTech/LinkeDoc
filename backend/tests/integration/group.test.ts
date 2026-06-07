@@ -14,10 +14,16 @@ jest.mock('@prisma/client', () => {
       findUnique: jest.fn(),
       create: jest.fn(),
       delete: jest.fn(),
+      update: jest.fn(),
     },
     post: {
       create: jest.fn(),
       findMany: jest.fn(),
+    },
+    notification: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      updateMany: jest.fn(),
     },
   };
   return {
@@ -156,6 +162,7 @@ describe('Clinical Groups API Integration Tests', () => {
         id: 'member-existing',
         groupId: 'group-1',
         userId: mockCurrentUser.id,
+        status: 'APPROVED',
       });
 
       (prisma.post.findMany as jest.Mock).mockResolvedValue([

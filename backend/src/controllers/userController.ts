@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth';
+import { createNotification } from './notificationController';
 
 const prisma = new PrismaClient();
 
@@ -95,6 +96,9 @@ export const createConnection = async (req: AuthRequest, res: Response, next: Ne
       },
     });
 
+    // Trigger notification
+    await createNotification(receiverId, requesterId, 'CONNECTION_REQUEST', connection.id);
+
     res.status(201).json({
       success: true,
       connectionId: connection.id,
@@ -141,6 +145,11 @@ export const updateConnectionStatus = async (req: AuthRequest, res: Response, ne
       where: { id },
       data: { status: updatedStatus },
     });
+
+    // Trigger notification if accepted
+    if (updatedStatus === 'ACCEPTED') {
+      await createNotification(connection.requesterId, userId, 'CONNECTION_ACCEPTED', connection.id);
+    }
 
     res.status(200).json({
       success: true,

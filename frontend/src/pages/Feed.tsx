@@ -22,7 +22,11 @@ import {
   Square,
   RefreshCw,
   Info,
-  Film
+  Film,
+  EyeOff,
+  ArrowUpRight,
+  Type,
+  BarChart2
 } from 'lucide-react';
 
 interface Author {
@@ -54,6 +58,7 @@ interface Post {
   commentsCount: number;
   hasLiked: boolean;
   comments: Comment[];
+  poll?: any;
 }
 
 export const Feed: React.FC = () => {
@@ -89,25 +94,14 @@ export const Feed: React.FC = () => {
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   const [inputMediaUrl, setInputMediaUrl] = useState('');
 
-  // Clinical Canvas Annotation tool state
-  const [canvasModalOpen, setCanvasModalOpen] = useState(false);
-  const [activeCanvasImage, setActiveCanvasImage] = useState('');
-  const [drawingColor, setDrawingColor] = useState('#EF4444'); // default Red
-  const [drawingTool, setDrawingTool] = useState<'pen' | 'redact'>('pen');
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [lastX, setLastX] = useState(0);
-  const [lastY, setLastY] = useState(0);
-  const [zoomFactor, setZoomFactor] = useState(1);
+  // Poll Creator State
+  const [showPollComposer, setShowPollComposer] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState<string[]>(['', '']); // default two options
+  const [pollDurationHours, setPollDurationHours] = useState(24);
+  const [composerModalOpen, setComposerModalOpen] = useState(false);
 
-  // Carousel slider active index trackers mapped by post ID
-  const [carousels, setCarousels] = useState<{ [postId: string]: number }>({});
 
-  // UI Interactive States
-  const [expandedComments, setExpandedComments] = useState<{ [postId: string]: boolean }>({});
-  const [commentInputs, setCommentInputs] = useState<{ [postId: string]: string }>({});
-  const [commentSubmitting, setCommentSubmitting] = useState<{ [postId: string]: boolean }>({});
-  const [expandedAbstracts, setExpandedAbstracts] = useState<{ [postId: string]: boolean }>({});
 
   // Preset Clinical Media files for quick selection & annotation
   const presetMedia = [
@@ -172,8 +166,8 @@ export const Feed: React.FC = () => {
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isApproved) return;
-    if (!content.trim() && mediaUrls.length === 0) {
-      setPostError('Post content or media attachments are required.');
+    if (!content.trim() && mediaUrls.length === 0 && (!showPollComposer || !pollQuestion.trim())) {
+      setPostError('Post content, media attachments, or a poll question are required.');
       return;
     }
 
@@ -202,6 +196,14 @@ export const Feed: React.FC = () => {
         payload.groupId = selectedGroupId;
       }
 
+      if (showPollComposer && pollQuestion.trim() && pollOptions.filter(o => o.trim()).length >= 2) {
+        payload.poll = {
+          question: pollQuestion.trim(),
+          options: pollOptions.filter(o => o.trim()),
+          durationHours: Number(pollDurationHours)
+        };
+      }
+
       const res = await api.createPost(payload);
       if (res.success) {
         setPostSuccess('Post published successfully!');
@@ -213,6 +215,11 @@ export const Feed: React.FC = () => {
         setMediaUrls([]);
         setHipaaConsentConfirmed(false);
         setSelectedGroupId('');
+        setShowPollComposer(false);
+        setPollQuestion('');
+        setPollOptions(['', '']);
+        setPollDurationHours(24);
+        setComposerModalOpen(false);
         fetchFeed();
       } else {
         setPostError(res.error || 'Failed to publish post');
@@ -221,6 +228,25 @@ export const Feed: React.FC = () => {
       setPostError('An error occurred publishing the post');
     } finally {
       setPostSubmitting(false);
+    }
+  };
+
+  const handleVote = async (pollId: string, optionId: string) => {
+    if (!isApproved) return;
+    if (votingInProgress[pollId]) return;
+    try {
+      setVotingInProgress(prev => ({ ...prev, [pollId]: true }));
+      const res = await api.votePoll(pollId, optionId);
+      if (res.success) {
+        setVotedPollOptions(prev => ({ ...prev, [pollId]: optionId }));
+        fetchFeed();
+      } else {
+        alert(res.error || 'Failed to register vote');
+      }
+    } catch (err) {
+      console.error('Failed to vote', err);
+    } finally {
+      setVotingInProgress(prev => ({ ...prev, [pollId]: false }));
     }
   };
 
@@ -298,6 +324,19 @@ export const Feed: React.FC = () => {
     }
   };
 
+  // Clinical Canvas Annotation tool state
+  const [canvasModalOpen, setCanvasModalOpen] = useState(false);
+  const [activeCanvasImage, setActiveCanvasImage] = useState('');
+  const [drawingColor, setDrawingColor] = useState('#EF4444'); // default Red
+  const [drawingTool, setDrawingTool] = useState<'pen' | 'redact' | 'blur' | 'arrow' | 'text'>('pen');
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [lastX, setLastX] = useState(0);
+  const [lastY, setLastY] = useState(0);
+  const [arrowStartX, setArrowStartX] = useState(0);
+  const [arrowStartY, setArrowStartY] = useState(0);
+  const [zoomFactor, setZoomFactor] = useState(1);
+
   // Initialize Canvas
   useEffect(() => {
     if (canvasModalOpen && canvasRef.current && activeCanvasImage) {
@@ -325,6 +364,60 @@ export const Feed: React.FC = () => {
     }
   }, [canvasModalOpen, activeCanvasImage, zoomFactor]);
 
+  // Carousel slider active index trackers mapped by post ID
+  const [carousels, setCarousels] = useState<{ [postId: string]: number }>({});
+
+  // UI Interactive States
+  const [expandedComments, setExpandedComments] = useState<{ [postId: string]: boolean }>({});
+  const [commentInputs, setCommentInputs] = useState<{ [postId: string]: string }>({});
+  const [commentSubmitting, setCommentSubmitting] = useState<{ [postId: string]: boolean }>({});
+  const [expandedAbstracts, setExpandedAbstracts] = useState<{ [postId: string]: boolean }>({});
+  const [votedPollOptions, setVotedPollOptions] = useState<{ [pollId: string]: string }>({});
+  const [votingInProgress, setVotingInProgress] = useState<{ [pollId: string]: boolean }>({});
+
+  // Canvas pixelate anonymizer helper
+  const applyPixelate = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
+    const size = 30;
+    const pixelSize = 6;
+    const startX = Math.max(0, x - size / 2);
+    const startY = Math.max(0, y - size / 2);
+    
+    try {
+      const imgData = ctx.getImageData(startX, startY, size, size);
+      const data = imgData.data;
+      
+      for (let py = 0; py < size; py += pixelSize) {
+        for (let px = 0; px < size; px += pixelSize) {
+          let r = 0, g = 0, b = 0, count = 0;
+          for (let dy = 0; dy < pixelSize && (py + dy) < size; dy++) {
+            for (let dx = 0; dx < pixelSize && (px + dx) < size; dx++) {
+              const idx = ((py + dy) * size + (px + dx)) * 4;
+              r += data[idx];
+              g += data[idx + 1];
+              b += data[idx + 2];
+              count++;
+            }
+          }
+          r = Math.floor(r / count);
+          g = Math.floor(g / count);
+          b = Math.floor(b / count);
+          
+          for (let dy = 0; dy < pixelSize && (py + dy) < size; dy++) {
+            for (let dx = 0; dx < pixelSize && (px + dx) < size; dx++) {
+              const idx = ((py + dy) * size + (px + dx)) * 4;
+              data[idx] = r;
+              data[idx + 1] = g;
+              data[idx + 2] = b;
+            }
+          }
+        }
+      }
+      ctx.putImageData(imgData, startX, startY);
+    } catch (e) {
+      console.error('Failed to pixelate canvas region:', e);
+    }
+  };
+
   // Canvas Drawing controls
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -337,17 +430,32 @@ export const Feed: React.FC = () => {
     setLastX(x);
     setLastY(y);
 
+    if (drawingTool === 'arrow') {
+      setArrowStartX(x);
+      setArrowStartY(y);
+    }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     if (drawingTool === 'redact') {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(x - 20, y - 10, 40, 20); // standard redaction box size
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(x - 25, y - 15, 50, 30);
+    } else if (drawingTool === 'blur') {
+      applyPixelate(ctx, x, y);
+    } else if (drawingTool === 'text') {
+      setIsDrawing(false);
+      const text = prompt('Enter text annotation:');
+      if (text) {
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillStyle = drawingColor;
+        ctx.fillText(text, x, y);
       }
     }
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || drawingTool !== 'pen') return;
+    if (!isDrawing) return;
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
@@ -356,20 +464,54 @@ export const Feed: React.FC = () => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    ctx.beginPath();
-    ctx.strokeStyle = drawingColor;
-    ctx.lineWidth = 4;
-    ctx.lineCap = 'round';
-    ctx.moveTo(lastX, lastY);
-    ctx.lineTo(x, y);
-    ctx.stroke();
-
-    setLastX(x);
-    setLastY(y);
+    if (drawingTool === 'pen') {
+      ctx.beginPath();
+      ctx.strokeStyle = drawingColor;
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      setLastX(x);
+      setLastY(y);
+    } else if (drawingTool === 'blur') {
+      applyPixelate(ctx, x, y);
+    }
   };
 
-  const stopDrawing = () => {
+  const stopDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
     setIsDrawing(false);
+
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (drawingTool === 'arrow') {
+      const headLength = 12;
+      const dx = x - arrowStartX;
+      const dy = y - arrowStartY;
+      const angle = Math.atan2(dy, dx);
+
+      ctx.beginPath();
+      ctx.moveTo(arrowStartX, arrowStartY);
+      ctx.lineTo(x, y);
+      ctx.strokeStyle = drawingColor;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - headLength * Math.cos(angle - Math.PI / 6), y - headLength * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x - headLength * Math.cos(angle + Math.PI / 6), y - headLength * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fillStyle = drawingColor;
+      ctx.fill();
+    }
   };
 
   const handleSaveCanvasAnnotation = () => {
@@ -1055,27 +1197,110 @@ export const Feed: React.FC = () => {
         }
       `}</style>
 
-      {/* Left Sidebar Profile Summary Card */}
+      {/* Left Sidebar Profile Cards */}
       <div className="left-sidebar">
-        <div className="card-glass profile-summary-card">
+        {/* Card 1: Profile Summary */}
+        <div className="card-glass profile-summary-card" style={{ marginBottom: '16px' }}>
           <div className="profile-card-banner"></div>
           <div className="profile-card-avatar-wrapper">
-            <div className="avatar-circle">
-              {getInitials(currentUser.name)}
-            </div>
+            <img
+              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
+              alt="Avatar"
+              className="profile-card-avatar-img"
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'var(--bg-tertiary)',
+                border: '3px solid var(--bg-secondary)',
+                objectFit: 'cover',
+                display: 'block'
+              }}
+            />
           </div>
-          <div className="profile-card-info">
-            <Link to="/profile" className="profile-card-name">
-              {currentUser.role === 'ADMIN' ? currentUser.name : currentUser.role === 'RECRUITER' ? currentUser.name : `Dr. ${currentUser.name}`}
+          <div className="profile-card-info" style={{ textAlign: 'center', padding: '0 16px 16px 16px', borderBottom: '1px solid var(--border)' }}>
+            <Link to="/profile" className="profile-card-name" style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', textDecoration: 'none', display: 'block', marginBottom: '4px' }}>
+              Hanif Al Hafizh
             </Link>
-            <div className="profile-card-headline">
-              {currentUser.role} {currentUser.specialty ? `• ${currentUser.specialty}` : ''}
+            <div className="profile-card-headline" style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+              UI/UX Designer
             </div>
+            <p className="profile-card-description" style={{ margin: '8px 0 0 0', fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+              UI/UX Designer, 100+ projects in web design & mobile apps (iOS and Android OS). Open to offers ..... <span style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 500 }}>Read more</span>
+            </p>
           </div>
-          <Link to="/network" className="profile-card-stats">
-            <span>Connections</span>
-            <span style={{ fontWeight: 600, color: 'var(--primary)' }}>12</span>
+          <div className="profile-card-stats-section" style={{ display: 'flex', flexDirection: 'column' }}>
+            <Link to="/network" className="profile-card-stats" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', fontSize: '12px', textDecoration: 'none', color: 'var(--text-secondary)', transition: 'background-color var(--transition-fast)' }}>
+              <span>Connections</span>
+              <span style={{ fontWeight: 600, color: '#0a66c2' }}>500+</span>
+            </Link>
+            <div className="profile-card-divider" style={{ height: '1px', backgroundColor: 'var(--border)' }}></div>
+            <Link to="/profile" className="profile-card-stats" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', fontSize: '12px', textDecoration: 'none', color: 'var(--text-secondary)', transition: 'background-color var(--transition-fast)' }}>
+              <span>Profil Views</span>
+              <span style={{ fontWeight: 600, color: '#0a66c2' }}>654</span>
+            </Link>
+            <div className="profile-card-divider" style={{ height: '1px', backgroundColor: 'var(--border)' }}></div>
+            <Link to="/" className="profile-card-stats" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', fontSize: '12px', textDecoration: 'none', color: 'var(--text-secondary)', transition: 'background-color var(--transition-fast)' }}>
+              <span>My Items</span>
+              <span style={{ fontWeight: 600, color: '#0a66c2' }}>32</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Card 2: Groups */}
+        <div className="card-glass groups-sidebar-card" style={{ marginBottom: '16px', padding: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Group</span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: '#0a66c2' }}>12</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <Link to="/groups" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--text-secondary)' }}>
+              <div className="group-circle-icon blue-theme" style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#e7f5ff', color: '#0a66c2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700 }}>
+                UI/UX
+              </div>
+              <span style={{ fontSize: '12px', fontWeight: 500 }} className="sidebar-group-name">UI/UX Design inspiration</span>
+            </Link>
+            <Link to="/groups" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--text-secondary)' }}>
+              <div className="group-circle-icon orange-theme" style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#fff4e6', color: '#fd7e14', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700 }}>
+                PRO D
+              </div>
+              <span style={{ fontSize: '12px', fontWeight: 500 }} className="sidebar-group-name">Pro Designer</span>
+            </Link>
+          </div>
+          <Link to="/groups" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#0a66c2', textDecoration: 'none', marginTop: '16px', textAlign: 'center' }}>
+            Show all
           </Link>
+        </div>
+
+        {/* Card 3: Followed Hashtags */}
+        <div className="card-glass hashtags-sidebar-card" style={{ padding: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Followed hastags</span>
+            <Link to="/" style={{ color: '#0a66c2', textDecoration: 'none', display: 'flex', alignItems: 'center' }} title="Show all hashtags">
+              <ChevronRight size={16} />
+            </Link>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {['#uidesign', '#uxdesign', '#mobileappdesign', '#webdesign', '#uianimation'].map((tag) => (
+              <Link
+                key={tag}
+                to={`/?search=${tag}`}
+                className="hashtag-pill"
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  color: 'var(--text-secondary)',
+                  background: 'var(--bg-tertiary)',
+                  padding: '6px 12px',
+                  borderRadius: '20px',
+                  textDecoration: 'none',
+                  border: '1px solid var(--border)'
+                }}
+              >
+                {tag}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1101,210 +1326,396 @@ export const Feed: React.FC = () => {
           </div>
         )}
 
-        {/* Start a Post Composer */}
-        <div className="card-glass post-composer-card">
-          <form onSubmit={handleCreatePost}>
-             <div className="composer-trigger-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', alignItems: 'stretch' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
-                <div className="composer-avatar">
-                  {getInitials(currentUser.name)}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--text-primary)' }}>{currentUser.name}</span>
-                  <select
-                    value={selectedGroupId}
-                    onChange={(e) => setSelectedGroupId(e.target.value)}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: 'var(--text-secondary)',
-                      background: 'var(--bg-tertiary)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 'var(--radius-sm)',
-                      cursor: 'pointer',
-                      width: 'fit-content',
-                      outline: 'none',
-                    }}
-                    title="Select post visibility"
-                  >
-                    <option value="">● Anyone (Public Feed)</option>
-                    {joinedGroups.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        ● Group: {g.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <textarea
-                className="composer-textarea"
-                placeholder="What medical update or clinical finding would you like to share?"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                disabled={!isApproved}
-                required={mediaUrls.length === 0}
-                style={{ width: '100%', marginTop: '6px' }}
-              />
-            </div>
+        {/* Start a Post Composer Redesigned */}
+        <div className="card-glass post-composer-card" style={{ padding: '12px 16px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+            <button
+              onClick={() => { if (isApproved) setComposerModalOpen(true); }}
+              disabled={!isApproved}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                background: 'var(--bg-tertiary)',
+                border: '1px solid var(--border)',
+                borderRadius: '30px',
+                padding: '10px 18px',
+                cursor: 'pointer',
+                textAlign: 'left',
+                color: 'var(--text-muted)',
+                fontSize: '14px',
+                fontWeight: 500,
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            >
+              <PenTool size={18} style={{ color: '#0a66c2' }} />
+              <span>What's on your mind?</span>
+            </button>
+          </div>
 
-            {/* Attached media list preview row */}
-            {mediaUrls.length > 0 && (
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px', paddingLeft: '56px' }}>
-                {mediaUrls.map((url, idx) => (
-                  <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '4px', border: '1px solid var(--border)', overflow: 'hidden', background: '#000' }}>
-                    {url.includes('mov_bbb') || url.includes('.mp4') ? (
-                      <video src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <img src={url} alt="Attached asset" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-around', borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '4px' }}>
+            <button
+              type="button"
+              className="composer-action-btn"
+              onClick={() => { if (isApproved) { setComposerModalOpen(true); setMediaModalOpen(true); } }}
+              disabled={!isApproved}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: '4px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500 }}
+            >
+              <ImageIcon size={18} style={{ color: '#37B24D' }} />
+              <span>Photo</span>
+            </button>
+
+            <button
+              type="button"
+              className="composer-action-btn"
+              onClick={() => { if (isApproved) { setComposerModalOpen(true); setMediaModalOpen(true); } }}
+              disabled={!isApproved}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: '4px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500 }}
+            >
+              <VideoIcon size={18} style={{ color: '#1C7ED6' }} />
+              <span>Video</span>
+            </button>
+
+            <button
+              type="button"
+              className="composer-action-btn"
+              onClick={() => { if (isApproved) { setComposerModalOpen(true); setShowPollComposer(true); } }}
+              disabled={!isApproved}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: '4px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500 }}
+            >
+              <BarChart2 size={18} style={{ color: '#F59E0B' }} />
+              <span>Event</span>
+            </button>
+
+            <button
+              type="button"
+              className="composer-action-btn"
+              onClick={() => { if (isApproved) { setComposerModalOpen(true); setIsResearch(true); } }}
+              disabled={!isApproved}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: '4px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500 }}
+            >
+              <FileText size={18} style={{ color: '#E03131' }} />
+              <span>Article</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Create Post Modal */}
+        {composerModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-container" style={{ width: '90%', maxWidth: '550px' }}>
+              <div className="modal-header">
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Create a post</h3>
+                <button
+                  type="button"
+                  className="modal-close-btn"
+                  onClick={() => setComposerModalOpen(false)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={handleCreatePost}>
+                <div className="modal-body" style={{ maxHeight: '65vh', overflowY: 'auto', padding: '20px' }}>
+                  {/* Author info row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                    <img
+                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
+                      alt="Me"
+                      style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{currentUser.name}</span>
+                      <select
+                        value={selectedGroupId}
+                        onChange={(e) => setSelectedGroupId(e.target.value)}
+                        style={{
+                          padding: '4px 8px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          color: 'var(--text-secondary)',
+                          background: 'var(--bg-tertiary)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 'var(--radius-sm)',
+                          cursor: 'pointer',
+                          width: 'fit-content',
+                          outline: 'none',
+                        }}
+                        title="Select post visibility"
+                      >
+                        <option value="">● Anyone (Public Feed)</option>
+                        {joinedGroups.map((g) => (
+                          <option key={g.id} value={g.id}>
+                            ● Group: {g.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <textarea
+                    className="composer-textarea"
+                    placeholder="What do you want to talk about?"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    disabled={!isApproved}
+                    required={mediaUrls.length === 0}
+                    style={{ width: '100%', minHeight: '120px', background: 'transparent', border: 'none', padding: 0, resize: 'vertical', fontSize: '15px', outline: 'none' }}
+                  />
+
+                  {/* Attached media list preview row */}
+                  {mediaUrls.length > 0 && (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px', marginTop: '12px' }}>
+                      {mediaUrls.map((url, idx) => (
+                        <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '4px', border: '1px solid var(--border)', overflow: 'hidden', background: '#000' }}>
+                          {url.includes('mov_bbb') || url.includes('.mp4') ? (
+                            <video src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <img src={url} alt="Attached asset" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeMediaUrl(idx)}
+                            style={{ position: 'absolute', top: '2px', right: '2px', padding: '2px', background: 'rgba(0,0,0,0.7)', border: 'none', borderRadius: '50%', color: '#fff', cursor: 'pointer', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* HIPAA Compliance Checkbox for media uploads */}
+                  {mediaUrls.length > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '12px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      <input
+                        type="checkbox"
+                        id="hipaa-consent-checkbox"
+                        checked={hipaaConsentConfirmed}
+                        onChange={(e) => setHipaaConsentConfirmed(e.target.checked)}
+                        style={{ width: '16px', height: '16px', cursor: 'pointer', marginTop: '2px' }}
+                        required
+                      />
+                      <label htmlFor="hipaa-consent-checkbox" style={{ cursor: 'pointer', fontWeight: 500, lineHeight: 1.4 }}>
+                        I confirm that all Patient Identifiable Information (PHI) has been anonymized/redacted from this image.
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Preset Media Quick attachment triggers inside modal */}
+                  <div style={{ display: 'flex', gap: '8px', margin: '12px 0 6px 0' }}>
+                    <button
+                      type="button"
+                      className="btn-quick-media"
+                      onClick={() => { setMediaModalOpen(true); }}
+                      disabled={!isApproved}
+                      style={{ padding: '6px 12px', fontSize: '12px' }}
+                    >
+                      <ImageIcon size={14} style={{ color: '#37B24D' }} />
+                      <span>Add Photo/Video Preset</span>
+                    </button>
+                  </div>
+
+                  {/* Poll Composer Fields */}
+                  {showPollComposer && (
+                    <div style={{
+                      background: 'var(--bg-tertiary)',
+                      border: '1px dashed var(--border)',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '16px',
+                      margin: '12px 0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}>
+                      <h4 style={{ margin: 0, fontSize: '13px', color: '#0a66c2', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        Create a Clinical Poll
+                      </h4>
+                      <input
+                        type="text"
+                        placeholder="Ask a question... (e.g. Which diagnostic procedure is preferred here?)"
+                        className="research-input"
+                        value={pollQuestion}
+                        onChange={(e) => setPollQuestion(e.target.value)}
+                        required={showPollComposer}
+                        style={{ fontSize: '13px' }}
+                      />
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Poll Options (Min 2, Max 4)</label>
+                        {pollOptions.map((opt, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <input
+                              type="text"
+                              placeholder={`Option ${idx + 1}`}
+                              className="research-input"
+                              style={{ flex: 1, fontSize: '13px' }}
+                              value={opt}
+                              onChange={(e) => {
+                                const updated = [...pollOptions];
+                                updated[idx] = e.target.value;
+                                setPollOptions(updated);
+                              }}
+                              required={idx < 2 && showPollComposer}
+                            />
+                            {pollOptions.length > 2 && (
+                              <button
+                                type="button"
+                                onClick={() => setPollOptions(prev => prev.filter((_, i) => i !== idx))}
+                                style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                              >
+                                <X size={16} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        
+                        {pollOptions.length < 4 && (
+                          <button
+                            type="button"
+                            onClick={() => setPollOptions([...pollOptions, ''])}
+                            style={{
+                              alignSelf: 'flex-start',
+                              background: 'none',
+                              border: 'none',
+                              color: '#0a66c2',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              padding: '4px 0',
+                            }}
+                          >
+                            + Add Option
+                          </button>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label htmlFor="poll-duration" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Poll Duration</label>
+                        <select
+                          id="poll-duration"
+                          className="research-input"
+                          value={pollDurationHours}
+                          onChange={(e) => setPollDurationHours(Number(e.target.value))}
+                          style={{ background: 'var(--bg-secondary)', width: 'fit-content', fontSize: '12px' }}
+                        >
+                          <option value={24}>24 Hours</option>
+                          <option value={72}>3 Days</option>
+                          <option value={168}>7 Days</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Research Paper fields (conditionally rendered) */}
+                  {isResearch && canPostResearch && (
+                    <div className="research-paper-fields" style={{ margin: '12px 0' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <h4 style={{ margin: 0, fontSize: '13px', color: '#0a66c2', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Layers size={16} /> Attach Research Paper
+                        </h4>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <input
+                            type="text"
+                            placeholder="Enter DOI or keywords..."
+                            className="research-input"
+                            style={{ padding: '4px 8px', fontSize: '11px', minWidth: '120px' }}
+                            value={pubmedQuery}
+                            onChange={(e) => setPubmedQuery(e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            className="btn-primary"
+                            style={{ padding: '4px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            onClick={handlePubMedLookup}
+                            disabled={pubmedSearching}
+                          >
+                            {pubmedSearching ? <RefreshCw size={12} className="animate-spin" /> : <Search size={12} />}
+                            <span>Fetch</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {pubmedAlert && (
+                        <div style={{ fontSize: '11px', color: 'var(--success)', background: 'var(--primary-glow)', padding: '6px 12px', borderRadius: '4px', border: '1px solid var(--primary)' }}>
+                          {pubmedAlert}
+                        </div>
+                      )}
+
+                      <input
+                        type="text"
+                        placeholder="Paper Title *"
+                        className="research-input"
+                        value={researchTitle}
+                        onChange={(e) => setResearchTitle(e.target.value)}
+                        required={isResearch}
+                        style={{ fontSize: '13px' }}
+                      />
+                      <textarea
+                        placeholder="Abstract / Summary Outline *"
+                        className="research-input"
+                        style={{ minHeight: '70px', resize: 'vertical', fontSize: '13px' }}
+                        value={researchAbstract}
+                        onChange={(e) => setResearchAbstract(e.target.value)}
+                        required={isResearch}
+                      />
+                      <input
+                        type="url"
+                        placeholder="PDF Link, PubMed URL or DOI Link"
+                        className="research-input"
+                        value={researchLink}
+                        onChange={(e) => setResearchLink(e.target.value)}
+                        style={{ fontSize: '13px' }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Feedback Notifications */}
+                  {postError && <div style={{ color: 'var(--danger)', fontSize: '13px', margin: '8px 0' }}>{postError}</div>}
+                  {postSuccess && <div style={{ color: 'var(--success)', fontSize: '13px', margin: '8px 0' }}>{postSuccess}</div>}
+                </div>
+
+                <div className="modal-footer" style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {canPostResearch && (
+                      <button
+                        type="button"
+                        className="btn-attachment-toggle"
+                        onClick={() => setIsResearch(!isResearch)}
+                        disabled={!isApproved}
+                        style={{ color: isResearch ? 'var(--accent)' : 'var(--primary)', padding: '6px 12px', fontSize: '12px' }}
+                      >
+                        <FileText size={14} />
+                        <span>{isResearch ? 'Remove Paper' : 'Attach Paper'}</span>
+                      </button>
                     )}
                     <button
                       type="button"
-                      onClick={() => removeMediaUrl(idx)}
-                      style={{ position: 'absolute', top: '2px', right: '2px', padding: '2px', background: 'rgba(0,0,0,0.7)', border: 'none', borderRadius: '50%', color: '#fff', cursor: 'pointer', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      className="btn-attachment-toggle"
+                      onClick={() => setShowPollComposer(!showPollComposer)}
+                      disabled={!isApproved}
+                      style={{ color: showPollComposer ? 'var(--accent)' : 'var(--primary)', padding: '6px 12px', fontSize: '12px' }}
                     >
-                      <X size={10} />
+                      <BarChart2 size={14} />
+                      <span>{showPollComposer ? 'Remove Poll' : 'Add Poll'}</span>
                     </button>
                   </div>
-                ))}
-              </div>
-            )}
 
-            {/* HIPAA Compliance Checkbox for media uploads */}
-            {mediaUrls.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingLeft: '56px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                <input
-                  type="checkbox"
-                  id="hipaa-consent-checkbox"
-                  checked={hipaaConsentConfirmed}
-                  onChange={(e) => setHipaaConsentConfirmed(e.target.checked)}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                  required
-                />
-                <label htmlFor="hipaa-consent-checkbox" style={{ cursor: 'pointer', fontWeight: 500 }}>
-                  I confirm that all Patient Identifiable Information (PHI) has been anonymized/redacted from this image.
-                </label>
-              </div>
-            )}
-
-            {/* Composer Media Attach Quick Actions row */}
-            <div className="composer-quick-actions">
-              <button
-                type="button"
-                className="btn-quick-media"
-                onClick={() => { setMediaModalOpen(true); }}
-                disabled={!isApproved}
-              >
-                <ImageIcon size={16} style={{ color: '#37B24D' }} />
-                <span>Photo / Case Scan</span>
-              </button>
-              <button
-                type="button"
-                className="btn-quick-media"
-                onClick={() => { setMediaModalOpen(true); }}
-                disabled={!isApproved}
-              >
-                <VideoIcon size={16} style={{ color: '#1C7ED6' }} />
-                <span>Clinical Video</span>
-              </button>
-            </div>
-
-            {/* Research Paper fields (conditionally rendered) */}
-            {isResearch && canPostResearch && (
-              <div className="research-paper-fields">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Layers size={16} /> Attach Research Paper
-                  </h4>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <input
-                      type="text"
-                      placeholder="Enter DOI or search keywords..."
-                      className="research-input"
-                      style={{ padding: '4px 8px', fontSize: '11px', minWidth: '160px' }}
-                      value={pubmedQuery}
-                      onChange={(e) => setPubmedQuery(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      style={{ padding: '4px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                      onClick={handlePubMedLookup}
-                      disabled={pubmedSearching}
-                    >
-                      {pubmedSearching ? <RefreshCw size={12} className="animate-spin" /> : <Search size={12} />}
-                      <span>Fetch</span>
-                    </button>
-                  </div>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    style={{ padding: '8px 20px', borderRadius: '20px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    disabled={!isApproved || postSubmitting}
+                  >
+                    <Send size={14} />
+                    <span>{postSubmitting ? 'Posting...' : 'Post'}</span>
+                  </button>
                 </div>
-
-                {pubmedAlert && (
-                  <div style={{ fontSize: '12px', color: 'var(--success)', background: 'var(--primary-glow)', padding: '6px 12px', borderRadius: '4px', border: '1px solid var(--primary)' }}>
-                    {pubmedAlert}
-                  </div>
-                )}
-
-                <input
-                  type="text"
-                  placeholder="Paper Title *"
-                  className="research-input"
-                  value={researchTitle}
-                  onChange={(e) => setResearchTitle(e.target.value)}
-                  required={isResearch}
-                />
-                <textarea
-                  placeholder="Abstract / Summary Outline *"
-                  className="research-input"
-                  style={{ minHeight: '70px', resize: 'vertical' }}
-                  value={researchAbstract}
-                  onChange={(e) => setResearchAbstract(e.target.value)}
-                  required={isResearch}
-                />
-                <input
-                  type="url"
-                  placeholder="PDF Link, PubMed URL or DOI Link (e.g. https://doi.org/10.1000/xyz123)"
-                  className="research-input"
-                  value={researchLink}
-                  onChange={(e) => setResearchLink(e.target.value)}
-                />
-              </div>
-            )}
-
-            {/* Feedback Notifications */}
-            {postError && <div style={{ color: 'var(--danger)', fontSize: '13px', margin: '8px 0' }}>{postError}</div>}
-            {postSuccess && <div style={{ color: 'var(--success)', fontSize: '13px', margin: '8px 0' }}>{postSuccess}</div>}
-
-            {/* Composer Footer Actions */}
-            <div className="composer-actions-row">
-              {canPostResearch ? (
-                <button
-                  type="button"
-                  className="btn-attachment-toggle"
-                  onClick={() => setIsResearch(!isResearch)}
-                  disabled={!isApproved}
-                  style={{ color: isResearch ? 'var(--accent)' : 'var(--primary)' }}
-                >
-                  <FileText size={16} />
-                  <span>{isResearch ? 'Remove Paper' : 'Attach Research Paper'}</span>
-                </button>
-              ) : (
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Info size={12} /> Clinical discussion only
-                </span>
-              )}
-
-              <button
-                type="submit"
-                className="btn-primary"
-                style={{ padding: '8px 20px', borderRadius: 'var(--radius-full)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                disabled={!isApproved || postSubmitting}
-              >
-                <Send size={14} />
-                <span>{postSubmitting ? 'Posting...' : 'Post'}</span>
-              </button>
+              </form>
             </div>
-          </form>
-        </div>
+          </div>
+        )}
 
         {/* Feed Posts Timeline */}
         {loading && posts.length === 0 ? (
@@ -1402,6 +1813,84 @@ export const Feed: React.FC = () => {
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Render Poll */}
+                {post.poll && (
+                  <div style={{
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '16px',
+                    marginBottom: '16px',
+                    background: 'var(--bg-tertiary)',
+                  }}>
+                    <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>
+                      {post.poll.question}
+                    </h4>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {post.poll.options.map((option: any) => {
+                        const totalVotes = post.poll.votes?.length || 0;
+                        const optionVotes = option.votes?.length || 0;
+                        const percentage = totalVotes > 0 ? Math.round((optionVotes / totalVotes) * 100) : 0;
+                        
+                        // Check if user voted for this option
+                        const userVotedThis = post.poll.votes?.some((v: any) => v.userId === currentUser.id && v.optionId === option.id) || votedPollOptions[post.poll.id] === option.id;
+                        const hasVotedAny = post.poll.votes?.some((v: any) => v.userId === currentUser.id) || !!votedPollOptions[post.poll.id];
+                        const isExpired = new Date() > new Date(post.poll.expiresAt);
+                        const showResults = hasVotedAny || isExpired;
+
+                        if (showResults) {
+                          return (
+                            <div key={option.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-primary)', fontWeight: userVotedThis ? '600' : 'normal' }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  {option.text}
+                                  {userVotedThis && <span style={{ fontSize: '11px', color: 'var(--primary)', background: 'var(--primary-glow)', padding: '2px 6px', borderRadius: '4px' }}>Your Vote</span>}
+                                </span>
+                                <span>{percentage}% ({optionVotes})</span>
+                              </div>
+                              <div style={{ width: '100%', height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                                <div style={{ width: `${percentage}%`, height: '100%', background: userVotedThis ? 'var(--primary)' : 'var(--text-muted)', borderRadius: '4px', transition: 'width 0.5s ease-in-out' }} />
+                              </div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              className="btn-quick-media"
+                              style={{
+                                width: '100%',
+                                padding: '10px 16px',
+                                textAlign: 'left',
+                                display: 'block',
+                                borderRadius: 'var(--radius-sm)',
+                                borderColor: 'var(--primary)',
+                                color: 'var(--primary)',
+                                background: 'transparent',
+                                fontWeight: 500,
+                              }}
+                              onClick={() => handleVote(post.poll.id, option.id)}
+                              disabled={!isApproved || votingInProgress[post.poll.id]}
+                            >
+                              {option.text}
+                            </button>
+                          );
+                        }
+                      })}
+                    </div>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <span>{post.poll.votes?.length || 0} votes</span>
+                      <span>
+                        {new Date() > new Date(post.poll.expiresAt)
+                          ? 'Poll closed'
+                          : `Expires on ${new Date(post.poll.expiresAt).toLocaleDateString()}`}
+                      </span>
+                    </div>
                   </div>
                 )}
 
@@ -1569,8 +2058,36 @@ export const Feed: React.FC = () => {
               <div className="trending-meta">15 replies • Pediatrics</div>
             </Link>
           </div>
-          <div style={{ marginTop: '16px', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
-            LinkeDoc for Medical Professionals © 2026
+          
+          <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 12px', justifyContent: 'center', marginBottom: '16px', fontSize: '11px', color: 'var(--text-muted)' }}>
+              <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>About</Link>
+              <Link to="/network" style={{ textDecoration: 'none', color: 'inherit' }}>Accessibility</Link>
+              <Link to="/jobs" style={{ textDecoration: 'none', color: 'inherit' }}>Help Center</Link>
+              <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy & Terms</Link>
+              <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Ad Choices</Link>
+              <Link to="/jobs" style={{ textDecoration: 'none', color: 'inherit' }}>Advertising</Link>
+              <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Business Services</Link>
+              <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Get the LinkeDoc app</Link>
+              <span style={{ cursor: 'pointer' }}>More</span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
+              <div style={{
+                background: '#0a66c2',
+                color: '#fff',
+                fontWeight: 800,
+                fontSize: '9px',
+                width: '16px',
+                height: '16px',
+                borderRadius: '3px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                letterSpacing: '-0.5px'
+              }}>ld</div>
+              <span>LinkeDoc Corporation © 2021</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1709,10 +2226,34 @@ export const Feed: React.FC = () => {
                     >
                       <Square size={14} /> Redact / Block
                     </button>
+                    <button
+                      type="button"
+                      className={`btn-tool ${drawingTool === 'blur' ? 'active' : ''}`}
+                      onClick={() => setDrawingTool('blur')}
+                      title="Blur sensitive patient data"
+                    >
+                      <EyeOff size={14} /> Blur
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn-tool ${drawingTool === 'arrow' ? 'active' : ''}`}
+                      onClick={() => setDrawingTool('arrow')}
+                      title="Draw arrow pointing to clinical finding"
+                    >
+                      <ArrowUpRight size={14} /> Arrow
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn-tool ${drawingTool === 'text' ? 'active' : ''}`}
+                      onClick={() => setDrawingTool('text')}
+                      title="Add text annotation"
+                    >
+                      <Type size={14} /> Text
+                    </button>
                   </div>
 
                   {/* Colors */}
-                  {drawingTool === 'pen' && (
+                  {(drawingTool === 'pen' || drawingTool === 'arrow' || drawingTool === 'text') && (
                     <div className="canvas-tool-group">
                       {['#EF4444', '#F59E0B', '#3B82F6', '#10B981'].map((c) => (
                         <div

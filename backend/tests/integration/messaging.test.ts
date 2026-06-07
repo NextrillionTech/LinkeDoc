@@ -18,6 +18,9 @@ jest.mock('@prisma/client', () => {
       create: jest.fn(),
       findMany: jest.fn(),
     },
+    notification: {
+      create: jest.fn(),
+    },
   };
   return {
     PrismaClient: jest.fn().mockImplementation(() => mockPrisma),

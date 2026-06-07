@@ -1,18 +1,10 @@
 import { Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
-import Pusher from 'pusher';
 import { AuthRequest } from '../middleware/auth';
+import { pusher } from '../config/pusher';
+import { createNotification } from './notificationController';
 
 const prisma = new PrismaClient();
-
-// Initialize Pusher Client
-const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID || 'dummy_id',
-  key: process.env.PUSHER_KEY || 'dummy_key',
-  secret: process.env.PUSHER_SECRET || 'dummy_secret',
-  cluster: process.env.PUSHER_CLUSTER || 'dummy_cluster',
-  useTLS: true,
-});
 
 export const registerPublicKey = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   const { publicKey } = req.body;
@@ -221,6 +213,10 @@ export const createMessage = async (req: AuthRequest, res: Response, next: NextF
         status: 'SENT',
       },
     });
+
+    // Determine recipient and create notification
+    const recipientId = conversation.participant1Id === req.user.id ? conversation.participant2Id : conversation.participant1Id;
+    await createNotification(recipientId, req.user.id, 'NEW_MESSAGE', conversationId);
 
     // Broadcast message payload in real-time
     try {

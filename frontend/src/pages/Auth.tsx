@@ -186,11 +186,28 @@ export const Auth: React.FC = () => {
                       id="license"
                       type="text"
                       className="input-glass"
-                      placeholder="e.g., LIC-123456"
+                      placeholder="e.g., 10-digit NPI or LIC-123456"
                       value={licenseNumber}
                       onChange={(e) => setLicenseNumber(e.target.value)}
                       required
                     />
+                    {licenseNumber.trim() && (
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 500,
+                        color: /^\d{10}$/.test(licenseNumber.trim())
+                          ? 'var(--success)'
+                          : licenseNumber.trim().toUpperCase().startsWith('NPI-')
+                            ? 'var(--accent)'
+                            : 'var(--text-muted)'
+                      }}>
+                        {/^\d{10}$/.test(licenseNumber.trim())
+                          ? '✓ 10-Digit NPI detected: CMS NPPES automatic verification active.'
+                          : licenseNumber.trim().toUpperCase().startsWith('NPI-')
+                            ? '✓ Mock credentials detected: Sandbox instant verification active.'
+                            : 'ℹ State License format: Registration will require manual admin review.'}
+                      </span>
+                    )}
                   </div>
                 </>
               )}
