@@ -1,32 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=Noto+Sans:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Harmonious Color Palette */
-  --bg-primary: #0a0f1d;
-  --bg-secondary: rgba(16, 24, 48, 0.7);
-  --bg-tertiary: rgba(30, 41, 73, 0.4);
-  
-  --primary: #4f46e5;
-  --primary-glow: rgba(79, 70, 229, 0.4);
-  --primary-hover: #6366f1;
-  
-  --accent: #06b6d4;
-  --accent-glow: rgba(6, 182, 212, 0.3);
-  
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.16);
-  
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-
-  /* Typography & Layout */
-  --font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-  --font-body: 'Plus Jakarta Sans', sans-serif;
+  /* Fonts & Radius & Animations */
+  --font-display: 'Figtree', 'Outfit', sans-serif;
+  --font-body: 'Noto Sans', 'Plus Jakarta Sans', sans-serif;
   
   --radius-sm: 8px;
   --radius-md: 16px;
@@ -35,6 +12,70 @@
   
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Light Mode Palette (Default) */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  
+  --primary: #0284c7;
+  --primary-glow: rgba(2, 132, 199, 0.15);
+  --primary-hover: #0369a1;
+  
+  --accent: #16a34a;
+  --accent-glow: rgba(22, 163, 74, 0.15);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  
+  --border: #e2e8f0;
+  --border-hover: #cbd5e1;
+  
+  --success: #16a34a;
+  --warning: #ca8a04;
+  --danger: #dc2626;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(2, 132, 199, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Mode Palette */
+    --bg-primary: #0f172a;
+    --bg-secondary: rgba(30, 41, 59, 0.7);
+    --bg-tertiary: rgba(51, 65, 85, 0.5);
+    
+    --primary: #38bdf8;
+    --primary-glow: rgba(56, 189, 248, 0.25);
+    --primary-hover: #0ea5e9;
+    
+    --accent: #4ade80;
+    --accent-glow: rgba(74, 222, 128, 0.2);
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.16);
+    
+    --success: #4ade80;
+    --warning: #facc15;
+    --danger: #f87171;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+    
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
+  }
 }
 
 /* Base Body Styles */
@@ -44,61 +85,24 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-body);
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
-  background-attachment: fixed;
+  transition: background-color var(--transition-smooth), color var(--transition-smooth);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  
+  /* Modern ambient background glow */
+  background-image: 
+    radial-gradient(at 0% 0%, var(--primary-glow) 0px, transparent 55%),
+    radial-gradient(at 100% 100%, var(--accent-glow) 0px, transparent 55%);
+  background-attachment: fixed;
 }
 
-/* Glassmorphism Card Style */
-.card-glass {
-  background: var(--bg-secondary);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 24px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  transition: border var(--transition-fast), transform var(--transition-smooth), box-shadow var(--transition-smooth);
-}
-
-.card-glass:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px 0 rgba(79, 70, 229, 0.1);
-}
-
-/* Glowing Interactive Elements */
-.btn-primary {
-  font-family: var(--font-display);
-  font-weight: 600;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 12px 24px;
-  cursor: pointer;
-  box-shadow: 0 4px 14px var(--primary-glow);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.btn-primary:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.5);
-}
-
-.btn-primary:active {
-  transform: scale(0.98);
-}
-
-/* Text Formatting */
+/* Typography spacing and details */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   color: var(--text-primary);
   margin-top: 0;
   letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
 p {
@@ -106,22 +110,62 @@ p {
   line-height: 1.6;
 }
 
+/* Glassmorphism Card Style */
+.card-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  transition: border-color var(--transition-fast), transform var(--transition-smooth), box-shadow var(--transition-smooth), background-color var(--transition-smooth);
+}
+
+.card-glass:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px 0 var(--primary-glow);
+}
+
+/* Glowing Interactive Button */
+.btn-primary {
+  font-family: var(--font-display);
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px var(--primary-glow);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--primary-glow);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
 /* Input Fields Styling */
 .input-glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
   color: var(--text-primary);
   font-family: var(--font-body);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
 }
 
 .input-glass:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 8px var(--accent-glow);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 /* Navigation Layout */
@@ -130,20 +174,22 @@ p {
   justify-content: space-between;
   align-items: center;
   padding: 16px 40px;
-  background: rgba(10, 15, 29, 0.8);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-smooth), border-color var(--transition-smooth);
 }
 
 .nav-logo {
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 24px;
-  background: linear-gradient(135deg, #ffffff, var(--accent));
+  background: linear-gradient(135deg, var(--text-primary), var(--primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-decoration: none;

@@ -3,7 +3,6 @@ import { api } from '../services/api';
 
 export const ProfileBuilder: React.FC = () => {
   const currentUser = api.getCurrentUser();
-  const [profile, setProfile] = useState<any>(null);
   
   const [specialty, setSpecialty] = useState('');
   const [skillsStr, setSkillsStr] = useState('');
@@ -17,7 +16,6 @@ export const ProfileBuilder: React.FC = () => {
     if (currentUser) {
       api.getProfile(currentUser.id).then((data) => {
         if (data && !data.error) {
-          setProfile(data);
           setSpecialty(data.specialty || '');
           setSkillsStr(data.skills ? data.skills.join(', ') : '');
           setEducation(data.education || []);

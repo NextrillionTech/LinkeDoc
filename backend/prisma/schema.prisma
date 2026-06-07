@@ -75,8 +75,8 @@ model Connection {
   status      ConnectionStatus @default(PENDING)
   createdAt   DateTime         @default(now())
 
-  requester   User             @relation("requester", fields: [requesterId], onDelete: Cascade)
-  receiver    User             @relation("receiver", fields: [receiverId], onDelete: Cascade)
+  requester   User             @relation("requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiver    User             @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@unique([requesterId, receiverId])
 }
@@ -98,8 +98,8 @@ model DiscussionThread {
   status      Status          @default(APPROVED) // APPROVED maps to active state, HIDDEN/PENDING maps to hidden state
   createdAt   DateTime        @default(now())
 
-  category    ForumCategory   @relation(fields: [categoryId], onDelete: Cascade)
-  author      User            @relation(fields: [authorId], onDelete: Cascade)
+  category    ForumCategory   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  author      User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
   replies     PostReply[]
 }
 
@@ -111,8 +111,8 @@ model PostReply {
   status      Status           @default(APPROVED)
   createdAt   DateTime         @default(now())
 
-  thread      DiscussionThread @relation(fields: [threadId], onDelete: Cascade)
-  author      User             @relation(fields: [authorId], onDelete: Cascade)
+  thread      DiscussionThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author      User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 model JobListing {
@@ -125,7 +125,7 @@ model JobListing {
   expiresAt   DateTime
   createdAt   DateTime @default(now())
 
-  recruiter   User     @relation(fields: [recruiterId], onDelete: Cascade)
+  recruiter   User     @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
 }
 
 model Report {
@@ -137,5 +137,5 @@ model Report {
   status      ReportStatus      @default(PENDING)
   createdAt   DateTime          @default(now())
 
-  reporter    User              @relation(fields: [reporterId], onDelete: Cascade)
+  reporter    User              @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 }

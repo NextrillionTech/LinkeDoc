@@ -40,6 +40,7 @@ The system must ensure low latency (< 200ms p95 response time) for medical recor
 
 ## Review Process & Release Gates
 All PRs require at least one peer approval. Pre-commit hooks check linting, formatting, and test execution. Automated CI runs all tests on merge requests.
+- **Continuous Delivery & Automated Deployment**: Once a feature, task, or set of changes has been completed and fully verified against the local test suite, the agent must commit the changes, push them to the current feature branch, and trigger automated deployment to Vercel/staging to enable immediate, side-by-side smoke testing.
 
 ## Governance
 Amendments to the constitution require a written proposal, team review, and ratification. Runtime development guidance is maintained in `.specify/memory/`.
