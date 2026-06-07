@@ -7,6 +7,7 @@ import { Forums } from './pages/Forums';
 import { JobBoard } from './pages/JobBoard';
 import { CreateJob } from './pages/CreateJob';
 import { Messaging } from './pages/Messaging';
+import { AdminDashboard } from './pages/AdminDashboard';
 import { api } from './services/api';
 import './App.css';
 
@@ -44,8 +45,13 @@ export const App: React.FC = () => {
                 <Link to="/chat" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
                   Consultations
                 </Link>
+                {user.role === 'ADMIN' && (
+                  <Link to="/admin" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+                    Admin Panel
+                  </Link>
+                )}
                 <span style={{ fontSize: '14px', color: 'var(--accent)' }}>
-                  {user.role === 'RECRUITER' ? `(${user.name} - Recruiter)` : `(Dr. ${user.name})`}
+                  {user.role === 'RECRUITER' ? `(${user.name} - Recruiter)` : user.role === 'ADMIN' ? `(${user.name} - Admin)` : `(Dr. ${user.name})`}
                 </span>
                 <button
                   onClick={handleLogout}
@@ -72,6 +78,7 @@ export const App: React.FC = () => {
             <Route path="/jobs" element={<JobBoard />} />
             <Route path="/jobs/create" element={<CreateJob />} />
             <Route path="/chat" element={<Messaging />} />
+            <Route path="/admin" element={<AdminDashboard />} />
           </Routes>
         </main>
       </div>

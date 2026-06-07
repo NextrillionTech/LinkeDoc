@@ -117,6 +117,7 @@ export const Auth: React.FC = () => {
                   <option value="PHARMACIST">Pharmacist</option>
                   <option value="RESEARCHER">Medical Researcher</option>
                   <option value="RECRUITER">Healthcare Recruiter</option>
+                  <option value="ADMIN">System Administrator</option>
                 </select>
               </div>
 
