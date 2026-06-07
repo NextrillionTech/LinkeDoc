@@ -26,10 +26,10 @@
 
 **Purpose**: Project initialization and base structure configuration.
 
-- [ ] T001 Create backend and frontend directory structures and configure root `.gitignore`
-- [ ] T002 Configure Express API dependencies and TypeScript settings in `backend/package.json`
-- [ ] T003 Configure React + Vite client dependencies and TypeScript settings in `frontend/package.json`
-- [ ] T004 [P] Configure shared linting and formatting configuration files at project root `.eslintrc.json` and `.prettierrc`
+- [x] T001 Create backend and frontend directory structures and configure root `.gitignore`
+- [x] T002 Configure Express API dependencies and TypeScript settings in `backend/package.json`
+- [x] T003 Configure React + Vite client dependencies and TypeScript settings in `frontend/package.json`
+- [x] T004 [P] Configure shared linting and formatting configuration files at project root `.eslintrc.json` and `.prettierrc`
 
 ---
 
@@ -39,10 +39,10 @@
 
 **⚠️ CRITICAL**: No user story implementation or testing can begin until this phase is complete.
 
-- [ ] T005 Initialize Prisma database schema config in `backend/prisma/schema.prisma`
-- [ ] T006 [P] Configure Express API server routing and base error handling middleware in `backend/src/config/server.ts` and `backend/src/middleware/errorHandler.ts`
-- [ ] T007 Implement JWT verification and admin roles authorization middleware in `backend/src/middleware/auth.ts`
-- [ ] T008 [P] Configure global CSS variables, tokens, and layouts in `frontend/src/App.css`
+- [x] T005 Initialize Prisma database schema config in `backend/prisma/schema.prisma`
+- [x] T006 [P] Configure Express API server routing and base error handling middleware in `backend/src/config/server.ts` and `backend/src/middleware/errorHandler.ts`
+- [x] T007 Implement JWT verification and admin roles authorization middleware in `backend/src/middleware/auth.ts`
+- [x] T008 [P] Configure global CSS variables, tokens, and layouts in `frontend/src/App.css`
 
 ---
 
@@ -56,22 +56,22 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T009 [P] [US1] Write integration tests for registration and login routes in `backend/tests/integration/auth.test.ts`
-- [ ] T010 [P] [US1] Write unit tests for Profile and Connection services in `backend/tests/unit/users.test.ts`
-- [ ] T011 [P] [US1] Write integration tests for connection requests and user retrieval routes in `backend/tests/integration/users.test.ts`
-- [ ] T012 [P] [US1] Write UI rendering tests for register, login, and profile builder components in `frontend/tests/components/profile.test.tsx`
+- [x] T009 [P] [US1] Write integration tests for registration and login routes in `backend/tests/integration/auth.test.ts`
+- [x] T010 [P] [US1] Write unit tests for Profile and Connection services in `backend/tests/unit/users.test.ts`
+- [x] T011 [P] [US1] Write integration tests for connection requests and user retrieval routes in `backend/tests/integration/users.test.ts`
+- [x] T012 [P] [US1] Write UI rendering tests for register, login, and profile builder components in `frontend/tests/components/profile.test.tsx`
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Implement User and Connection database schemas in `backend/prisma/schema.prisma`
-- [ ] T014 [US1] Implement request validation schemas using Zod in `backend/src/middleware/validation.ts`
-- [ ] T015 [US1] Implement controllers and routes for user registration and login (initializing state as PENDING) in `backend/src/controllers/authController.ts` and `backend/src/routes/authRoutes.ts`
-- [ ] T016 [US1] Implement controllers and routes for admin approval queue in `backend/src/controllers/adminController.ts` and `backend/src/routes/adminRoutes.ts`
-- [ ] T017 [US1] Implement controllers and routes for profile operations and connection requests in `backend/src/controllers/userController.ts` and `backend/src/routes/userRoutes.ts`
-- [ ] T018 [US1] Implement registration and login page views in `frontend/src/pages/Auth.tsx`
-- [ ] T019 [US1] Implement profile builder and editor views in `frontend/src/pages/ProfileBuilder.tsx`
-- [ ] T020 [US1] Implement user directory and connection list views in `frontend/src/pages/Network.tsx`
-- [ ] T021 [US1] Create API client services wrapper to call auth, profile, and connection endpoints in `frontend/src/services/api.ts`
+- [x] T013 [P] [US1] Implement User and Connection database schemas in `backend/prisma/schema.prisma`
+- [x] T014 [US1] Implement request validation schemas using Zod in `backend/src/middleware/validation.ts`
+- [x] T015 [US1] Implement controllers and routes for user registration and login (initializing state as PENDING) in `backend/src/controllers/authController.ts` and `backend/src/routes/authRoutes.ts`
+- [x] T016 [US1] Implement controllers and routes for admin approval queue in `backend/src/controllers/adminController.ts` and `backend/src/routes/adminRoutes.ts`
+- [x] T017 [US1] Implement controllers and routes for profile operations and connection requests in `backend/src/controllers/userController.ts` and `backend/src/routes/userRoutes.ts`
+- [x] T018 [US1] Implement registration and login page views in `frontend/src/pages/Auth.tsx`
+- [x] T019 [US1] Implement profile builder and editor views in `frontend/src/pages/ProfileBuilder.tsx`
+- [x] T020 [US1] Implement user directory and connection list views in `frontend/src/pages/Network.tsx`
+- [x] T021 [US1] Create API client services wrapper to call auth, profile, and connection endpoints in `frontend/src/services/api.ts`
 
 **Checkpoint**: At this point, User Story 1 (Authentication, profiles, and networking) should be fully testable and functional.
 

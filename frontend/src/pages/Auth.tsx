@@ -1,0 +1,172 @@
+import React, { useState } from 'react';
+import { api } from '../services/api';
+
+export const Auth: React.FC = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'DOCTOR' | 'NURSE' | 'PHARMACIST' | 'RESEARCHER' | 'RECRUITER' | 'ADMIN'>('DOCTOR');
+  const [specialty, setSpecialty] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
+  
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage('');
+    setError('');
+
+    try {
+      if (isLogin) {
+        const res = await api.login({ email, password });
+        if (res.success) {
+          setMessage('Login successful! Welcome back.');
+          window.location.reload(); // Reload to update user state across the app
+        } else {
+          setError(res.error || 'Invalid credentials');
+        }
+      } else {
+        const res = await api.register({
+          name,
+          email,
+          password,
+          role,
+          specialty: role !== 'RECRUITER' && role !== 'ADMIN' ? specialty : undefined,
+          licenseNumber: role !== 'RECRUITER' && role !== 'ADMIN' ? licenseNumber : undefined,
+        });
+        if (res.success) {
+          setMessage(res.message || 'Registration successful!');
+          // Reset form fields
+          setIsLogin(true);
+        } else {
+          setError(res.error || 'Registration failed');
+        }
+      }
+    } catch (err) {
+      setError('An unexpected connection error occurred');
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', padding: '20px' }}>
+      <div className="card-glass" style={{ width: '100%', maxWidth: '480px' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '24px', fontSize: '28px' }}>
+          {isLogin ? 'Sign In to LinkeDoc' : 'Create Your Account'}
+        </h2>
+        
+        {message && <div style={{ color: 'var(--success)', padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: 'var(--radius-sm)', marginBottom: '16px', fontSize: '14px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>{message}</div>}
+        {error && <div style={{ color: 'var(--danger)', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 'var(--radius-sm)', marginBottom: '16px', fontSize: '14px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{error}</div>}
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {!isLogin && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label htmlFor="name" style={{ fontSize: '14px', fontWeight: 500 }}>Full Name</label>
+              <input
+                id="name"
+                type="text"
+                className="input-glass"
+                placeholder="Dr. John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label htmlFor="email" style={{ fontSize: '14px', fontWeight: 500 }}>Email Address</label>
+            <input
+              id="email"
+              type="email"
+              className="input-glass"
+              placeholder="name@hospital.org"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label htmlFor="password" style={{ fontSize: '14px', fontWeight: 500 }}>Password</label>
+            <input
+              id="password"
+              type="password"
+              className="input-glass"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {!isLogin && (
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label htmlFor="role" style={{ fontSize: '14px', fontWeight: 500 }}>Professional Role</label>
+                <select
+                  id="role"
+                  className="input-glass"
+                  style={{ background: 'var(--bg-primary)' }}
+                  value={role}
+                  onChange={(e: any) => setRole(e.target.value)}
+                >
+                  <option value="DOCTOR">Doctor / Physician</option>
+                  <option value="NURSE">Nurse Practitioner / RN</option>
+                  <option value="PHARMACIST">Pharmacist</option>
+                  <option value="RESEARCHER">Medical Researcher</option>
+                  <option value="RECRUITER">Healthcare Recruiter</option>
+                </select>
+              </div>
+
+              {role !== 'RECRUITER' && role !== 'ADMIN' && (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label htmlFor="specialty" style={{ fontSize: '14px', fontWeight: 500 }}>Specialty Field</label>
+                    <input
+                      id="specialty"
+                      type="text"
+                      className="input-glass"
+                      placeholder="e.g., Cardiology, Pediatrics"
+                      value={specialty}
+                      onChange={(e) => setSpecialty(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label htmlFor="license" style={{ fontSize: '14px', fontWeight: 500 }}>Medical License / NPI Number</label>
+                    <input
+                      id="license"
+                      type="text"
+                      className="input-glass"
+                      placeholder="e.g., LIC-123456"
+                      value={licenseNumber}
+                      onChange={(e) => setLicenseNumber(e.target.value)}
+                      required
+                    />
+                  </div>
+                </>
+              )}
+            </>
+          )}
+
+          <button type="submit" className="btn-primary" style={{ marginTop: '12px' }}>
+            {isLogin ? 'Sign In' : 'Register Account'}
+          </button>
+        </form>
+
+        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px' }}>
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <span
+            style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+            onClick={() => setIsLogin(!isLogin)}
+          >
+            {isLogin ? 'Sign Up' : 'Sign In'}
+          </span>
+        </p>
+      </div>
+    </div>
+  );
+};
