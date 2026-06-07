@@ -28,8 +28,7 @@ import {
   FolderOpen,
   Bell,
   Sun,
-  Moon,
-  LayoutGrid
+  Moon
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -435,21 +434,6 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
                 )}
               </div>
 
-              {/* Work item linked to groups */}
-              <Link
-                to="/groups"
-                className="linkedin-nav-item"
-                title="Work"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  textDecoration: 'none'
-                }}
-              >
-                <LayoutGrid size={20} />
-                <span className="linkedin-nav-label">Work</span>
-              </Link>
             </nav>
           </div>
         ) : (

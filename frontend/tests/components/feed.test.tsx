@@ -59,6 +59,7 @@ vi.mock('../../src/services/api', () => ({
         },
       },
     }),
+    getCategories: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -76,7 +77,7 @@ describe('Home Feed Component Tests', () => {
 
     // Left Profile Card
     expect(screen.getByText('Connections')).toBeInTheDocument();
-    expect(screen.getByText('Hanif Al Hafizh')).toBeInTheDocument();
+    expect(screen.getByText('Dr. Jane Smith')).toBeInTheDocument();
 
     // Center Composer Trigger
     expect(screen.getByText("What's on your mind?")).toBeInTheDocument();

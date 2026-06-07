@@ -100,6 +100,7 @@ export const Feed: React.FC = () => {
   const [pollOptions, setPollOptions] = useState<string[]>(['', '']); // default two options
   const [pollDurationHours, setPollDurationHours] = useState(24);
   const [composerModalOpen, setComposerModalOpen] = useState(false);
+  const [trendingCategories, setTrendingCategories] = useState<any[]>([]);
 
 
 
@@ -155,10 +156,22 @@ export const Feed: React.FC = () => {
     }
   };
 
+  const fetchTrendingCategories = async () => {
+    try {
+      const res = await api.getCategories();
+      if (Array.isArray(res)) {
+        setTrendingCategories(res.slice(0, 5));
+      }
+    } catch (e) {
+      console.error('Failed to fetch categories for trending', e);
+    }
+  };
+
   useEffect(() => {
     if (currentUser) {
       fetchFeed();
       fetchJoinedGroups();
+      fetchTrendingCategories();
     }
   }, []);
 
@@ -1203,46 +1216,51 @@ export const Feed: React.FC = () => {
         <div className="card-glass profile-summary-card" style={{ marginBottom: '16px' }}>
           <div className="profile-card-banner"></div>
           <div className="profile-card-avatar-wrapper">
-            <img
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
-              alt="Avatar"
-              className="profile-card-avatar-img"
+            <div
+              className="avatar-circle"
               style={{
                 width: '64px',
                 height: '64px',
                 borderRadius: '50%',
                 background: 'var(--bg-tertiary)',
                 border: '3px solid var(--bg-secondary)',
-                objectFit: 'cover',
-                display: 'block'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px',
+                fontWeight: 700,
+                color: 'var(--primary)',
+                boxSizing: 'border-box'
               }}
-            />
+            >
+              {getInitials(currentUser.name)}
+            </div>
           </div>
           <div className="profile-card-info" style={{ textAlign: 'center', padding: '0 16px 16px 16px', borderBottom: '1px solid var(--border)' }}>
             <Link to="/profile" className="profile-card-name" style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', textDecoration: 'none', display: 'block', marginBottom: '4px' }}>
-              Hanif Al Hafizh
+              {currentUser.role === 'ADMIN' || currentUser.role === 'RECRUITER' ? currentUser.name : `Dr. ${currentUser.name}`}
             </Link>
             <div className="profile-card-headline" style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-              UI/UX Designer
+              {currentUser.role} {currentUser.specialty ? `• ${currentUser.specialty}` : ''}
             </div>
             <p className="profile-card-description" style={{ margin: '8px 0 0 0', fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-              UI/UX Designer, 100+ projects in web design & mobile apps (iOS and Android OS). Open to offers ..... <span style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 500 }}>Read more</span>
+              {currentUser.bio || 'Medical professional in the LinkeDoc network.'}
             </p>
           </div>
           <div className="profile-card-stats-section" style={{ display: 'flex', flexDirection: 'column' }}>
             <Link to="/network" className="profile-card-stats" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', fontSize: '12px', textDecoration: 'none', color: 'var(--text-secondary)', transition: 'background-color var(--transition-fast)' }}>
               <span>Connections</span>
-              <span style={{ fontWeight: 600, color: '#0a66c2' }}>500+</span>
+              <span style={{ fontWeight: 600, color: 'var(--primary)' }}>0</span>
             </Link>
             <div className="profile-card-divider" style={{ height: '1px', backgroundColor: 'var(--border)' }}></div>
             <Link to="/profile" className="profile-card-stats" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', fontSize: '12px', textDecoration: 'none', color: 'var(--text-secondary)', transition: 'background-color var(--transition-fast)' }}>
               <span>Profil Views</span>
-              <span style={{ fontWeight: 600, color: '#0a66c2' }}>654</span>
+              <span style={{ fontWeight: 600, color: 'var(--primary)' }}>0</span>
             </Link>
             <div className="profile-card-divider" style={{ height: '1px', backgroundColor: 'var(--border)' }}></div>
             <Link to="/" className="profile-card-stats" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', fontSize: '12px', textDecoration: 'none', color: 'var(--text-secondary)', transition: 'background-color var(--transition-fast)' }}>
               <span>My Items</span>
-              <span style={{ fontWeight: 600, color: '#0a66c2' }}>32</span>
+              <span style={{ fontWeight: 600, color: 'var(--primary)' }}>0</span>
             </Link>
           </div>
         </div>
@@ -1251,23 +1269,25 @@ export const Feed: React.FC = () => {
         <div className="card-glass groups-sidebar-card" style={{ marginBottom: '16px', padding: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Group</span>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: '#0a66c2' }}>12</span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--primary)' }}>{joinedGroups.length}</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <Link to="/groups" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--text-secondary)' }}>
-              <div className="group-circle-icon blue-theme" style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#e7f5ff', color: '#0a66c2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700 }}>
-                UI/UX
+            {joinedGroups.length === 0 ? (
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>
+                No groups joined yet
               </div>
-              <span style={{ fontSize: '12px', fontWeight: 500 }} className="sidebar-group-name">UI/UX Design inspiration</span>
-            </Link>
-            <Link to="/groups" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--text-secondary)' }}>
-              <div className="group-circle-icon orange-theme" style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#fff4e6', color: '#fd7e14', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700 }}>
-                PRO D
-              </div>
-              <span style={{ fontSize: '12px', fontWeight: 500 }} className="sidebar-group-name">Pro Designer</span>
-            </Link>
+            ) : (
+              joinedGroups.map(g => (
+                <Link key={g.id} to="/groups" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--text-secondary)' }}>
+                  <div className="group-circle-icon blue-theme" style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--primary-glow)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 700 }}>
+                    {getInitials(g.name)}
+                  </div>
+                  <span style={{ fontSize: '12px', fontWeight: 500 }} className="sidebar-group-name">{g.name}</span>
+                </Link>
+              ))
+            )}
           </div>
-          <Link to="/groups" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#0a66c2', textDecoration: 'none', marginTop: '16px', textAlign: 'center' }}>
+          <Link to="/groups" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--primary)', textDecoration: 'none', marginTop: '16px', textAlign: 'center' }}>
             Show all
           </Link>
         </div>
@@ -1275,31 +1295,12 @@ export const Feed: React.FC = () => {
         {/* Card 3: Followed Hashtags */}
         <div className="card-glass hashtags-sidebar-card" style={{ padding: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Followed hastags</span>
-            <Link to="/" style={{ color: '#0a66c2', textDecoration: 'none', display: 'flex', alignItems: 'center' }} title="Show all hashtags">
-              <ChevronRight size={16} />
-            </Link>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Followed hashtags</span>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {['#uidesign', '#uxdesign', '#mobileappdesign', '#webdesign', '#uianimation'].map((tag) => (
-              <Link
-                key={tag}
-                to={`/?search=${tag}`}
-                className="hashtag-pill"
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 500,
-                  color: 'var(--text-secondary)',
-                  background: 'var(--bg-tertiary)',
-                  padding: '6px 12px',
-                  borderRadius: '20px',
-                  textDecoration: 'none',
-                  border: '1px solid var(--border)'
-                }}
-              >
-                {tag}
-              </Link>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>
+              No followed hashtags yet.
+            </span>
           </div>
         </div>
       </div>
@@ -1350,7 +1351,7 @@ export const Feed: React.FC = () => {
                 boxSizing: 'border-box'
               }}
             >
-              <PenTool size={18} style={{ color: '#0a66c2' }} />
+              <PenTool size={18} style={{ color: 'var(--primary)' }} />
               <span>What's on your mind?</span>
             </button>
           </div>
@@ -1529,7 +1530,7 @@ export const Feed: React.FC = () => {
                       flexDirection: 'column',
                       gap: '12px'
                     }}>
-                      <h4 style={{ margin: 0, fontSize: '13px', color: '#0a66c2', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <h4 style={{ margin: 0, fontSize: '13px', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         Create a Clinical Poll
                       </h4>
                       <input
@@ -1579,7 +1580,7 @@ export const Feed: React.FC = () => {
                               alignSelf: 'flex-start',
                               background: 'none',
                               border: 'none',
-                              color: '#0a66c2',
+                              color: 'var(--primary)',
                               fontSize: '12px',
                               fontWeight: 600,
                               cursor: 'pointer',
@@ -1612,7 +1613,7 @@ export const Feed: React.FC = () => {
                   {isResearch && canPostResearch && (
                     <div className="research-paper-fields" style={{ margin: '12px 0' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                        <h4 style={{ margin: 0, fontSize: '13px', color: '#0a66c2', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <h4 style={{ margin: 0, fontSize: '13px', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <Layers size={16} /> Attach Research Paper
                         </h4>
                         <div style={{ display: 'flex', gap: '6px' }}>
@@ -2041,22 +2042,18 @@ export const Feed: React.FC = () => {
             <span>Trending Discussions</span>
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <Link to="/forums" className="trending-item">
-              <div className="trending-title">Cardiology Research Updates</div>
-              <div className="trending-meta">48 active discussions today</div>
-            </Link>
-            <Link to="/forums" className="trending-item">
-              <div className="trending-title">AI diagnostic accuracy in radiology</div>
-              <div className="trending-meta">32 comments • Oncology</div>
-            </Link>
-            <Link to="/jobs" className="trending-item">
-              <div className="trending-title">New ICU Resident openings</div>
-              <div className="trending-meta">24 recruiters active</div>
-            </Link>
-            <Link to="/forums" className="trending-item">
-              <div className="trending-title">Pediatric dosing safety parameters</div>
-              <div className="trending-meta">15 replies • Pediatrics</div>
-            </Link>
+            {trendingCategories.length === 0 ? (
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '16px 0' }}>
+                No trending discussions yet
+              </div>
+            ) : (
+              trendingCategories.map(cat => (
+                <Link key={cat.id} to="/forums" className="trending-item">
+                  <div className="trending-title">{cat.name}</div>
+                  <div className="trending-meta">{cat.description || 'Active medical discussions'}</div>
+                </Link>
+              ))
+            )}
           </div>
           
           <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
@@ -2074,7 +2071,7 @@ export const Feed: React.FC = () => {
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
               <div style={{
-                background: '#0a66c2',
+                background: 'var(--primary)',
                 color: '#fff',
                 fontWeight: 800,
                 fontSize: '9px',

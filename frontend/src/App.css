@@ -18,12 +18,12 @@
   --bg-secondary: #1d2226;
   --bg-tertiary: #2f353a;
   
-  --primary: #70b5f9;
-  --primary-glow: rgba(112, 181, 249, 0.2);
-  --primary-hover: #a0cffc;
+  --primary: #05685e;
+  --primary-glow: rgba(5, 104, 94, 0.25);
+  --primary-hover: #078a7d;
   
-  --accent: #70b5f9;
-  --accent-glow: rgba(112, 181, 249, 0.1);
+  --accent: #05685e;
+  --accent-glow: rgba(5, 104, 94, 0.15);
   
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.9);
@@ -50,12 +50,12 @@
   --bg-secondary: #ffffff;
   --bg-tertiary: #eef3f8;
   
-  --primary: #0a66c2;
-  --primary-glow: rgba(10, 102, 194, 0.1);
-  --primary-hover: #004182;
+  --primary: #05685e;
+  --primary-glow: rgba(5, 104, 94, 0.1);
+  --primary-hover: #034b44;
   
-  --accent: #0a66c2;
-  --accent-glow: rgba(10, 102, 194, 0.08);
+  --accent: #05685e;
+  --accent-glow: rgba(5, 104, 94, 0.08);
   
   --text-primary: rgba(0, 0, 0, 0.9);
   --text-secondary: rgba(0, 0, 0, 0.7);
@@ -196,7 +196,7 @@ p {
 }
 
 .linkedin-logo-box {
-  background-color: #0a66c2;
+  background-color: var(--primary);
   color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-weight: 800;
@@ -285,7 +285,7 @@ p {
 }
 
 .linkedin-nav-item.active {
-  background-color: #0a66c2 !important;
+  background-color: var(--primary) !important;
   color: #ffffff !important;
 }
 
@@ -378,6 +378,7 @@ p {
   border: 1px solid var(--border);
   border-radius: var(--radius-md) 0 var(--radius-md) var(--radius-md);
   padding: 16px;
+  box-sizing: border-box;
   box-shadow: var(--shadow-lg);
   z-index: 1000;
   display: flex;
@@ -434,6 +435,7 @@ p {
   padding: 6px 12px;
   border-radius: var(--radius-full);
   margin-top: 4px;
+  box-sizing: border-box;
 }
 
 .me-dropdown-divider {
@@ -735,6 +737,7 @@ p {
   max-height: 420px;
   margin-top: 8px;
   border-radius: var(--radius-md);
+  box-sizing: border-box;
   box-shadow: var(--shadow-lg);
   z-index: 1000;
   display: flex;
