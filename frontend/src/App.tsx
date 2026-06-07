@@ -217,9 +217,8 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
       <div className="linkedin-header-content">
         {/* Left: Logo, Toggle and Search bar */}
         <div className="linkedin-header-left">
-          <Link to="/" className="linkedin-brand-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-            <div className="linkedin-logo-box">ld</div>
-            <span className="linkedin-brand-text" style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>LinkeDoc</span>
+          <Link to="/" className="linkedin-brand-logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+            <img src="/logo.svg" alt="LinkeDoc" style={{ height: '34px', objectFit: 'contain', display: 'block' }} />
           </Link>
 
           {/* Theme Toggle Button next to logo */}
