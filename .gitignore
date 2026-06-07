@@ -45,3 +45,4 @@ coverage
 
 # Speccit runtime files
 .specify/feature.json
+.vercel
