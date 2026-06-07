@@ -72,6 +72,9 @@ model User {
   conversationsAsP1   Conversation[]     @relation("participant1")
   conversationsAsP2   Conversation[]     @relation("participant2")
   messagesSent        Message[]          @relation("messageSender")
+  posts               Post[]
+  postLikes           PostLike[]
+  postComments        PostComment[]
 }
 
 model Connection {
@@ -171,3 +174,42 @@ model Message {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User         @relation("messageSender", fields: [senderId], references: [id], onDelete: Cascade)
 }
+
+model Post {
+  id               String        @id @default(uuid())
+  authorId         String
+  content          String        @db.Text
+  isResearch       Boolean       @default(false)
+  researchTitle    String?
+  researchAbstract String?       @db.Text
+  researchLink     String?
+  createdAt        DateTime      @default(now())
+
+  author           User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes            PostLike[]
+  comments         PostComment[]
+}
+
+model PostLike {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model PostComment {
+  id        String   @id @default(uuid())
+  postId    String
+  authorId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+

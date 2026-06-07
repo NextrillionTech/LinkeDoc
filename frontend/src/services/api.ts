@@ -227,4 +227,47 @@ export const api = {
     });
     return res.json();
   },
+
+  // Feed & Social Posting
+  async createPost(data: { content: string; isResearch?: boolean; researchTitle?: string; researchAbstract?: string; researchLink?: string }) {
+    const res = await fetch(`${API_BASE_URL}/feed`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  async getFeed() {
+    const res = await fetch(`${API_BASE_URL}/feed`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async toggleLike(postId: string) {
+    const res = await fetch(`${API_BASE_URL}/feed/${postId}/like`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async addComment(postId: string, content: string) {
+    const res = await fetch(`${API_BASE_URL}/feed/${postId}/comments`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ content }),
+    });
+    return res.json();
+  },
+
+  async getComments(postId: string) {
+    const res = await fetch(`${API_BASE_URL}/feed/${postId}/comments`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
 };

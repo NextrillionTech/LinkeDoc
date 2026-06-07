@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Auth } from './pages/Auth';
+import { Feed } from './pages/Feed';
 import { ProfileBuilder } from './pages/ProfileBuilder';
 import { Network } from './pages/Network';
 import { Forums } from './pages/Forums';
@@ -30,6 +31,9 @@ export const App: React.FC = () => {
           <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
             {user ? (
               <>
+                <Link to="/" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+                  Home
+                </Link>
                 <Link to="/profile" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
                   My Profile
                 </Link>
@@ -71,7 +75,7 @@ export const App: React.FC = () => {
 
         <main style={{ padding: '20px' }}>
           <Routes>
-            <Route path="/" element={user ? <ProfileBuilder /> : <Auth />} />
+            <Route path="/" element={user ? <Feed /> : <Auth />} />
             <Route path="/profile" element={<ProfileBuilder />} />
             <Route path="/network" element={<Network />} />
             <Route path="/forums" element={<Forums />} />

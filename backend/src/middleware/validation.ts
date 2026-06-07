@@ -55,6 +55,18 @@ export const messageSendSchema = z.object({
   encryptedBody: z.string().min(1, 'Encrypted body content cannot be empty'),
 });
 
+export const postSchema = z.object({
+  content: z.string().min(1, 'Post content cannot be empty'),
+  isResearch: z.boolean().optional(),
+  researchTitle: z.string().optional(),
+  researchAbstract: z.string().optional(),
+  researchLink: z.string().optional(),
+});
+
+export const commentSchema = z.object({
+  content: z.string().min(1, 'Comment content cannot be empty'),
+});
+
 export const validateBody = (schema: z.ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
