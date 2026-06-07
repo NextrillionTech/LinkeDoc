@@ -50,6 +50,7 @@ model User {
   experience    Json?              // Array of jobs, companies, years
   skills        String[]           // Array of strings
   status        Status             @default(PENDING)
+  publicKey     String?            // E2EE public key
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
@@ -66,6 +67,11 @@ model User {
 
   // Reports submitted
   reports             Report[]
+
+  // Conversations & Messages (E2EE direct messaging)
+  conversationsAsP1   Conversation[]     @relation("participant1")
+  conversationsAsP2   Conversation[]     @relation("participant2")
+  messagesSent        Message[]          @relation("messageSender")
 }
 
 model Connection {
@@ -138,4 +144,30 @@ model Report {
   createdAt   DateTime          @default(now())
 
   reporter    User              @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id             String    @id @default(uuid())
+  participant1Id String
+  participant2Id String
+  createdAt      DateTime  @default(now())
+  
+  messages       Message[]
+
+  participant1   User      @relation("participant1", fields: [participant1Id], references: [id], onDelete: Cascade)
+  participant2   User      @relation("participant2", fields: [participant2Id], references: [id], onDelete: Cascade)
+
+  @@unique([participant1Id, participant2Id])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  senderId       String
+  encryptedBody  String       // Base64 encoded ciphertext
+  status         String       @default("SENT") // SENT, READ
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("messageSender", fields: [senderId], references: [id], onDelete: Cascade)
 }

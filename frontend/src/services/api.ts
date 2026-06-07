@@ -175,4 +175,56 @@ export const api = {
     });
     return res.json();
   },
+
+  // E2EE Messaging & Key Exchange
+  async registerPublicKey(publicKey: string) {
+    const res = await fetch(`${API_BASE_URL}/users/public-key`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ publicKey }),
+    });
+    return res.json();
+  },
+
+  async getPublicKey(userId: string) {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}/public-key`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async createConversation(participantId: string) {
+    const res = await fetch(`${API_BASE_URL}/conversations`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ participantId }),
+    });
+    return res.json();
+  },
+
+  async getConversations() {
+    const res = await fetch(`${API_BASE_URL}/conversations`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async sendMessage(conversationId: string, encryptedBody: string) {
+    const res = await fetch(`${API_BASE_URL}/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ encryptedBody }),
+    });
+    return res.json();
+  },
+
+  async getMessages(conversationId: string) {
+    const res = await fetch(`${API_BASE_URL}/conversations/${conversationId}/messages`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
 };

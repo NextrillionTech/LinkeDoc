@@ -8,6 +8,7 @@ import userRoutes from '../routes/userRoutes';
 import adminRoutes from '../routes/adminRoutes';
 import forumRoutes from '../routes/forumRoutes';
 import jobRoutes from '../routes/jobRoutes';
+import messagingRoutes from '../routes/messagingRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +26,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/forums', forumRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api/conversations', messagingRoutes);
 
 // Base Health Check
 app.get('/health', (req, res) => {

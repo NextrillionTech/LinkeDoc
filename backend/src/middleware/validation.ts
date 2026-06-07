@@ -43,6 +43,18 @@ export const jobSchema = z.object({
   location: z.string().min(2, 'Location is required'),
 });
 
+export const publicKeySchema = z.object({
+  publicKey: z.string().min(10, 'Public key must be at least 10 characters'),
+});
+
+export const conversationCreateSchema = z.object({
+  participantId: z.string().uuid('Invalid participant ID format'),
+});
+
+export const messageSendSchema = z.object({
+  encryptedBody: z.string().min(1, 'Encrypted body content cannot be empty'),
+});
+
 export const validateBody = (schema: z.ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
