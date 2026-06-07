@@ -10,12 +10,13 @@ import forumRoutes from '../routes/forumRoutes';
 import jobRoutes from '../routes/jobRoutes';
 import messagingRoutes from '../routes/messagingRoutes';
 import feedRoutes from '../routes/feedRoutes';
+import groupRoutes from '../routes/groupRoutes';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Standard Middleware
 app.use(cors());
@@ -29,6 +30,7 @@ app.use('/api/forums', forumRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/conversations', messagingRoutes);
 app.use('/api/feed', feedRoutes);
+app.use('/api/groups', groupRoutes);
 
 // Base Health Check
 app.get('/health', (req, res) => {

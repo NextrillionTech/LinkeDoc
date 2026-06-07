@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { Edit2, MapPin, Building, GraduationCap } from 'lucide-react';
 
 interface EducationEntry {
   degree: string;
@@ -78,7 +79,7 @@ export const ProfileBuilder: React.FC = () => {
       setError('');
       setMessage('');
 
-      const skillsArray = skillsInput.split(',').map(s => s.trim()).filter(Boolean);
+      const skillsArray = skillsInput.split(',').map((s: string) => s.trim()).filter(Boolean);
       const res = await api.updateProfile(currentUser.id, {
         specialty: specialtyInput,
         skills: skillsArray,
@@ -360,7 +361,7 @@ export const ProfileBuilder: React.FC = () => {
             className="btn-edit-trigger"
             style={{ position: 'absolute', top: '20px', right: '20px' }}
           >
-            ✏️
+            <Edit2 size={16} />
           </button>
 
           <div className="profile-intro-avatar-wrapper">
@@ -377,8 +378,10 @@ export const ProfileBuilder: React.FC = () => {
             {specialty ? `${specialty} Specialist` : 'Medical Practitioner'} • {currentUser.role}
           </div>
 
-          <div className="profile-intro-meta">
-            <span>📍 Chicago, Illinois, United States</span>
+          <div className="profile-intro-meta" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px 16px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <MapPin size={14} /> Chicago, Illinois, United States
+            </span>
             <span>•</span>
             <span style={{ color: 'var(--primary)', fontWeight: 600 }}>12 connections</span>
             <span>•</span>
@@ -408,7 +411,7 @@ export const ProfileBuilder: React.FC = () => {
         <div className="profile-card-content">
           <div className="profile-card-header-row">
             <h3 style={{ fontSize: '18px', margin: 0 }}>About</h3>
-            <button onClick={handleOpenEdit} className="btn-edit-trigger">✏️</button>
+            <button onClick={handleOpenEdit} className="btn-edit-trigger"><Edit2 size={14} /></button>
           </div>
           <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)', lineHeight: 1.6 }}>
             {aboutText}
@@ -421,7 +424,7 @@ export const ProfileBuilder: React.FC = () => {
         <div className="profile-card-content">
           <div className="profile-card-header-row">
             <h3 style={{ fontSize: '18px', margin: 0 }}>Experience</h3>
-            <button onClick={handleOpenEdit} className="btn-edit-trigger">✏️</button>
+            <button onClick={handleOpenEdit} className="btn-edit-trigger"><Edit2 size={14} /></button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -430,9 +433,11 @@ export const ProfileBuilder: React.FC = () => {
                 No experience details added yet. Click edit to write work history.
               </p>
             ) : (
-              experience.map((exp, idx) => (
+              experience.map((exp: ExperienceEntry, idx: number) => (
                 <div key={idx} className="profile-list-item">
-                  <div className="list-item-bullet-icon">🏥</div>
+                  <div className="list-item-bullet-icon" style={{ display: 'flex', alignItems: 'center' }}>
+                    <Building size={16} style={{ color: 'var(--primary)' }} />
+                  </div>
                   <div>
                     <div className="list-item-title">{exp.title}</div>
                     <div className="list-item-sub">{exp.company}</div>
@@ -450,7 +455,7 @@ export const ProfileBuilder: React.FC = () => {
         <div className="profile-card-content">
           <div className="profile-card-header-row">
             <h3 style={{ fontSize: '18px', margin: 0 }}>Education</h3>
-            <button onClick={handleOpenEdit} className="btn-edit-trigger">✏️</button>
+            <button onClick={handleOpenEdit} className="btn-edit-trigger"><Edit2 size={14} /></button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -459,9 +464,11 @@ export const ProfileBuilder: React.FC = () => {
                 No education history added yet. Click edit to add medical degree details.
               </p>
             ) : (
-              education.map((edu, idx) => (
+              education.map((edu: EducationEntry, idx: number) => (
                 <div key={idx} className="profile-list-item">
-                  <div className="list-item-bullet-icon">🎓</div>
+                  <div className="list-item-bullet-icon" style={{ display: 'flex', alignItems: 'center' }}>
+                    <GraduationCap size={18} style={{ color: 'var(--primary)' }} />
+                  </div>
                   <div>
                     <div className="list-item-title">{edu.degree}</div>
                     <div className="list-item-sub">{edu.school}</div>
@@ -479,7 +486,7 @@ export const ProfileBuilder: React.FC = () => {
         <div className="profile-card-content">
           <div className="profile-card-header-row">
             <h3 style={{ fontSize: '18px', margin: 0 }}>Skills</h3>
-            <button onClick={handleOpenEdit} className="btn-edit-trigger">✏️</button>
+            <button onClick={handleOpenEdit} className="btn-edit-trigger"><Edit2 size={14} /></button>
           </div>
 
           {skillsStr.trim() === '' ? (
@@ -488,7 +495,7 @@ export const ProfileBuilder: React.FC = () => {
             </p>
           ) : (
             <div className="skills-container">
-              {skillsStr.split(',').map((s, idx) => (
+              {skillsStr.split(',').map((s: string, idx: number) => (
                 <div key={idx} className="skill-pill">
                   {s.trim()}
                 </div>
@@ -557,7 +564,7 @@ export const ProfileBuilder: React.FC = () => {
                 <div>
                   <h4 style={{ fontSize: '14px', margin: '12px 0 8px 0' }}>Education History</h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {educationInput.map((edu, idx) => (
+                    {educationInput.map((edu: EducationEntry, idx: number) => (
                       <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <input
                           className="input-glass"
@@ -600,7 +607,7 @@ export const ProfileBuilder: React.FC = () => {
                           type="button"
                           className="btn-primary"
                           style={{ background: 'var(--danger)', padding: '8px 12px', boxShadow: 'none', borderRadius: '4px', fontSize: '12px' }}
-                          onClick={() => setEducationInput(educationInput.filter((_, i) => i !== idx))}
+                          onClick={() => setEducationInput(educationInput.filter((_: any, i: number) => i !== idx))}
                         >
                           Delete
                         </button>
@@ -621,7 +628,7 @@ export const ProfileBuilder: React.FC = () => {
                 <div>
                   <h4 style={{ fontSize: '14px', margin: '12px 0 8px 0' }}>Experience History</h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {experienceInput.map((exp, idx) => (
+                    {experienceInput.map((exp: ExperienceEntry, idx: number) => (
                       <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <input
                           className="input-glass"
@@ -663,7 +670,7 @@ export const ProfileBuilder: React.FC = () => {
                           type="button"
                           className="btn-primary"
                           style={{ background: 'var(--danger)', padding: '8px 12px', boxShadow: 'none', borderRadius: '4px', fontSize: '12px' }}
-                          onClick={() => setExperienceInput(experienceInput.filter((_, i) => i !== idx))}
+                          onClick={() => setExperienceInput(experienceInput.filter((_: any, i: number) => i !== idx))}
                         >
                           Delete
                         </button>

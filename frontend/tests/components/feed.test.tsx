@@ -118,6 +118,7 @@ describe('Home Feed Component Tests', () => {
       expect(api.createPost).toHaveBeenCalledWith({
         content: 'New paper abstract',
         isResearch: true,
+        mediaUrls: [],
         researchTitle: 'COVID-19 Analysis',
         researchAbstract: 'Summary of details',
         researchLink: '',

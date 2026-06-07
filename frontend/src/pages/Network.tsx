@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
+import { Users, BookOpen, Building, Hash } from 'lucide-react';
 
 export const Network: React.FC = () => {
   const currentUser = api.getCurrentUser();
@@ -159,20 +160,24 @@ export const Network: React.FC = () => {
       <div className="network-sidebar">
         <div className="card-glass network-sidebar-card">
           <div className="network-sidebar-header">Manage my network</div>
-          <div className="network-menu-item">
-            <span>👥 Connections</span>
+          <div className="network-menu-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Users size={16} />
+            <span style={{ flex: 1 }}>Connections</span>
             <span style={{ fontWeight: 600 }}>12</span>
           </div>
-          <div className="network-menu-item">
-            <span>📖 Contact Book</span>
+          <div className="network-menu-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BookOpen size={16} />
+            <span style={{ flex: 1 }}>Contact Book</span>
             <span>47</span>
           </div>
-          <div className="network-menu-item">
-            <span>🏥 Hospital Peers</span>
+          <div className="network-menu-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Building size={16} />
+            <span style={{ flex: 1 }}>Hospital Peers</span>
             <span>8</span>
           </div>
-          <div className="network-menu-item">
-            <span>🏷️ Hashtags</span>
+          <div className="network-menu-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Hash size={16} />
+            <span style={{ flex: 1 }}>Hashtags</span>
             <span>15</span>
           </div>
         </div>

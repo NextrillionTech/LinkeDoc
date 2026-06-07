@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { Bookmark, Bell, DollarSign, FileText, Plus, MapPin, Building } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -168,13 +169,21 @@ export const JobBoard: React.FC = () => {
 
         <div className="card-glass sidebar-jobs-card">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <span className="jobs-nav-item" style={{ fontWeight: 600 }}>🔖 Saved Jobs</span>
-            <span className="jobs-nav-item">🔔 Job Alerts</span>
-            <span className="jobs-nav-item">💵 Salary Calculator</span>
-            <span className="jobs-nav-item">📝 Resume Builder</span>
+            <span className="jobs-nav-item" style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Bookmark size={14} /> Saved Jobs
+            </span>
+            <span className="jobs-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Bell size={14} /> Job Alerts
+            </span>
+            <span className="jobs-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <DollarSign size={14} /> Salary Calculator
+            </span>
+            <span className="jobs-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FileText size={14} /> Resume Builder
+            </span>
             {currentUser?.role === 'RECRUITER' && (
-              <Link to="/jobs/create" className="jobs-nav-item" style={{ color: 'var(--accent)', fontWeight: 600 }}>
-                ➕ Post a Free Job
+              <Link to="/jobs/create" className="jobs-nav-item" style={{ color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Plus size={14} /> Post a Free Job
               </Link>
             )}
           </div>
@@ -223,13 +232,15 @@ export const JobBoard: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                   <div>
                     <h3 style={{ fontSize: '18px', marginBottom: '2px', fontWeight: 700 }}>{job.title}</h3>
-                    <p style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 600, margin: 0 }}>
-                      🏢 {job.recruiterName || 'Verified Healthcare Recruiter'}
+                    <p style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Building size={14} /> {job.recruiterName || 'Verified Healthcare Recruiter'}
                     </p>
                   </div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                     <span className="job-metadata-pill">{job.specialty}</span>
-                    <span className="job-metadata-pill">📍 {job.location}</span>
+                    <span className="job-metadata-pill" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={12} /> {job.location}
+                    </span>
                   </div>
                 </div>
 

@@ -13,7 +13,7 @@ interface AuthRequest extends Request {
 }
 
 export const createPost = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
-  const { content, isResearch, researchTitle, researchAbstract, researchLink } = req.body;
+  const { content, isResearch, researchTitle, researchAbstract, researchLink, mediaUrls, groupId } = req.body;
   const userId = req.user?.id;
   const userRole = req.user?.role;
 
@@ -41,6 +41,8 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
         researchTitle: isResearch ? researchTitle : null,
         researchAbstract: isResearch ? researchAbstract : null,
         researchLink: isResearch ? researchLink : null,
+        mediaUrls: mediaUrls || [],
+        groupId: groupId || null,
       },
       include: {
         author: {
@@ -70,6 +72,9 @@ export const getFeed = async (req: AuthRequest, res: Response, next: NextFunctio
 
   try {
     const posts = await prisma.post.findMany({
+      where: {
+        groupId: null, // Only return main public posts in the home feed
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         author: {
@@ -109,6 +114,8 @@ export const getFeed = async (req: AuthRequest, res: Response, next: NextFunctio
         researchTitle: p.researchTitle,
         researchAbstract: p.researchAbstract,
         researchLink: p.researchLink,
+        mediaUrls: p.mediaUrls,
+        groupId: p.groupId,
         createdAt: p.createdAt,
         author: p.author,
         likesCount,

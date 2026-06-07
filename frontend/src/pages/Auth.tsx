@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
+import { CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 
 export const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -56,8 +57,51 @@ export const Auth: React.FC = () => {
           {isLogin ? 'Sign In to LinkeDoc' : 'Create Your Account'}
         </h2>
         
-        {message && <div style={{ color: 'var(--success)', padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: 'var(--radius-sm)', marginBottom: '16px', fontSize: '14px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>{message}</div>}
-        {error && <div style={{ color: 'var(--danger)', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 'var(--radius-sm)', marginBottom: '16px', fontSize: '14px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{error}</div>}
+        {message && (
+          <div style={{
+            color: 'var(--success)',
+            padding: '16px',
+            background: 'rgba(16, 185, 129, 0.08)',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '16px',
+            fontSize: '14px',
+            border: '1px solid rgba(16, 185, 129, 0.2)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px'
+          }}>
+            {message.includes('verified') ? (
+              <ShieldCheck size={24} style={{ flexShrink: 0, color: 'var(--success)' }} />
+            ) : (
+              <CheckCircle size={20} style={{ flexShrink: 0 }} />
+            )}
+            <div>
+              {message.includes('verified') && (
+                <strong style={{ display: 'block', marginBottom: '2px', color: 'var(--success)' }}>
+                  NPI Registry Verified!
+                </strong>
+              )}
+              <span>{message}</span>
+            </div>
+          </div>
+        )}
+        {error && (
+          <div style={{
+            color: 'var(--danger)',
+            padding: '12px 16px',
+            background: 'rgba(239, 68, 68, 0.08)',
+            borderRadius: 'var(--radius-sm)',
+            marginBottom: '16px',
+            fontSize: '14px',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <AlertCircle size={18} />
+            <span>{error}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {!isLogin && (

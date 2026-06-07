@@ -1,6 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+
+// Lucide React Icons
+import {
+  ThumbsUp,
+  MessageSquare,
+  Send,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  Layers,
+  Link2,
+  FileText,
+  X,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  AlertTriangle,
+  PenTool,
+  Square,
+  RefreshCw,
+  Info
+} from 'lucide-react';
 
 interface Author {
   id: string;
@@ -23,6 +45,8 @@ interface Post {
   researchTitle?: string | null;
   researchAbstract?: string | null;
   researchLink?: string | null;
+  mediaUrls?: string[];
+  groupId?: string | null;
   createdAt: string;
   author: Author;
   likesCount: number;
@@ -47,15 +71,63 @@ export const Feed: React.FC = () => {
   const [researchTitle, setResearchTitle] = useState('');
   const [researchAbstract, setResearchAbstract] = useState('');
   const [researchLink, setResearchLink] = useState('');
+  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [postSubmitting, setPostSubmitting] = useState(false);
   const [postError, setPostError] = useState('');
   const [postSuccess, setPostSuccess] = useState('');
+
+  // PubMed search state
+  const [pubmedQuery, setPubmedQuery] = useState('');
+  const [pubmedSearching, setPubmedSearching] = useState(false);
+  const [pubmedAlert, setPubmedAlert] = useState('');
+
+  // Media attachment picker modal state
+  const [mediaModalOpen, setMediaModalOpen] = useState(false);
+  const [inputMediaUrl, setInputMediaUrl] = useState('');
+
+  // Clinical Canvas Annotation tool state
+  const [canvasModalOpen, setCanvasModalOpen] = useState(false);
+  const [activeCanvasImage, setActiveCanvasImage] = useState('');
+  const [drawingColor, setDrawingColor] = useState('#EF4444'); // default Red
+  const [drawingTool, setDrawingTool] = useState<'pen' | 'redact'>('pen');
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [lastX, setLastX] = useState(0);
+  const [lastY, setLastY] = useState(0);
+  const [zoomFactor, setZoomFactor] = useState(1);
+
+  // Carousel slider active index trackers mapped by post ID
+  const [carousels, setCarousels] = useState<{ [postId: string]: number }>({});
 
   // UI Interactive States
   const [expandedComments, setExpandedComments] = useState<{ [postId: string]: boolean }>({});
   const [commentInputs, setCommentInputs] = useState<{ [postId: string]: string }>({});
   const [commentSubmitting, setCommentSubmitting] = useState<{ [postId: string]: boolean }>({});
   const [expandedAbstracts, setExpandedAbstracts] = useState<{ [postId: string]: boolean }>({});
+
+  // Preset Clinical Media files for quick selection & annotation
+  const presetMedia = [
+    {
+      name: 'Chest X-Ray',
+      url: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80',
+      type: 'image'
+    },
+    {
+      name: 'Brain MRI Scan',
+      url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
+      type: 'image'
+    },
+    {
+      name: 'ECG Patient Graph',
+      url: 'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?auto=format&fit=crop&w=800&q=80',
+      type: 'image'
+    },
+    {
+      name: 'Ultrasound Scan (Video)',
+      url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+      type: 'video'
+    }
+  ];
 
   // Fetch Feed
   const fetchFeed = async () => {
@@ -84,8 +156,8 @@ export const Feed: React.FC = () => {
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isApproved) return;
-    if (!content.trim()) {
-      setPostError('Post content cannot be empty.');
+    if (!content.trim() && mediaUrls.length === 0) {
+      setPostError('Post content or media attachments are required.');
       return;
     }
 
@@ -97,6 +169,7 @@ export const Feed: React.FC = () => {
       const payload = {
         content: content.trim(),
         isResearch,
+        mediaUrls,
         ...(isResearch ? {
           researchTitle: researchTitle.trim(),
           researchAbstract: researchAbstract.trim(),
@@ -112,7 +185,7 @@ export const Feed: React.FC = () => {
         setResearchTitle('');
         setResearchAbstract('');
         setResearchLink('');
-        // Reload Feed
+        setMediaUrls([]);
         fetchFeed();
       } else {
         setPostError(res.error || 'Failed to publish post');
@@ -157,9 +230,7 @@ export const Feed: React.FC = () => {
       setCommentSubmitting(prev => ({ ...prev, [postId]: true }));
       const res = await api.addComment(postId, commentText.trim());
       if (res.success && res.comment) {
-        // Clear input
         setCommentInputs(prev => ({ ...prev, [postId]: '' }));
-        // Append comment locally
         setPosts(prev => prev.map(p => {
           if (p.id === postId) {
             return {
@@ -178,9 +249,130 @@ export const Feed: React.FC = () => {
     }
   };
 
+  // PubMed / DOI search trigger
+  const handlePubMedLookup = async () => {
+    if (!pubmedQuery.trim()) return;
+    try {
+      setPubmedSearching(true);
+      setPubmedAlert('');
+      const data = await api.searchPubMed(pubmedQuery.trim());
+      if (data.success) {
+        setResearchTitle(data.title || '');
+        setResearchAbstract(data.abstract || '');
+        setResearchLink(data.link || '');
+        setPubmedAlert('Successfully fetched paper details from PubMed!');
+      } else {
+        setPubmedAlert('No articles found matching that query. Pre-filled standard details.');
+      }
+    } catch (e) {
+      setPubmedAlert('Could not connect to database registry. Entered demo records.');
+    } finally {
+      setPubmedSearching(false);
+    }
+  };
+
+  // Initialize Canvas
+  useEffect(() => {
+    if (canvasModalOpen && canvasRef.current && activeCanvasImage) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = activeCanvasImage;
+      img.onload = () => {
+        // Clear canvas
+        canvas.width = 600;
+        canvas.height = 400;
+        
+        // Draw image keeping ratio
+        const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * zoomFactor;
+        const x = (canvas.width - img.width * scale) / 2;
+        const y = (canvas.height - img.height * scale) / 2;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#1e1e1e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+      };
+    }
+  }, [canvasModalOpen, activeCanvasImage, zoomFactor]);
+
+  // Canvas Drawing controls
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setIsDrawing(true);
+    setLastX(x);
+    setLastY(y);
+
+    if (drawingTool === 'redact') {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(x - 20, y - 10, 40, 20); // standard redaction box size
+      }
+    }
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || drawingTool !== 'pen') return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    ctx.beginPath();
+    ctx.strokeStyle = drawingColor;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    setLastX(x);
+    setLastY(y);
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const handleSaveCanvasAnnotation = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const annotatedDataUri = canvas.toDataURL('image/jpeg', 0.85);
+      setMediaUrls(prev => [...prev, annotatedDataUri]);
+      setCanvasModalOpen(false);
+      setMediaModalOpen(false);
+    }
+  };
+
+  const removeMediaUrl = (index: number) => {
+    setMediaUrls(prev => prev.filter((_, idx) => idx !== index));
+  };
+
   // Helper to get name initials
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  // Carousel navigation
+  const navigateCarousel = (postId: string, direction: number, max: number) => {
+    setCarousels(prev => {
+      const current = prev[postId] || 0;
+      let next = current + direction;
+      if (next < 0) next = max - 1;
+      if (next >= max) next = 0;
+      return { ...prev, [postId]: next };
+    });
   };
 
   if (!currentUser) {
@@ -193,7 +385,7 @@ export const Feed: React.FC = () => {
 
   return (
     <div className="feed-layout-container">
-      {/* Local styles for LinkedIn Look & Feel */}
+      {/* Styles inline for advanced LinkedIn components */}
       <style>{`
         .feed-layout-container {
           max-width: 1200px;
@@ -222,7 +414,7 @@ export const Feed: React.FC = () => {
           }
         }
 
-        /* Profile Card Left */
+        /* Profile Left sidebar card */
         .profile-summary-card {
           padding: 0;
           overflow: hidden;
@@ -293,7 +485,7 @@ export const Feed: React.FC = () => {
           background-color: var(--bg-tertiary);
         }
 
-        /* Post Composer Box */
+        /* Start a Post Composer */
         .post-composer-card {
           margin-bottom: 16px;
           padding: 16px;
@@ -302,7 +494,7 @@ export const Feed: React.FC = () => {
         .composer-trigger-row {
           display: flex;
           gap: 12px;
-          align-items: center;
+          align-items: flex-start;
           margin-bottom: 12px;
         }
 
@@ -321,7 +513,7 @@ export const Feed: React.FC = () => {
         .composer-textarea {
           flex: 1;
           resize: none;
-          min-height: 48px;
+          min-height: 54px;
           border-radius: var(--radius-lg);
           padding: 12px 16px;
           border: 1px solid var(--border);
@@ -335,6 +527,34 @@ export const Feed: React.FC = () => {
         .composer-textarea:focus {
           outline: none;
           border-color: var(--primary);
+        }
+
+        .composer-quick-actions {
+          display: flex;
+          gap: 6px;
+          margin-bottom: 12px;
+          padding-left: 56px;
+        }
+
+        .btn-quick-media {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: none;
+          border: 1px solid var(--border);
+          border-radius: var(--radius-full);
+          padding: 6px 14px;
+          font-size: 13px;
+          color: var(--text-secondary);
+          cursor: pointer;
+          font-weight: 500;
+          transition: background-color var(--transition-fast), border-color var(--transition-fast);
+        }
+
+        .btn-quick-media:hover {
+          background-color: var(--bg-tertiary);
+          border-color: var(--primary);
+          color: var(--primary);
         }
 
         .composer-actions-row {
@@ -445,7 +665,101 @@ export const Feed: React.FC = () => {
           white-space: pre-wrap;
         }
 
-        /* Research Paper Card Attachment */
+        /* Media display widgets */
+        .media-attachments-container {
+          position: relative;
+          margin-bottom: 16px;
+          border-radius: var(--radius-md);
+          overflow: hidden;
+          border: 1px solid var(--border);
+          background: #000;
+        }
+
+        .carousel-view-wrapper {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 300px;
+          max-height: 500px;
+        }
+
+        .carousel-img {
+          width: 100%;
+          height: 100%;
+          max-height: 500px;
+          object-fit: contain;
+        }
+
+        .carousel-btn {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          background: rgba(0, 0, 0, 0.6);
+          border: none;
+          color: #fff;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          z-index: 10;
+          transition: background-color var(--transition-fast);
+        }
+
+        .carousel-btn:hover {
+          background-color: var(--primary);
+        }
+
+        .carousel-btn-left {
+          left: 12px;
+        }
+
+        .carousel-btn-right {
+          right: 12px;
+        }
+
+        .carousel-indicators {
+          position: absolute;
+          bottom: 12px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 6px;
+          background: rgba(0, 0, 0, 0.4);
+          padding: 4px 10px;
+          border-radius: var(--radius-full);
+        }
+
+        .carousel-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.5);
+          cursor: pointer;
+        }
+
+        .carousel-dot.active {
+          background: #fff;
+          width: 10px;
+          border-radius: 3px;
+        }
+
+        .carousel-badge {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          background: rgba(0, 0, 0, 0.6);
+          color: #fff;
+          font-size: 11px;
+          padding: 4px 8px;
+          border-radius: var(--radius-sm);
+          font-weight: 500;
+        }
+
+        /* Research Card block */
         .research-attachment-box {
           border: 1px solid var(--border);
           border-radius: var(--radius-sm);
@@ -455,12 +769,14 @@ export const Feed: React.FC = () => {
         }
 
         .research-tag {
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
           background: var(--accent-glow);
           color: var(--accent);
           font-size: 10px;
           font-weight: 700;
-          padding: 2px 6px;
+          padding: 2px 8px;
           border-radius: var(--radius-full);
           text-transform: uppercase;
           margin-bottom: 8px;
@@ -498,7 +814,7 @@ export const Feed: React.FC = () => {
           background-color: var(--primary-glow);
         }
 
-        /* Social Counters & Actions */
+        /* Social bar */
         .social-counters {
           display: flex;
           justify-content: space-between;
@@ -539,7 +855,7 @@ export const Feed: React.FC = () => {
           color: var(--primary);
         }
 
-        /* Comment Section Styles */
+        /* Comments */
         .comments-section {
           border-top: 1px solid var(--border);
           margin-top: 12px;
@@ -614,7 +930,114 @@ export const Feed: React.FC = () => {
           line-height: 1.4;
         }
 
-        /* Right Sidebar Trending card */
+        /* Modal screens */
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.75);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          backdrop-filter: blur(4px);
+        }
+
+        .modal-container {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          width: 90%;
+          max-width: 640px;
+          overflow: hidden;
+          box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 24px;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .modal-body {
+          padding: 24px;
+        }
+
+        .modal-footer {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          padding: 16px 24px;
+          border-top: 1px solid var(--border);
+          background: var(--bg-tertiary);
+        }
+
+        /* Canvas drawing workspace */
+        .canvas-workspace {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          background: #111;
+          padding: 16px;
+          border-radius: var(--radius-sm);
+          border: 1px solid var(--border);
+        }
+
+        .canvas-toolbar {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 12px;
+          width: 100%;
+          justify-content: space-between;
+          background: var(--bg-primary);
+          padding: 8px 16px;
+          border-radius: var(--radius-full);
+          border: 1px solid var(--border);
+        }
+
+        .canvas-tool-group {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+        }
+
+        .color-dot {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          cursor: pointer;
+          border: 2px solid transparent;
+        }
+
+        .color-dot.active {
+          border-color: #fff;
+          transform: scale(1.1);
+        }
+
+        .btn-tool {
+          background: none;
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          color: var(--text-secondary);
+          padding: 4px 10px;
+          font-size: 12px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .btn-tool.active {
+          background: var(--primary);
+          color: #fff;
+          border-color: var(--primary);
+        }
+
+        /* Right Sidebar Trending */
         .right-sidebar-sticky {
           position: sticky;
           top: 85px;
@@ -684,9 +1107,13 @@ export const Feed: React.FC = () => {
             marginBottom: '16px',
             color: 'var(--warning)',
             fontSize: '14px',
-            fontWeight: 500
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
           }}>
-            ⚠️ Your account is pending verification by an administrator. You will be able to share updates, upload papers, and comment once approved.
+            <AlertTriangle size={20} />
+            <span>Your account is pending verification. You will be able to share updates, upload papers, and comment once approved.</span>
           </div>
         )}
 
@@ -703,14 +1130,89 @@ export const Feed: React.FC = () => {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={!isApproved}
-                required
+                required={mediaUrls.length === 0}
               />
+            </div>
+
+            {/* Attached media list preview row */}
+            {mediaUrls.length > 0 && (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px', paddingLeft: '56px' }}>
+                {mediaUrls.map((url, idx) => (
+                  <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '4px', border: '1px solid var(--border)', overflow: 'hidden', background: '#000' }}>
+                    {url.includes('mov_bbb') || url.includes('.mp4') ? (
+                      <video src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <img src={url} alt="Attached asset" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeMediaUrl(idx)}
+                      style={{ position: 'absolute', top: '2px', right: '2px', padding: '2px', background: 'rgba(0,0,0,0.7)', border: 'none', borderRadius: '50%', color: '#fff', cursor: 'pointer', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Composer Media Attach Quick Actions row */}
+            <div className="composer-quick-actions">
+              <button
+                type="button"
+                className="btn-quick-media"
+                onClick={() => { setMediaModalOpen(true); }}
+                disabled={!isApproved}
+              >
+                <ImageIcon size={16} style={{ color: '#37B24D' }} />
+                <span>Photo / Case Scan</span>
+              </button>
+              <button
+                type="button"
+                className="btn-quick-media"
+                onClick={() => { setMediaModalOpen(true); }}
+                disabled={!isApproved}
+              >
+                <VideoIcon size={16} style={{ color: '#1C7ED6' }} />
+                <span>Clinical Video</span>
+              </button>
             </div>
 
             {/* Research Paper fields (conditionally rendered) */}
             {isResearch && canPostResearch && (
               <div className="research-paper-fields">
-                <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--primary)' }}>Attach Research Paper</h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Layers size={16} /> Attach Research Paper
+                  </h4>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <input
+                      type="text"
+                      placeholder="Enter DOI or search keywords..."
+                      className="research-input"
+                      style={{ padding: '4px 8px', fontSize: '11px', minWidth: '160px' }}
+                      value={pubmedQuery}
+                      onChange={(e) => setPubmedQuery(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={{ padding: '4px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      onClick={handlePubMedLookup}
+                      disabled={pubmedSearching}
+                    >
+                      {pubmedSearching ? <RefreshCw size={12} className="animate-spin" /> : <Search size={12} />}
+                      <span>Fetch</span>
+                    </button>
+                  </div>
+                </div>
+
+                {pubmedAlert && (
+                  <div style={{ fontSize: '12px', color: 'var(--success)', background: 'var(--primary-glow)', padding: '6px 12px', borderRadius: '4px', border: '1px solid var(--primary)' }}>
+                    {pubmedAlert}
+                  </div>
+                )}
+
                 <input
                   type="text"
                   placeholder="Paper Title *"
@@ -722,7 +1224,7 @@ export const Feed: React.FC = () => {
                 <textarea
                   placeholder="Abstract / Summary Outline *"
                   className="research-input"
-                  style={{ minHeight: '60px', resize: 'vertical' }}
+                  style={{ minHeight: '70px', resize: 'vertical' }}
                   value={researchAbstract}
                   onChange={(e) => setResearchAbstract(e.target.value)}
                   required={isResearch}
@@ -751,21 +1253,23 @@ export const Feed: React.FC = () => {
                   disabled={!isApproved}
                   style={{ color: isResearch ? 'var(--accent)' : 'var(--primary)' }}
                 >
-                  📝 {isResearch ? 'Remove Paper' : 'Attach Research Paper'}
+                  <FileText size={16} />
+                  <span>{isResearch ? 'Remove Paper' : 'Attach Research Paper'}</span>
                 </button>
               ) : (
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                  Clinical discussion only
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Info size={12} /> Clinical discussion only
                 </span>
               )}
 
               <button
                 type="submit"
                 className="btn-primary"
-                style={{ padding: '8px 20px', borderRadius: 'var(--radius-full)', fontSize: '13px' }}
+                style={{ padding: '8px 20px', borderRadius: 'var(--radius-full)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
                 disabled={!isApproved || postSubmitting}
               >
-                {postSubmitting ? 'Posting...' : 'Post'}
+                <Send size={14} />
+                <span>{postSubmitting ? 'Posting...' : 'Post'}</span>
               </button>
             </div>
           </form>
@@ -794,6 +1298,10 @@ export const Feed: React.FC = () => {
               minute: '2-digit'
             });
 
+            // Media attachment info
+            const hasMedia = post.mediaUrls && post.mediaUrls.length > 0;
+            const carouselIdx = carousels[post.id] || 0;
+
             return (
               <div key={post.id} className="card-glass post-card">
                 {/* Author row */}
@@ -814,6 +1322,57 @@ export const Feed: React.FC = () => {
                 <div className="post-body-text">
                   {post.content}
                 </div>
+
+                {/* Render Media Attachments */}
+                {hasMedia && post.mediaUrls && (
+                  <div className="media-attachments-container">
+                    {post.mediaUrls.length === 1 ? (
+                      // Single item
+                      post.mediaUrls[0].includes('mov_bbb') || post.mediaUrls[0].includes('.mp4') ? (
+                        <video src={post.mediaUrls[0]} controls style={{ width: '100%', maxHeight: '420px', display: 'block' }} />
+                      ) : (
+                        <img src={post.mediaUrls[0]} alt="Post attachment" style={{ width: '100%', maxHeight: '500px', objectFit: 'contain', display: 'block' }} />
+                      )
+                    ) : (
+                      // Carousel Slider
+                      <div className="carousel-view-wrapper">
+                        <span className="carousel-badge">
+                          Slide {carouselIdx + 1} of {post.mediaUrls.length}
+                        </span>
+                        
+                        <button
+                          className="carousel-btn carousel-btn-left"
+                          onClick={() => navigateCarousel(post.id, -1, post.mediaUrls!.length)}
+                        >
+                          <ChevronLeft size={20} />
+                        </button>
+                        
+                        {post.mediaUrls[carouselIdx].includes('mov_bbb') || post.mediaUrls[carouselIdx].includes('.mp4') ? (
+                          <video src={post.mediaUrls[carouselIdx]} controls style={{ width: '100%', height: '100%', maxHeight: '420px' }} />
+                        ) : (
+                          <img src={post.mediaUrls[carouselIdx]} alt="Post carousel attachment" className="carousel-img" />
+                        )}
+
+                        <button
+                          className="carousel-btn carousel-btn-right"
+                          onClick={() => navigateCarousel(post.id, 1, post.mediaUrls!.length)}
+                        >
+                          <ChevronRight size={20} />
+                        </button>
+
+                        <div className="carousel-indicators">
+                          {post.mediaUrls.map((_, dotIdx) => (
+                            <div
+                              key={dotIdx}
+                              className={`carousel-dot ${dotIdx === carouselIdx ? 'active' : ''}`}
+                              onClick={() => setCarousels(prev => ({ ...prev, [post.id]: dotIdx }))}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Research paper card attachment */}
                 {post.isResearch && post.researchTitle && (
@@ -853,7 +1412,7 @@ export const Feed: React.FC = () => {
                         rel="noopener noreferrer"
                         className="btn-doi-link"
                       >
-                        🔗 View Full Text / DOI
+                        <Link2 size={14} /> View Full Text / DOI
                       </a>
                     )}
                   </div>
@@ -872,13 +1431,15 @@ export const Feed: React.FC = () => {
                     onClick={() => handleToggleLike(post.id)}
                     disabled={!isApproved}
                   >
-                    👍 Like
+                    <ThumbsUp size={16} />
+                    <span>Like</span>
                   </button>
                   <button
                     className="btn-post-action"
                     onClick={() => setExpandedComments(prev => ({ ...prev, [post.id]: !prev[post.id] }))}
                   >
-                    💬 Comment
+                    <MessageSquare size={16} />
+                    <span>Comment</span>
                   </button>
                 </div>
 
@@ -955,8 +1516,9 @@ export const Feed: React.FC = () => {
       {/* Right Sidebar Trending and Community Column */}
       <div className="right-sidebar">
         <div className="card-glass right-sidebar-sticky" style={{ padding: '16px' }}>
-          <h3 style={{ fontSize: '15px', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
-            Trending Discussions
+          <h3 style={{ fontSize: '15px', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={16} style={{ color: 'var(--accent)' }} />
+            <span>Trending Discussions</span>
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <Link to="/forums" className="trending-item">
@@ -981,6 +1543,249 @@ export const Feed: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Attachment Picker Modal */}
+      {mediaModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <div className="modal-header">
+              <h3 style={{ margin: 0, fontSize: '18px' }}>Attach Case Photo or Clinical Video</h3>
+              <button
+                type="button"
+                onClick={() => setMediaModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 600 }}>Paste URL directly:</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="url"
+                    placeholder="https://example.com/medical-image.jpg"
+                    className="research-input"
+                    style={{ flex: 1 }}
+                    value={inputMediaUrl}
+                    onChange={(e) => setInputMediaUrl(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    style={{ padding: '8px 16px' }}
+                    onClick={() => {
+                      if (inputMediaUrl.trim()) {
+                        setMediaUrls(prev => [...prev, inputMediaUrl.trim()]);
+                        setInputMediaUrl('');
+                        setMediaModalOpen(false);
+                      }
+                    }}
+                  >
+                    Attach
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 600, display: 'block', marginBottom: '10px' }}>Or select from sample clinical presets (Draw & Anonymize!):</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  {presetMedia.map((m, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '12px',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--radius-sm)',
+                        background: 'var(--bg-tertiary)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px',
+                        transition: 'border-color var(--transition-fast)'
+                      }}
+                      onClick={() => {
+                        if (m.type === 'video') {
+                          // Direct add video
+                          setMediaUrls(prev => [...prev, m.url]);
+                          setMediaModalOpen(false);
+                        } else {
+                          // Open drawing canvas for images
+                          setActiveCanvasImage(m.url);
+                          setCanvasModalOpen(true);
+                        }
+                      }}
+                    >
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{m.name}</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        {m.type === 'video' ? '📽️ Click to attach video directly' : '🖌️ Click to annotate/draw'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ background: 'none', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}
+                onClick={() => setMediaModalOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Canvas Drawing Editor Overlay */}
+      {canvasModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-container" style={{ maxWidth: '640px' }}>
+            <div className="modal-header">
+              <h3 style={{ margin: 0, fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <PenTool size={18} style={{ color: 'var(--primary)' }} />
+                <span>Annotate & Anonymize Clinical Scan</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setCanvasModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ padding: '16px' }}>
+              <div className="canvas-workspace">
+                <div className="canvas-toolbar">
+                  {/* Drawing Tool */}
+                  <div className="canvas-tool-group">
+                    <button
+                      type="button"
+                      className={`btn-tool ${drawingTool === 'pen' ? 'active' : ''}`}
+                      onClick={() => setDrawingTool('pen')}
+                    >
+                      <PenTool size={14} /> Pen
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn-tool ${drawingTool === 'redact' ? 'active' : ''}`}
+                      onClick={() => setDrawingTool('redact')}
+                      title="Draw black rectangles to cover patient metadata"
+                    >
+                      <Square size={14} /> Redact / Block
+                    </button>
+                  </div>
+
+                  {/* Colors */}
+                  {drawingTool === 'pen' && (
+                    <div className="canvas-tool-group">
+                      {['#EF4444', '#F59E0B', '#3B82F6', '#10B981'].map((c) => (
+                        <div
+                          key={c}
+                          className={`color-dot ${drawingColor === c ? 'active' : ''}`}
+                          style={{ backgroundColor: c }}
+                          onClick={() => setDrawingColor(c)}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Zoom/Reset */}
+                  <div className="canvas-tool-group">
+                    <button
+                      type="button"
+                      className="btn-tool"
+                      onClick={() => setZoomFactor(prev => Math.min(2, prev + 0.25))}
+                      title="Zoom In"
+                    >
+                      +
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-tool"
+                      onClick={() => setZoomFactor(prev => Math.max(0.5, prev - 0.25))}
+                      title="Zoom Out"
+                    >
+                      -
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-tool"
+                      onClick={() => {
+                        setZoomFactor(1);
+                        // trigger redraw
+                        const canvas = canvasRef.current;
+                        const ctx = canvas?.getContext('2d');
+                        if (canvas && ctx && activeCanvasImage) {
+                          const img = new Image();
+                          img.crossOrigin = 'anonymous';
+                          img.src = activeCanvasImage;
+                          img.onload = () => {
+                            const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                            const x = (canvas.width - img.width * scale) / 2;
+                            const y = (canvas.height - img.height * scale) / 2;
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            ctx.fillStyle = '#1e1e1e';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                          };
+                        }
+                      }}
+                      title="Reset image drawings"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <canvas
+                  ref={canvasRef}
+                  onMouseDown={startDrawing}
+                  onMouseMove={draw}
+                  onMouseUp={stopDrawing}
+                  onMouseLeave={stopDrawing}
+                  style={{
+                    border: '1px solid var(--border)',
+                    borderRadius: '4px',
+                    cursor: drawingTool === 'pen' ? 'crosshair' : 'cell',
+                    background: '#1e1e1e',
+                    maxWidth: '100%',
+                    height: 'auto'
+                  }}
+                />
+                
+                <p style={{ color: '#aaa', fontSize: '11px', margin: '8px 0 0 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Info size={12} /> Click and drag on image to redact details or highlight clinical focus regions.
+                </p>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ background: 'none', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}
+                onClick={() => setCanvasModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ padding: '8px 16px', borderRadius: '4px' }}
+                onClick={handleSaveCanvasAnnotation}
+              >
+                Save & Attach
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

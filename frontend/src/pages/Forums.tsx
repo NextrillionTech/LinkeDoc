@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { CreateThreadForm, CreateReplyForm, ReportModal } from '../components/ForumPostForm';
+import { ArrowLeft } from 'lucide-react';
 
 export const Forums: React.FC = () => {
   const currentUser = api.getCurrentUser();
@@ -175,11 +176,14 @@ export const Forums: React.FC = () => {
                   background: 'var(--bg-tertiary)',
                   color: 'var(--text-primary)',
                   boxShadow: 'none',
-                  padding: '8px 16px'
+                  padding: '8px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
                 onClick={() => setSelectedThread(null)}
               >
-                ← Back to Category Threads
+                <ArrowLeft size={16} /> Back to Category Threads
               </button>
 
               {/* Thread Core Content */}

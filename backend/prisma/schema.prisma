@@ -75,6 +75,8 @@ model User {
   posts               Post[]
   postLikes           PostLike[]
   postComments        PostComment[]
+  createdGroups       Group[]            @relation("groupCreator")
+  groupMemberships    GroupMember[]
 }
 
 model Connection {
@@ -183,9 +185,12 @@ model Post {
   researchTitle    String?
   researchAbstract String?       @db.Text
   researchLink     String?
+  mediaUrls        String[]
+  groupId          String?
   createdAt        DateTime      @default(now())
 
   author           User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  group            Group?        @relation(fields: [groupId], references: [id], onDelete: Cascade)
   likes            PostLike[]
   comments         PostComment[]
 }
@@ -211,5 +216,29 @@ model PostComment {
 
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Group {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  description String
+  creatorId   String
+  createdAt   DateTime      @default(now())
+
+  creator     User          @relation("groupCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  members     GroupMember[]
+  posts       Post[]
+}
+
+model GroupMember {
+  id        String   @id @default(uuid())
+  groupId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
 }
 

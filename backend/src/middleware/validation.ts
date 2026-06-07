@@ -61,6 +61,13 @@ export const postSchema = z.object({
   researchTitle: z.string().optional(),
   researchAbstract: z.string().optional(),
   researchLink: z.string().optional(),
+  mediaUrls: z.array(z.string()).optional(),
+  groupId: z.string().uuid().nullable().optional(),
+});
+
+export const groupSchema = z.object({
+  name: z.string().min(3, 'Group name must be at least 3 characters'),
+  description: z.string().min(5, 'Group description must be at least 5 characters'),
 });
 
 export const commentSchema = z.object({

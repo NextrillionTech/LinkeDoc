@@ -17,7 +17,10 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 
     const passwordHash = bcrypt.hashSync(password, 10);
     const isProfessional = ['DOCTOR', 'NURSE', 'PHARMACIST', 'RESEARCHER'].includes(role);
-    const initialStatus = isProfessional ? 'PENDING' : 'APPROVED';
+    
+    // NPI lookup mockup: check if licenseNumber is a 10-digit code or starts with NPI-
+    const isNpiVerified = isProfessional && licenseNumber && (/^\d{10}$/.test(licenseNumber.trim()) || licenseNumber.trim().toUpperCase().startsWith('NPI-'));
+    const initialStatus = isProfessional ? (isNpiVerified ? 'APPROVED' : 'PENDING') : 'APPROVED';
 
     const user = await prisma.user.create({
       data: {
@@ -34,7 +37,9 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     res.status(201).json({
       success: true,
       message: isProfessional
-        ? 'Registration successful. Your account is pending verification by administration.'
+        ? (isNpiVerified
+            ? 'Registration successful. Your credentials have been automatically verified via NPI database mockup!'
+            : 'Registration successful. Your account is pending verification by administration.')
         : 'Registration successful.',
       user: {
         id: user.id,
