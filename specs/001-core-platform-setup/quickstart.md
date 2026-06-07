@@ -91,3 +91,21 @@ curl -X POST http://localhost:5000/api/auth/login \
 ```bash
 curl http://localhost:5000/api/forums/categories
 ```
+
+### E. Create a Job Listing (Recruiter)
+```bash
+curl -X POST http://localhost:5000/api/jobs \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <RECRUITER_JWT_TOKEN>" \
+  -d '{
+    "title": "Chief Resident - Internal Medicine",
+    "description": "We are seeking a Chief Resident to lead clinical training, schedule rotations, and supervise internal medicine interns.",
+    "specialty": "Internal Medicine",
+    "location": "Chicago, IL"
+  }'
+```
+
+### F. Search / Filter Job Listings (Job Seeker)
+```bash
+curl "http://localhost:5000/api/jobs?specialty=Internal%20Medicine&location=Chicago"
+```

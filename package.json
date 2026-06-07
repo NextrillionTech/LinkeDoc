@@ -7,8 +7,15 @@
     "backend"
   ],
   "scripts": {
+    "test:backend": "npm run test --prefix backend",
+    "test:frontend": "npm run test --prefix frontend -- --run",
+    "test": "npm run test:backend && npm run test:frontend",
     "build:frontend": "npm run build --prefix frontend",
     "build:backend": "npm run build --prefix backend",
-    "build": "npm run prisma:generate --prefix backend && npm run build:frontend"
+    "build": "npm run prisma:generate --prefix backend && npm run build:frontend",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
   }
 }

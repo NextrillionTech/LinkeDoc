@@ -85,17 +85,17 @@
 
 ### Tests for User Story 2
 
-- [ ] T022 [P] [US2] Write integration tests for forum category retrieval, thread/reply creation, and flagging routes in `backend/tests/integration/forums.test.ts`
-- [ ] T023 [P] [US2] Write UI rendering tests for forum categories, threads, and post flagging in `frontend/tests/components/forums.test.tsx`
+- [x] T022 [P] [US2] Write integration tests for forum category retrieval, thread/reply creation, and flagging routes in `backend/tests/integration/forums.test.ts`
+- [x] T023 [P] [US2] Write UI rendering tests for forum categories, threads, and post flagging in `frontend/tests/components/forums.test.tsx`
 
 ### Implementation for User Story 2
 
-- [ ] T024 [P] [US2] Implement ForumCategory, DiscussionThread, PostReply, and Report schemas in `backend/prisma/schema.prisma`
-- [ ] T025 [US2] Implement specialty seed script in `backend/prisma/seed.ts`
-- [ ] T026 [US2] Implement controllers and routes for categories, threads, replies, and flagging in `backend/src/controllers/forumController.ts` and `backend/src/routes/forumRoutes.ts`
-- [ ] T027 [US2] Implement category index and thread discussion pages in `frontend/src/pages/Forums.tsx`
-- [ ] T028 [US2] Implement thread creation and comment form components in `frontend/src/components/ForumPostForm.tsx`
-- [ ] T029 [US2] Add category and discussion thread API calls to client services wrapper in `frontend/src/services/api.ts`
+- [x] T024 [P] [US2] Implement ForumCategory, DiscussionThread, PostReply, and Report schemas in `backend/prisma/schema.prisma`
+- [x] T025 [US2] Implement specialty seed script in `backend/prisma/seed.ts`
+- [x] T026 [US2] Implement controllers and routes for categories, threads, replies, and flagging in `backend/src/controllers/forumController.ts` and `backend/src/routes/forumRoutes.ts`
+- [x] T027 [US2] Implement category index and thread discussion pages in `frontend/src/pages/Forums.tsx`
+- [x] T028 [US2] Implement thread creation and comment form components in `frontend/src/components/ForumPostForm.tsx`
+- [x] T029 [US2] Add category and discussion thread API calls to client services wrapper in `frontend/src/services/api.ts`
 
 **Checkpoint**: User Story 2 is integrated and both profiles and forums are fully testable.
 

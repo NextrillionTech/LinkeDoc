@@ -36,6 +36,13 @@ export const reportSchema = z.object({
   reason: z.string().min(5, 'Reason must be at least 5 characters'),
 });
 
+export const jobSchema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
+  specialty: z.string().min(2, 'Specialty is required'),
+  location: z.string().min(2, 'Location is required'),
+});
+
 export const validateBody = (schema: z.ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

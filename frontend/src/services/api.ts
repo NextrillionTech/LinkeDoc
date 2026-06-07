@@ -152,4 +152,27 @@ export const api = {
     });
     return res.json();
   },
+
+  // Job Board
+  async createJob(title: string, description: string, specialty: string, location: string) {
+    const res = await fetch(`${API_BASE_URL}/jobs`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ title, description, specialty, location }),
+    });
+    return res.json();
+  },
+
+  async getJobs(filters?: { specialty?: string; location?: string }) {
+    const params = new URLSearchParams();
+    if (filters?.specialty) params.append('specialty', filters.specialty);
+    if (filters?.location) params.append('location', filters.location);
+    const queryString = params.toString();
+    const url = queryString ? `${API_BASE_URL}/jobs?${queryString}` : `${API_BASE_URL}/jobs`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
 };
