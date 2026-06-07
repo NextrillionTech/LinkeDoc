@@ -109,28 +109,28 @@
 
 ### Tests for User Story 3
 
-- [ ] T030 [P] [US3] Write integration tests for job listing creation and search query filters in `backend/tests/integration/jobs.test.ts`
-- [ ] T031 [P] [US3] Write UI rendering tests for job list and search filter views in `frontend/tests/components/jobs.test.tsx`
-
+- [x] T030 [P] [US3] Write integration tests for job listing creation and search query filters in `backend/tests/integration/jobs.test.ts`
+- [x] T031 [P] [US3] Write UI rendering tests for job list and search filter views in `frontend/tests/components/jobs.test.tsx`
+ 
 ### Implementation for User Story 3
-
-- [ ] T032 [P] [US3] Implement JobListing schema in `backend/prisma/schema.prisma`
-- [ ] T033 [US3] Implement controllers and routes for job creation, queries, and search filtering in `backend/src/controllers/jobController.ts` and `backend/src/routes/jobRoutes.ts`
-- [ ] T034 [US3] Implement job posting interface in `frontend/src/pages/CreateJob.tsx`
-- [ ] T035 [US3] Implement job directory search board and filters in `frontend/src/pages/JobBoard.tsx`
-- [ ] T036 [US3] Add job board API calls to client services wrapper in `frontend/src/services/api.ts`
-
+ 
+- [x] T032 [P] [US3] Implement JobListing schema in `backend/prisma/schema.prisma`
+- [x] T033 [US3] Implement controllers and routes for job creation, queries, and search filtering in `backend/src/controllers/jobController.ts` and `backend/src/routes/jobRoutes.ts`
+- [x] T034 [US3] Implement job posting interface in `frontend/src/pages/CreateJob.tsx`
+- [x] T035 [US3] Implement job directory search board and filters in `frontend/src/pages/JobBoard.tsx`
+- [x] T036 [US3] Add job board API calls to client services wrapper in `frontend/src/services/api.ts`
+ 
 **Checkpoint**: All core features are functional.
-
+ 
 ---
-
+ 
 ## Phase N: Polish & Cross-Cutting Concerns
-
+ 
 **Purpose**: Optimization, cleanup, and validation.
-
-- [ ] T037 Install Husky and set up pre-commit formatting/testing hook in `.husky/pre-commit`
-- [ ] T038 Verify end-to-end setup and validation commands in `specs/001-core-platform-setup/quickstart.md`
-- [ ] T039 [P] Compile quickstart installation references and general guidelines in `README.md`
+ 
+- [x] T037 Install Husky and set up pre-commit formatting/testing hook in `.husky/pre-commit`
+- [x] T038 Verify end-to-end setup and validation commands in `specs/001-core-platform-setup/quickstart.md`
+- [x] T039 [P] Compile quickstart installation references and general guidelines in `README.md`
 
 ---
 
