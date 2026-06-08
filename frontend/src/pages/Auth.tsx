@@ -51,8 +51,29 @@ export const Auth: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', padding: '20px' }}>
-      <div className="card-glass" style={{ width: '100%', maxWidth: '480px' }}>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: 'calc(100vh - 120px)',
+      padding: '40px 20px',
+      backgroundImage: `linear-gradient(rgba(18, 22, 25, 0.65), rgba(18, 22, 25, 0.85)), url('/medium-shot-doctors-wearing-protective-equipment.jpg')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      borderRadius: 'var(--radius-lg)',
+      boxShadow: 'inset 0 0 120px rgba(0, 0, 0, 0.6)',
+      boxSizing: 'border-box'
+    }}>
+      <div className="card-glass" style={{
+        width: '100%',
+        maxWidth: '480px',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        background: 'rgba(29, 34, 38, 0.75)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)'
+      }}>
         <h2 style={{ textAlign: 'center', marginBottom: '24px', fontSize: '28px' }}>
           {isLogin ? 'Sign In to LinkeDoc' : 'Create Your Account'}
         </h2>
