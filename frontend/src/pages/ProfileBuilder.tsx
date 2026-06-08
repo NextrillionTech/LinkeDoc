@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { useToast } from '../components/ToastContext';
 import { Edit2, MapPin, Building, GraduationCap, X, Plus, Trash2, MoreHorizontal, CheckCircle, Clock, AlertCircle, Award, BookOpen, Users, FileText } from 'lucide-react';
 
 interface EducationEntry {
@@ -29,6 +30,7 @@ interface GroupEntry {
 
 export const ProfileBuilder: React.FC = () => {
   const currentUser = api.getCurrentUser();
+  const { showToast } = useToast();
 
   // Profile data state
   const [specialty, setSpecialty] = useState('');
@@ -52,9 +54,9 @@ export const ProfileBuilder: React.FC = () => {
   const [stateMedicalCouncilInput, setStateMedicalCouncilInput] = useState('');
   const [publicationsInput, setPublicationsInput] = useState<PublicationEntry[]>([]);
 
-  // Status notifications
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  // DOI/PubMed Auto-import states
+  const [pubSearchQuery, setPubSearchQuery] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const fetchProfile = () => {
@@ -108,8 +110,6 @@ export const ProfileBuilder: React.FC = () => {
     setMedicalRegistrationNumberInput(medicalRegistrationNumber);
     setStateMedicalCouncilInput(stateMedicalCouncil);
     setPublicationsInput([...publications]);
-    setError('');
-    setMessage('');
     setIsEditModalOpen(true);
   };
 
@@ -120,8 +120,6 @@ export const ProfileBuilder: React.FC = () => {
 
     try {
       setSaving(true);
-      setError('');
-      setMessage('');
 
       const skillsArray = skillsInput.split(',').map((s: string) => s.trim()).filter(Boolean);
       const res = await api.updateProfile(currentUser.id, {
@@ -138,7 +136,7 @@ export const ProfileBuilder: React.FC = () => {
       });
 
       if (res.success) {
-        setMessage('Profile updated successfully!');
+        showToast('Profile updated successfully!', 'success');
         setSpecialty(specialtyInput);
         setSkillsStr(skillsInput);
         setEducation(educationInput);
@@ -156,12 +154,42 @@ export const ProfileBuilder: React.FC = () => {
 
         setIsEditModalOpen(false);
       } else {
-        setError(res.error || 'Failed to update profile');
+        showToast(res.error || 'Failed to update profile', 'error');
       }
     } catch (err) {
-      setError('An error occurred during profile save');
+      showToast('An error occurred during profile save', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleImportPublication = async () => {
+    if (!pubSearchQuery.trim()) {
+      showToast('Please enter a DOI, PMID, or keyword to search', 'warning');
+      return;
+    }
+    setIsImporting(true);
+    try {
+      const res = await api.searchPubMed(pubSearchQuery);
+      if (res && (res.title || res.journal)) {
+        const yearInt = parseInt(res.year) || new Date().getFullYear();
+        const newPub: PublicationEntry = {
+          title: res.title || '',
+          journal: res.journal || '',
+          year: yearInt,
+          authors: res.authors || '',
+        };
+        setPublicationsInput([...publicationsInput, newPub]);
+        setPubSearchQuery('');
+        showToast('Publication metadata successfully imported!', 'success');
+      } else {
+        showToast('No publication metadata found for this query', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to fetch publication metadata', 'error');
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -532,10 +560,6 @@ export const ProfileBuilder: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Feedbacks */}
-      {message && <div className="alert-success">{message}</div>}
-      {error && <div className="alert-error">{error}</div>}
 
       {/* Bento Grid Architecture */}
       <div className="profile-bento-grid">
@@ -938,6 +962,31 @@ export const ProfileBuilder: React.FC = () => {
                 {/* Publications list fields */}
                 <div>
                   <h4 style={{ fontSize: '14px', margin: '12px 0 8px 0', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>Peer-Reviewed Publications</h4>
+                  
+                  {/* DOI / PMID Auto-import search */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', flexDirection: 'column' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Auto-Import via DOI / PMID / Keywords</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        type="text"
+                        className="input-glass"
+                        style={{ flex: 1, padding: '6px 12px', fontSize: '13px' }}
+                        placeholder="e.g. 10.1002/lary.28205 or 31741362 or COVID-19 cardiology"
+                        value={pubSearchQuery}
+                        onChange={(e) => setPubSearchQuery(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        style={{ padding: '6px 16px', fontSize: '12px' }}
+                        onClick={handleImportPublication}
+                        disabled={isImporting}
+                      >
+                        {isImporting ? 'Importing...' : 'Auto-Import'}
+                      </button>
+                    </div>
+                  </div>
+
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {publicationsInput.map((pub: PublicationEntry, idx: number) => (
                       <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>

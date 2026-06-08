@@ -1,15 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   /* Fonts & Radius & Animations */
-  --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
   --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 20px;
   --radius-full: 9999px;
-  
+
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -17,21 +17,21 @@
   --bg-primary: #000000;
   --bg-secondary: #1d2226;
   --bg-tertiary: #2f353a;
-  
+
   --primary: #05685e;
   --primary-glow: rgba(5, 104, 94, 0.25);
   --primary-hover: #078a7d;
-  
+
   --accent: #05685e;
   --accent-glow: rgba(5, 104, 94, 0.15);
-  
+
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.9);
   --text-muted: rgba(255, 255, 255, 0.6);
-  
+
   --border: rgba(255, 255, 255, 0.15);
   --border-hover: rgba(255, 255, 255, 0.25);
-  
+
   --success: #057642;
   --warning: #ca8a04;
   --danger: #dc2626;
@@ -39,7 +39,7 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
   --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 12px 24px 0 rgba(0, 0, 0, 0.4);
-  
+
   --glass-bg: #1d2226;
   --glass-border: rgba(255, 255, 255, 0.15);
 }
@@ -49,21 +49,21 @@
   --bg-primary: #eef3f8;
   --bg-secondary: #ffffff;
   --bg-tertiary: #eef3f8;
-  
+
   --primary: #05685e;
   --primary-glow: rgba(5, 104, 94, 0.1);
   --primary-hover: #034b44;
-  
+
   --accent: #05685e;
   --accent-glow: rgba(5, 104, 94, 0.08);
-  
+
   --text-primary: rgba(0, 0, 0, 0.9);
   --text-secondary: rgba(0, 0, 0, 0.7);
   --text-muted: rgba(0, 0, 0, 0.6);
-  
+
   --border: #dcdcdc;
   --border-hover: #b0b0b0;
-  
+
   --success: #057642;
   --warning: #ca8a04;
   --danger: #dc2626;
@@ -71,7 +71,7 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 12px 24px 0 rgba(0, 0, 0, 0.08);
-  
+
   --glass-bg: #ffffff;
   --glass-border: #dcdcdc;
 }
@@ -89,7 +89,12 @@ body {
 }
 
 /* Typography spacing and details */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
   color: var(--text-primary);
   margin-top: 0;
@@ -109,11 +114,13 @@ p {
   border-radius: var(--radius-md);
   padding: 16px;
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--transition-fast), background-color var(--transition-smooth);
+  transition: border-color var(--transition-fast), background-color var(--transition-smooth), transform var(--transition-smooth), box-shadow var(--transition-smooth);
 }
 
 .card-glass:hover {
   border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 /* Glowing Interactive Button */
@@ -388,8 +395,15 @@ p {
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .me-dropdown-profile-summary {
@@ -510,8 +524,13 @@ p {
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {
@@ -529,8 +548,15 @@ p {
 }
 
 @keyframes modalSlideUp {
-  from { opacity: 0; transform: translateY(16px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-header {
@@ -728,7 +754,6 @@ p {
 .app-main-content-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
 }
 
 /* ===== Notifications System ===== */
@@ -998,3 +1023,114 @@ p {
   background-color: var(--bg-tertiary) !important;
 }
 
+/* Toast Container */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Individual Toast */
+.toast-notification {
+  pointer-events: auto;
+  min-width: 320px;
+  max-width: 420px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-primary);
+  animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  font-weight: bold;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.toast-success {
+  border-left: 4px solid #10b981;
+}
+.toast-success .toast-icon {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.toast-error {
+  border-left: 4px solid #ef4444;
+}
+.toast-error .toast-icon {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.toast-warning {
+  border-left: 4px solid #f59e0b;
+}
+.toast-warning .toast-icon {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.toast-info {
+  border-left: 4px solid var(--primary);
+}
+.toast-info .toast-icon {
+  background: var(--primary-glow);
+  color: var(--primary);
+}
+
+.toast-message {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.toast-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.toast-close-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(100%) translateY(0);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+}

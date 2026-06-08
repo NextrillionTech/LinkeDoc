@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { useToast } from '../components/ToastContext';
 
 interface PendingUser {
   id: string;
@@ -16,8 +17,7 @@ interface PendingUser {
 export const AdminDashboard: React.FC = () => {
   const [users, setUsers] = useState<PendingUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   const fetchPending = async () => {
     try {
@@ -26,10 +26,10 @@ export const AdminDashboard: React.FC = () => {
       if (res && !res.error) {
         setUsers(res.pendingUsers || []);
       } else {
-        setError(res.error || 'Failed to fetch pending users queue.');
+        showToast(res.error || 'Failed to fetch pending users queue.', 'error');
       }
     } catch (err) {
-      setError('An error occurred while loading verification queue.');
+      showToast('An error occurred while loading verification queue.', 'error');
     } finally {
       setLoading(false);
     }
@@ -40,19 +40,17 @@ export const AdminDashboard: React.FC = () => {
   }, []);
 
   const handleVerify = async (id: string, status: 'APPROVED' | 'REJECTED') => {
-    setMessage('');
-    setError('');
     try {
       const res = await api.verifyUser(id, status);
       if (res.success) {
-        setMessage(`User successfully ${status.toLowerCase()}!`);
+        showToast(`User successfully ${status.toLowerCase()}!`, 'success');
         // Remove from list
         setUsers((prev) => prev.filter((u) => u.id !== id));
       } else {
-        setError(res.error || 'Failed to update user status.');
+        showToast(res.error || 'Failed to update user status.', 'error');
       }
     } catch (err) {
-      setError('An error occurred during verification.');
+      showToast('An error occurred during verification.', 'error');
     }
   };
 
@@ -68,9 +66,6 @@ export const AdminDashboard: React.FC = () => {
         <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
           Verification Queue — Review and approve professional licenses for doctor, nurse, pharmacist, and researcher accounts.
         </p>
-
-        {message && <div style={{ color: 'var(--success)', padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: 'var(--radius-sm)', marginBottom: '16px', fontSize: '14px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>{message}</div>}
-        {error && <div style={{ color: 'var(--danger)', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: 'var(--radius-sm)', marginBottom: '16px', fontSize: '14px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{error}</div>}
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading verification queue...</div>

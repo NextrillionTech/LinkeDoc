@@ -11,6 +11,7 @@ import { Messaging } from './pages/Messaging';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Groups } from './pages/Groups';
 import { api } from './services/api';
+import { ToastProvider } from './components/ToastContext';
 import './App.css';
 
 // Lucide React Icons
@@ -461,26 +462,28 @@ export const App: React.FC = () => {
   };
 
   return (
-    <Router>
-      <div className="app-viewport-wrapper">
-        <HeaderBar user={user} onLogout={handleLogout} />
+    <ToastProvider>
+      <Router>
+        <div className="app-viewport-wrapper">
+          <HeaderBar user={user} onLogout={handleLogout} />
 
-        <main className="app-main-content-container">
-          <Routes>
-            <Route path="/" element={user ? <Feed /> : <Auth />} />
-            <Route path="/profile" element={<ProfileBuilder />} />
-            <Route path="/network" element={<Network />} />
-            <Route path="/groups" element={<Groups />} />
-            <Route path="/groups/:id" element={<Groups />} />
-            <Route path="/forums" element={<Forums />} />
-            <Route path="/jobs" element={<JobBoard />} />
-            <Route path="/jobs/create" element={<CreateJob />} />
-            <Route path="/chat" element={<Messaging />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+          <main className="app-main-content-container">
+            <Routes>
+              <Route path="/" element={user ? <Feed /> : <Auth />} />
+              <Route path="/profile" element={<ProfileBuilder />} />
+              <Route path="/network" element={<Network />} />
+              <Route path="/groups" element={<Groups />} />
+              <Route path="/groups/:id" element={<Groups />} />
+              <Route path="/forums" element={<Forums />} />
+              <Route path="/jobs" element={<JobBoard />} />
+              <Route path="/jobs/create" element={<CreateJob />} />
+              <Route path="/chat" element={<Messaging />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
+    </ToastProvider>
   );
 };
 

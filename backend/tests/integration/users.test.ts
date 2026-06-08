@@ -7,10 +7,12 @@ jest.mock('@prisma/client', () => {
   const mockPrisma = {
     user: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
     },
     connection: {
       create: jest.fn(),
       update: jest.fn(),
+      findMany: jest.fn(),
     },
     notification: {
       create: jest.fn(),
@@ -43,6 +45,52 @@ jest.mock('../../src/middleware/auth', () => {
 describe('Users & Connections Routes Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('GET /api/users', () => {
+    it('should search and return list of users', async () => {
+      (prisma.user.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: 'user-2',
+          name: 'Dr. Jane Smith',
+          specialty: 'Cardiology',
+          medicalRegistrationNumber: 'MRN54321',
+          stateMedicalCouncil: 'NMC',
+          status: 'APPROVED',
+        },
+      ]);
+
+      const res = await request(app)
+        .get('/api/users')
+        .query({ query: 'Jane' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.users).toHaveLength(1);
+      expect(res.body.users[0].name).toBe('Dr. Jane Smith');
+    });
+  });
+
+  describe('GET /api/users/connections', () => {
+    it('should retrieve list of connections', async () => {
+      (prisma.connection.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: 'conn-1',
+          status: 'PENDING',
+          requesterId: 'user-requester-id',
+          receiverId: 'user-2',
+          requester: { id: 'user-requester-id', name: 'Dr. John Doe', role: 'DOCTOR' },
+          receiver: { id: 'user-2', name: 'Dr. Jane Smith', role: 'DOCTOR' },
+        },
+      ]);
+
+      const res = await request(app)
+        .get('/api/users/connections');
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.connections).toHaveLength(1);
+    });
   });
 
   describe('POST /api/users/connections', () => {

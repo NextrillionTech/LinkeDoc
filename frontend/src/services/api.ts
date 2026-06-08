@@ -83,6 +83,23 @@ export const api = {
     return res.json();
   },
 
+  async listUsers(query?: string) {
+    const url = query ? `${API_BASE_URL}/users?query=${encodeURIComponent(query)}` : `${API_BASE_URL}/users`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async getConnections() {
+    const res = await fetch(`${API_BASE_URL}/users/connections`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return res.json();
+  },
+
   // Admin Verification queue
   async getPendingUsers() {
     const res = await fetch(`${API_BASE_URL}/admin/users/pending`, {

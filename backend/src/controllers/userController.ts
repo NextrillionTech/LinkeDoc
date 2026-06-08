@@ -169,3 +169,79 @@ export const updateConnectionStatus = async (req: AuthRequest, res: Response, ne
     next(err);
   }
 };
+
+export const listUsers = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const query = req.query.query as string;
+  const currentUserId = req.user?.id;
+
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        id: currentUserId ? { not: currentUserId } : undefined,
+        OR: query ? [
+          { name: { contains: query, mode: 'insensitive' } },
+          { specialty: { contains: query, mode: 'insensitive' } },
+          { stateMedicalCouncil: { contains: query, mode: 'insensitive' } },
+          { medicalRegistrationNumber: { contains: query, mode: 'insensitive' } },
+        ] : undefined,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        specialty: true,
+        medicalRegistrationNumber: true,
+        stateMedicalCouncil: true,
+        status: true,
+      },
+      take: 20,
+    });
+    res.status(200).json({ success: true, users });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getConnections = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  if (!req.user) {
+    res.status(401).json({ success: false, error: 'Authentication required' });
+    return;
+  }
+  const userId = req.user.id;
+
+  try {
+    const connections = await prisma.connection.findMany({
+      where: {
+        OR: [
+          { requesterId: userId },
+          { receiverId: userId },
+        ],
+      },
+      include: {
+        requester: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+            specialty: true,
+            status: true,
+          },
+        },
+        receiver: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+            specialty: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json({ success: true, connections });
+  } catch (err) {
+    next(err);
+  }
+};
