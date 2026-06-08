@@ -76,38 +76,6 @@
   --glass-border: #dcdcdc;
 }
 
-/* Radiology High-Contrast Clinical Theme */
-.theme-radiology {
-  --bg-primary: #000000;
-  --bg-secondary: #000000;
-  --bg-tertiary: #0a0a0a;
-  
-  --primary: #ffffff;
-  --primary-glow: rgba(255, 255, 255, 0.15);
-  --primary-hover: #cccccc;
-  
-  --accent: #ffffff;
-  --accent-glow: rgba(255, 255, 255, 0.1);
-  
-  --text-primary: #ffffff;
-  --text-secondary: #e5e5e5;
-  --text-muted: #999999;
-  
-  --border: #444444;
-  --border-hover: #888888;
-  
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-
-  --shadow-sm: 0 0 0 1px #444444;
-  --shadow-md: 0 0 0 2px #444444;
-  --shadow-lg: 0 0 0 2px #ffffff;
-  
-  --glass-bg: #000000;
-  --glass-border: #444444;
-}
-
 /* Base Body Styles */
 body {
   margin: 0;

@@ -27,8 +27,7 @@ import {
   FolderOpen,
   Bell,
   Sun,
-  Moon,
-  Eye
+  Moon
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -55,9 +54,9 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [theme, setTheme] = useState<'light' | 'dark' | 'radiology'>(() => {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('theme');
-    return (saved as 'light' | 'dark' | 'radiology') || 'dark';
+    return (saved as 'light' | 'dark') || 'dark';
   });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -79,13 +78,7 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
 
   // Theme synchronization
   useEffect(() => {
-    if (theme === 'light') {
-      document.documentElement.className = 'theme-light';
-    } else if (theme === 'radiology') {
-      document.documentElement.className = 'theme-radiology';
-    } else {
-      document.documentElement.className = '';
-    }
+    document.documentElement.className = theme === 'light' ? 'theme-light' : '';
     localStorage.setItem('theme', theme);
   }, [theme]);
 
@@ -231,14 +224,8 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
           <button
             type="button"
             className="theme-toggle-btn btn-ghost"
-            onClick={() => setTheme(theme === 'dark' ? 'radiology' : theme === 'radiology' ? 'light' : 'dark')}
-            title={
-              theme === 'dark'
-                ? 'Switch to Radiology High-Contrast Mode'
-                : theme === 'radiology'
-                ? 'Switch to Light Mode'
-                : 'Switch to Dark Mode'
-            }
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             style={{
               padding: '6px',
               display: 'flex',
@@ -249,13 +236,7 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
               marginLeft: '4px'
             }}
           >
-            {theme === 'dark' ? (
-              <Eye size={20} />
-            ) : theme === 'radiology' ? (
-              <Sun size={20} />
-            ) : (
-              <Moon size={20} />
-            )}
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
           {user && (
