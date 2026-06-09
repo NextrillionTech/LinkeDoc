@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
+import bgImage from './medium-shot-doctors-wearing-protective-equipment.jpg';
 
 export const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -52,17 +53,20 @@ export const Auth: React.FC = () => {
 
   return (
     <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      minHeight: 'calc(100vh - 120px)',
       padding: '40px 20px',
-      backgroundImage: `linear-gradient(rgba(18, 22, 25, 0.65), rgba(18, 22, 25, 0.85)), url('/medium-shot-doctors-wearing-protective-equipment.jpg')`,
+      backgroundImage: `linear-gradient(rgba(18, 22, 25, 0.65), rgba(18, 22, 25, 0.85)), url(${bgImage})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
-      borderRadius: 'var(--radius-lg)',
-      boxShadow: 'inset 0 0 120px rgba(0, 0, 0, 0.6)',
+      zIndex: 1,
       boxSizing: 'border-box'
     }}>
       <div className="card-glass" style={{

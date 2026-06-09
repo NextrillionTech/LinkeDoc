@@ -79,9 +79,12 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
 
   // Theme synchronization
   useEffect(() => {
-    document.documentElement.className = theme === 'light' ? 'theme-light' : '';
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    const activeTheme = user ? theme : 'dark';
+    document.documentElement.className = activeTheme === 'light' ? 'theme-light' : '';
+    if (user) {
+      localStorage.setItem('theme', theme);
+    }
+  }, [theme, user]);
 
   // Notifications fetching & Pusher live listener
   useEffect(() => {
@@ -222,23 +225,25 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
           </Link>
 
           {/* Theme Toggle Button next to logo */}
-          <button
-            type="button"
-            className="theme-toggle-btn btn-ghost"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            style={{
-              padding: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-muted)',
-              borderRadius: '50%',
-              marginLeft: '4px'
-            }}
-          >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+          {user && (
+            <button
+              type="button"
+              className="theme-toggle-btn btn-ghost"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              style={{
+                padding: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-muted)',
+                borderRadius: '50%',
+                marginLeft: '4px'
+              }}
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          )}
 
           {user && (
             <div className="linkedin-search-container">
