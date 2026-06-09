@@ -22,7 +22,6 @@ import {
   Square,
   RefreshCw,
   Info,
-  Film,
   EyeOff,
   ArrowUpRight,
   Type,
@@ -92,9 +91,12 @@ export const Feed: React.FC = () => {
 
   // Media attachment picker modal state
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
-  const [inputMediaUrl, setInputMediaUrl] = useState('');
+  const [uploadedFileUrl, setUploadedFileUrl] = useState('');
+  const [uploadedFileType, setUploadedFileType] = useState<'image' | 'video' | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState('');
 
   // Poll Creator State
+  const [pollModalOpen, setPollModalOpen] = useState(false);
   const [showPollComposer, setShowPollComposer] = useState(false);
   const [pollQuestion, setPollQuestion] = useState('');
   const [pollOptions, setPollOptions] = useState<string[]>(['', '']); // default two options
@@ -104,29 +106,40 @@ export const Feed: React.FC = () => {
 
 
 
-  // Preset Clinical Media files for quick selection & annotation
-  const presetMedia = [
-    {
-      name: 'Chest X-Ray',
-      url: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80',
-      type: 'image'
-    },
-    {
-      name: 'Brain MRI Scan',
-      url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
-      type: 'image'
-    },
-    {
-      name: 'ECG Patient Graph',
-      url: 'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?auto=format&fit=crop&w=800&q=80',
-      type: 'image'
-    },
-    {
-      name: 'Ultrasound Scan (Video)',
-      url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      type: 'video'
-    }
-  ];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fileType = file.type.startsWith('video/') ? 'video' : 'image';
+    const reader = new FileReader();
+    reader.onload = () => {
+      setUploadedFileUrl(reader.result as string);
+      setUploadedFileType(fileType);
+      setUploadedFileName(file.name);
+      if (fileType === 'image') {
+        setActiveCanvasImage(reader.result as string);
+        setZoomFactor(1);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    const fileType = file.type.startsWith('video/') ? 'video' : 'image';
+    const reader = new FileReader();
+    reader.onload = () => {
+      setUploadedFileUrl(reader.result as string);
+      setUploadedFileType(fileType);
+      setUploadedFileName(file.name);
+      if (fileType === 'image') {
+        setActiveCanvasImage(reader.result as string);
+        setZoomFactor(1);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Fetch Feed
   const fetchFeed = async () => {
@@ -337,8 +350,6 @@ export const Feed: React.FC = () => {
     }
   };
 
-  // Clinical Canvas Annotation tool state
-  const [canvasModalOpen, setCanvasModalOpen] = useState(false);
   const [activeCanvasImage, setActiveCanvasImage] = useState('');
   const [drawingColor, setDrawingColor] = useState('#EF4444'); // default Red
   const [drawingTool, setDrawingTool] = useState<'pen' | 'redact' | 'blur' | 'arrow' | 'text'>('pen');
@@ -352,7 +363,7 @@ export const Feed: React.FC = () => {
 
   // Initialize Canvas
   useEffect(() => {
-    if (canvasModalOpen && canvasRef.current && activeCanvasImage) {
+    if (mediaModalOpen && uploadedFileType === 'image' && canvasRef.current && activeCanvasImage) {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
@@ -375,7 +386,7 @@ export const Feed: React.FC = () => {
         ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
       };
     }
-  }, [canvasModalOpen, activeCanvasImage, zoomFactor]);
+  }, [mediaModalOpen, uploadedFileType, activeCanvasImage, zoomFactor]);
 
   // Carousel slider active index trackers mapped by post ID
   const [carousels, setCarousels] = useState<{ [postId: string]: number }>({});
@@ -532,7 +543,6 @@ export const Feed: React.FC = () => {
     if (canvas) {
       const annotatedDataUri = canvas.toDataURL('image/jpeg', 0.85);
       setMediaUrls(prev => [...prev, annotatedDataUri]);
-      setCanvasModalOpen(false);
       setMediaModalOpen(false);
     }
   };
@@ -789,6 +799,45 @@ export const Feed: React.FC = () => {
         .research-input:focus {
           outline: none;
           border-color: var(--primary);
+        }
+
+        .modal-composer-textarea {
+          width: 100%;
+          border: 1px solid var(--border-hover);
+          border-radius: var(--radius-sm);
+          padding: 16px;
+          background: var(--bg-tertiary);
+          color: var(--text-primary);
+          font-family: var(--font-body);
+          font-size: 15px;
+          line-height: 1.5;
+          outline: none;
+          box-sizing: border-box;
+          transition: border-color var(--transition-fast);
+        }
+
+        .modal-composer-textarea:focus {
+          border-color: var(--primary);
+        }
+
+        .file-upload-dropzone {
+          border: 2px dashed var(--border);
+          border-radius: var(--radius-md);
+          padding: 40px 20px;
+          text-align: center;
+          background: var(--bg-tertiary);
+          cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          transition: all var(--transition-fast);
+        }
+
+        .file-upload-dropzone:hover {
+          border-color: var(--primary);
+          background: var(--primary-glow);
         }
 
         /* Post Card Item */
@@ -1360,7 +1409,15 @@ export const Feed: React.FC = () => {
             <button
               type="button"
               className="composer-action-btn"
-              onClick={() => { if (isApproved) { setComposerModalOpen(true); setMediaModalOpen(true); } }}
+              onClick={() => {
+                if (isApproved) {
+                  setUploadedFileUrl('');
+                  setUploadedFileType(null);
+                  setUploadedFileName('');
+                  setComposerModalOpen(true);
+                  setMediaModalOpen(true);
+                }
+              }}
               disabled={!isApproved}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: '4px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500 }}
             >
@@ -1371,7 +1428,15 @@ export const Feed: React.FC = () => {
             <button
               type="button"
               className="composer-action-btn"
-              onClick={() => { if (isApproved) { setComposerModalOpen(true); setMediaModalOpen(true); } }}
+              onClick={() => {
+                if (isApproved) {
+                  setUploadedFileUrl('');
+                  setUploadedFileType(null);
+                  setUploadedFileName('');
+                  setComposerModalOpen(true);
+                  setMediaModalOpen(true);
+                }
+              }}
               disabled={!isApproved}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: '4px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500 }}
             >
@@ -1382,12 +1447,16 @@ export const Feed: React.FC = () => {
             <button
               type="button"
               className="composer-action-btn"
-              onClick={() => { if (isApproved) { setComposerModalOpen(true); setShowPollComposer(true); } }}
+              onClick={() => {
+                if (isApproved) {
+                  setPollModalOpen(true);
+                }
+              }}
               disabled={!isApproved}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: '4px', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500 }}
             >
               <BarChart2 size={18} style={{ color: '#F59E0B' }} />
-              <span>Event</span>
+              <span>Poll</span>
             </button>
 
             <button
@@ -1406,7 +1475,7 @@ export const Feed: React.FC = () => {
         {/* Create Post Modal */}
         {composerModalOpen && (
           <div className="modal-overlay">
-            <div className="modal-container" style={{ width: '90%', maxWidth: '550px' }}>
+            <div className="modal-container" style={{ width: '90%', maxWidth: isResearch ? '850px' : '550px', transition: 'max-width 0.2s ease-in-out' }}>
               <div className="modal-header">
                 <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Create a post</h3>
                 <button
@@ -1469,13 +1538,16 @@ export const Feed: React.FC = () => {
                   </div>
 
                   <textarea
-                    className="composer-textarea"
+                    className="modal-composer-textarea"
                     placeholder="What do you want to talk about?"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     disabled={!isApproved}
                     required={mediaUrls.length === 0}
-                    style={{ width: '100%', minHeight: '120px', background: 'transparent', border: 'none', padding: 0, resize: 'vertical', fontSize: '15px', outline: 'none' }}
+                    style={{
+                      minHeight: isResearch ? '350px' : '150px',
+                      resize: 'vertical',
+                    }}
                   />
 
                   {/* Attached media list preview row */}
@@ -1517,107 +1589,67 @@ export const Feed: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Preset Media Quick attachment triggers inside modal */}
+                  {/* Media Quick attachment triggers inside modal */}
                   <div style={{ display: 'flex', gap: '8px', margin: '12px 0 6px 0' }}>
                     <button
                       type="button"
                       className="btn-quick-media"
-                      onClick={() => { setMediaModalOpen(true); }}
+                      onClick={() => {
+                        setUploadedFileUrl('');
+                        setUploadedFileType(null);
+                        setUploadedFileName('');
+                        setMediaModalOpen(true);
+                      }}
                       disabled={!isApproved}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
                       <ImageIcon size={14} style={{ color: '#37B24D' }} />
-                      <span>Add Photo/Video Preset</span>
+                      <span>Add Photo/Video</span>
                     </button>
                   </div>
 
-                  {/* Poll Composer Fields */}
-                  {showPollComposer && (
+                  {/* Poll Attachment Preview inside Composer */}
+                  {showPollComposer && pollQuestion && (
                     <div style={{
                       background: 'var(--bg-tertiary)',
-                      border: '1px dashed var(--border)',
+                      border: '1px solid var(--border)',
                       borderRadius: 'var(--radius-sm)',
-                      padding: '16px',
+                      padding: '12px 16px',
                       margin: '12px 0',
                       display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px'
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
                     }}>
-                      <h4 style={{ margin: 0, fontSize: '13px', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Create a Clinical Poll
-                      </h4>
-                      <input
-                        type="text"
-                        placeholder="Ask a question... (e.g. Which diagnostic procedure is preferred here?)"
-                        className="research-input"
-                        value={pollQuestion}
-                        onChange={(e) => setPollQuestion(e.target.value)}
-                        required={showPollComposer}
-                        style={{ fontSize: '13px' }}
-                      />
-                      
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Poll Options (Min 2, Max 4)</label>
-                        {pollOptions.map((opt, idx) => (
-                          <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <input
-                              type="text"
-                              placeholder={`Option ${idx + 1}`}
-                              className="research-input"
-                              style={{ flex: 1, fontSize: '13px' }}
-                              value={opt}
-                              onChange={(e) => {
-                                const updated = [...pollOptions];
-                                updated[idx] = e.target.value;
-                                setPollOptions(updated);
-                              }}
-                              required={idx < 2 && showPollComposer}
-                            />
-                            {pollOptions.length > 2 && (
-                              <button
-                                type="button"
-                                onClick={() => setPollOptions(prev => prev.filter((_, i) => i !== idx))}
-                                style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                              >
-                                <X size={16} />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                        
-                        {pollOptions.length < 4 && (
-                          <button
-                            type="button"
-                            onClick={() => setPollOptions([...pollOptions, ''])}
-                            style={{
-                              alignSelf: 'flex-start',
-                              background: 'none',
-                              border: 'none',
-                              color: 'var(--primary)',
-                              fontSize: '12px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              padding: '4px 0',
-                            }}
-                          >
-                            + Add Option
-                          </button>
-                        )}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>Attached Poll</div>
+                        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{pollQuestion}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '2px' }}>
+                          {pollOptions.filter(o => o.trim()).length} options • {pollDurationHours}h duration
+                        </div>
                       </div>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label htmlFor="poll-duration" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Poll Duration</label>
-                        <select
-                          id="poll-duration"
-                          className="research-input"
-                          value={pollDurationHours}
-                          onChange={(e) => setPollDurationHours(Number(e.target.value))}
-                          style={{ background: 'var(--bg-secondary)', width: 'fit-content', fontSize: '12px' }}
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          style={{ padding: '6px' }}
+                          onClick={() => setPollModalOpen(true)}
+                          title="Edit Poll"
                         >
-                          <option value={24}>24 Hours</option>
-                          <option value={72}>3 Days</option>
-                          <option value={168}>7 Days</option>
-                        </select>
+                          <PenTool size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          style={{ padding: '6px', color: 'var(--danger)' }}
+                          onClick={() => {
+                            setShowPollComposer(false);
+                            setPollQuestion('');
+                            setPollOptions(['', '']);
+                          }}
+                          title="Remove Poll"
+                        >
+                          <X size={16} />
+                        </button>
                       </div>
                     </div>
                   )}
@@ -1707,12 +1739,12 @@ export const Feed: React.FC = () => {
                     <button
                       type="button"
                       className="btn-attachment-toggle"
-                      onClick={() => setShowPollComposer(!showPollComposer)}
+                      onClick={() => setPollModalOpen(true)}
                       disabled={!isApproved}
                       style={{ color: showPollComposer ? 'var(--accent)' : 'var(--primary)', padding: '6px 12px', fontSize: '12px' }}
                     >
                       <BarChart2 size={14} />
-                      <span>{showPollComposer ? 'Remove Poll' : 'Add Poll'}</span>
+                      <span>{showPollComposer ? 'Edit Poll' : 'Add Poll'}</span>
                     </button>
                   </div>
 
@@ -2101,13 +2133,14 @@ export const Feed: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Attachment Picker Modal */}
+       {/* Attachment Upload Modal (Normal file upload + redaction/drawing features) */}
       {mediaModalOpen && (
         <div className="modal-overlay">
-          <div className="modal-container">
+          <div className="modal-container" style={{ width: '90%', maxWidth: uploadedFileType === 'image' ? '700px' : '550px' }}>
             <div className="modal-header">
-              <h3 style={{ margin: 0, fontSize: '18px' }}>Attach Case Photo or Clinical Video</h3>
+              <h3 style={{ margin: 0, fontSize: '18px' }}>
+                {uploadedFileType === 'image' ? 'Annotate & Anonymize Image' : 'Attach Photo or Video'}
+              </h3>
               <button
                 type="button"
                 className="modal-close-btn"
@@ -2117,240 +2150,400 @@ export const Feed: React.FC = () => {
               </button>
             </div>
             
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600 }}>Paste URL directly:</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '75vh', overflowY: 'auto' }}>
+              {!uploadedFileUrl ? (
+                /* Normal Drag and Drop zone */
+                <div
+                  className="file-upload-dropzone"
+                  onClick={() => document.getElementById('file-upload-input')?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                >
                   <input
-                    type="url"
-                    placeholder="https://example.com/medical-image.jpg"
-                    className="research-input"
-                    style={{ flex: 1 }}
-                    value={inputMediaUrl}
-                    onChange={(e) => setInputMediaUrl(e.target.value)}
+                    type="file"
+                    id="file-upload-input"
+                    accept="image/*,video/*"
+                    style={{ display: 'none' }}
+                    onChange={handleFileChange}
                   />
+                  <ImageIcon size={48} style={{ color: 'var(--primary)' }} />
+                  <div>
+                    <span style={{ fontWeight: 600, fontSize: '14px', display: 'block', color: 'var(--text-primary)' }}>
+                      Select file to upload
+                    </span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      or drag and drop case photos or clinical videos here
+                    </span>
+                  </div>
+                  <button type="button" className="btn-primary" style={{ padding: '8px 16px', fontSize: '12px' }}>
+                    Choose File
+                  </button>
+                </div>
+              ) : (
+                /* File has been selected */
+                <div>
+                  {uploadedFileType === 'video' ? (
+                    /* Video preview */
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        Previewing Video: {uploadedFileName}
+                      </span>
+                      <video
+                        src={uploadedFileUrl}
+                        controls
+                        style={{ width: '100%', maxHeight: '360px', borderRadius: '4px', background: '#000' }}
+                      />
+                    </div>
+                  ) : (
+                    /* Image preview + drawing canvas workspace */
+                    <div className="canvas-workspace" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div className="canvas-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: 'var(--bg-tertiary)', borderRadius: '4px' }}>
+                        
+                        {/* Drawing Tool Selectors */}
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            style={{
+                              padding: '6px 10px',
+                              fontSize: '12px',
+                              fontWeight: drawingTool === 'pen' ? 'bold' : 'normal',
+                              background: drawingTool === 'pen' ? 'var(--primary-glow)' : 'transparent',
+                              border: '1px solid var(--border)',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            onClick={() => setDrawingTool('pen')}
+                          >
+                            <PenTool size={14} /> Pen
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            style={{
+                              padding: '6px 10px',
+                              fontSize: '12px',
+                              fontWeight: drawingTool === 'redact' ? 'bold' : 'normal',
+                              background: drawingTool === 'redact' ? 'var(--primary-glow)' : 'transparent',
+                              border: '1px solid var(--border)',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            onClick={() => setDrawingTool('redact')}
+                            title="Draw black rectangles to cover patient metadata"
+                          >
+                            <Square size={14} /> Redact
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            style={{
+                              padding: '6px 10px',
+                              fontSize: '12px',
+                              fontWeight: drawingTool === 'blur' ? 'bold' : 'normal',
+                              background: drawingTool === 'blur' ? 'var(--primary-glow)' : 'transparent',
+                              border: '1px solid var(--border)',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            onClick={() => setDrawingTool('blur')}
+                            title="Blur sensitive patient data"
+                          >
+                            <EyeOff size={14} /> Blur
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            style={{
+                              padding: '6px 10px',
+                              fontSize: '12px',
+                              fontWeight: drawingTool === 'arrow' ? 'bold' : 'normal',
+                              background: drawingTool === 'arrow' ? 'var(--primary-glow)' : 'transparent',
+                              border: '1px solid var(--border)',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            onClick={() => setDrawingTool('arrow')}
+                            title="Draw arrow pointing to clinical finding"
+                          >
+                            <ArrowUpRight size={14} /> Arrow
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            style={{
+                              padding: '6px 10px',
+                              fontSize: '12px',
+                              fontWeight: drawingTool === 'text' ? 'bold' : 'normal',
+                              background: drawingTool === 'text' ? 'var(--primary-glow)' : 'transparent',
+                              border: '1px solid var(--border)',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            onClick={() => setDrawingTool('text')}
+                            title="Add text annotation"
+                          >
+                            <Type size={14} /> Text
+                          </button>
+                        </div>
+
+                        {/* Colors */}
+                        {(drawingTool === 'pen' || drawingTool === 'arrow' || drawingTool === 'text') && (
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            {['#EF4444', '#F59E0B', '#3B82F6', '#10B981', '#000000'].map((c) => (
+                              <div
+                                key={c}
+                                style={{
+                                  width: '18px',
+                                  height: '18px',
+                                  borderRadius: '50%',
+                                  backgroundColor: c,
+                                  border: drawingColor === c ? '2px solid var(--text-primary)' : '1px solid var(--border)',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={() => setDrawingColor(c)}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Zoom & Reset */}
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            style={{ padding: '4px 8px', fontSize: '11px', border: '1px solid var(--border)', borderRadius: '4px' }}
+                            onClick={() => setZoomFactor(prev => Math.min(2, prev + 0.25))}
+                            title="Zoom In"
+                          >
+                            +
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            style={{ padding: '4px 8px', fontSize: '11px', border: '1px solid var(--border)', borderRadius: '4px' }}
+                            onClick={() => setZoomFactor(prev => Math.max(0.5, prev - 0.25))}
+                            title="Zoom Out"
+                          >
+                            -
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            style={{ padding: '4px 8px', fontSize: '11px', border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--danger)' }}
+                            onClick={() => {
+                              setZoomFactor(1);
+                              const canvas = canvasRef.current;
+                              const ctx = canvas?.getContext('2d');
+                              if (canvas && ctx && activeCanvasImage) {
+                                const img = new Image();
+                                img.crossOrigin = 'anonymous';
+                                img.src = activeCanvasImage;
+                                img.onload = () => {
+                                  const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                                  const x = (canvas.width - img.width * scale) / 2;
+                                  const y = (canvas.height - img.height * scale) / 2;
+                                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                  ctx.fillStyle = '#1e1e1e';
+                                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                  ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                                };
+                              }
+                            }}
+                            title="Reset image drawings"
+                          >
+                            Reset
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'center', background: '#1e1e1e', borderRadius: '4px', padding: '12px' }}>
+                        <canvas
+                          ref={canvasRef}
+                          onMouseDown={startDrawing}
+                          onMouseMove={draw}
+                          onMouseUp={stopDrawing}
+                          onMouseLeave={stopDrawing}
+                          style={{
+                            border: '1px solid var(--border)',
+                            borderRadius: '4px',
+                            cursor: drawingTool === 'pen' ? 'crosshair' : 'cell',
+                            background: '#1e1e1e',
+                            maxWidth: '100%',
+                            height: 'auto'
+                          }}
+                        />
+                      </div>
+                      
+                      <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '4px 0 0 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Info size={12} /> Use drawing tools to redact HIPAA/patient details or annotate findings before attaching.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                {uploadedFileUrl && (
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 600 }}
+                    onClick={() => {
+                      setUploadedFileUrl('');
+                      setUploadedFileType(null);
+                      setUploadedFileName('');
+                    }}
+                  >
+                    Change File
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setMediaModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                {uploadedFileUrl && (
                   <button
                     type="button"
                     className="btn-primary"
-                    style={{ padding: '8px 16px' }}
+                    style={{ padding: '8px 16px', borderRadius: '4px' }}
                     onClick={() => {
-                      if (inputMediaUrl.trim()) {
-                        setMediaUrls(prev => [...prev, inputMediaUrl.trim()]);
-                        setInputMediaUrl('');
+                      if (uploadedFileType === 'video') {
+                        setMediaUrls(prev => [...prev, uploadedFileUrl]);
                         setMediaModalOpen(false);
+                      } else {
+                        handleSaveCanvasAnnotation();
                       }
                     }}
                   >
-                    Attach
+                    Attach File
                   </button>
-                </div>
+                )}
               </div>
-
-              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, display: 'block', marginBottom: '10px' }}>Or select from sample clinical presets (Draw & Anonymize!):</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  {presetMedia.map((m, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        padding: '12px',
-                        border: '1px solid var(--border)',
-                        borderRadius: 'var(--radius-sm)',
-                        background: 'var(--bg-tertiary)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '6px',
-                        transition: 'border-color var(--transition-fast)'
-                      }}
-                      onClick={() => {
-                        if (m.type === 'video') {
-                          // Direct add video
-                          setMediaUrls(prev => [...prev, m.url]);
-                          setMediaModalOpen(false);
-                        } else {
-                          // Open drawing canvas for images
-                          setActiveCanvasImage(m.url);
-                          setCanvasModalOpen(true);
-                        }
-                      }}
-                    >
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{m.name}</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        {m.type === 'video' ? <><Film size={12} /> Click to attach video directly</> : <><PenTool size={12} /> Click to annotate &amp; draw</>}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setMediaModalOpen(false)}
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Canvas Drawing Editor Overlay */}
-      {canvasModalOpen && (
+      {/* Create Clinical Poll Modal */}
+      {pollModalOpen && (
         <div className="modal-overlay">
-          <div className="modal-container" style={{ maxWidth: '640px' }}>
+          <div className="modal-container" style={{ width: '90%', maxWidth: '500px' }}>
             <div className="modal-header">
-              <h3 style={{ margin: 0, fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <PenTool size={18} style={{ color: 'var(--primary)' }} />
-                <span>Annotate & Anonymize Clinical Scan</span>
+              <h3 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BarChart2 size={20} style={{ color: 'var(--primary)' }} />
+                <span>Create a Clinical Poll</span>
               </h3>
               <button
                 type="button"
                 className="modal-close-btn"
-                onClick={() => setCanvasModalOpen(false)}
+                onClick={() => setPollModalOpen(false)}
               >
                 <X size={20} />
               </button>
             </div>
-
-            <div className="modal-body" style={{ padding: '16px' }}>
-              <div className="canvas-workspace">
-                <div className="canvas-toolbar">
-                  {/* Drawing Tool */}
-                  <div className="canvas-tool-group">
-                    <button
-                      type="button"
-                      className={`btn-tool ${drawingTool === 'pen' ? 'active' : ''}`}
-                      onClick={() => setDrawingTool('pen')}
-                    >
-                      <PenTool size={14} /> Pen
-                    </button>
-                    <button
-                      type="button"
-                      className={`btn-tool ${drawingTool === 'redact' ? 'active' : ''}`}
-                      onClick={() => setDrawingTool('redact')}
-                      title="Draw black rectangles to cover patient metadata"
-                    >
-                      <Square size={14} /> Redact / Block
-                    </button>
-                    <button
-                      type="button"
-                      className={`btn-tool ${drawingTool === 'blur' ? 'active' : ''}`}
-                      onClick={() => setDrawingTool('blur')}
-                      title="Blur sensitive patient data"
-                    >
-                      <EyeOff size={14} /> Blur
-                    </button>
-                    <button
-                      type="button"
-                      className={`btn-tool ${drawingTool === 'arrow' ? 'active' : ''}`}
-                      onClick={() => setDrawingTool('arrow')}
-                      title="Draw arrow pointing to clinical finding"
-                    >
-                      <ArrowUpRight size={14} /> Arrow
-                    </button>
-                    <button
-                      type="button"
-                      className={`btn-tool ${drawingTool === 'text' ? 'active' : ''}`}
-                      onClick={() => setDrawingTool('text')}
-                      title="Add text annotation"
-                    >
-                      <Type size={14} /> Text
-                    </button>
-                  </div>
-
-                  {/* Colors */}
-                  {(drawingTool === 'pen' || drawingTool === 'arrow' || drawingTool === 'text') && (
-                    <div className="canvas-tool-group">
-                      {['#EF4444', '#F59E0B', '#3B82F6', '#10B981'].map((c) => (
-                        <div
-                          key={c}
-                          className={`color-dot ${drawingColor === c ? 'active' : ''}`}
-                          style={{ backgroundColor: c }}
-                          onClick={() => setDrawingColor(c)}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Zoom/Reset */}
-                  <div className="canvas-tool-group">
-                    <button
-                      type="button"
-                      className="btn-tool"
-                      onClick={() => setZoomFactor(prev => Math.min(2, prev + 0.25))}
-                      title="Zoom In"
-                    >
-                      +
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-tool"
-                      onClick={() => setZoomFactor(prev => Math.max(0.5, prev - 0.25))}
-                      title="Zoom Out"
-                    >
-                      -
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-tool"
-                      onClick={() => {
-                        setZoomFactor(1);
-                        // trigger redraw
-                        const canvas = canvasRef.current;
-                        const ctx = canvas?.getContext('2d');
-                        if (canvas && ctx && activeCanvasImage) {
-                          const img = new Image();
-                          img.crossOrigin = 'anonymous';
-                          img.src = activeCanvasImage;
-                          img.onload = () => {
-                            const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-                            const x = (canvas.width - img.width * scale) / 2;
-                            const y = (canvas.height - img.height * scale) / 2;
-                            ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            ctx.fillStyle = '#1e1e1e';
-                            ctx.fillRect(0, 0, canvas.width, canvas.height);
-                            ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-                          };
-                        }
-                      }}
-                      title="Reset image drawings"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-
-                <canvas
-                  ref={canvasRef}
-                  onMouseDown={startDrawing}
-                  onMouseMove={draw}
-                  onMouseUp={stopDrawing}
-                  onMouseLeave={stopDrawing}
-                  style={{
-                    border: '1px solid var(--border)',
-                    borderRadius: '4px',
-                    cursor: drawingTool === 'pen' ? 'crosshair' : 'cell',
-                    background: '#1e1e1e',
-                    maxWidth: '100%',
-                    height: 'auto'
-                  }}
+            
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Your Question *</label>
+                <input
+                  type="text"
+                  placeholder="Ask a question... (e.g., Which diagnostic procedure is preferred here?)"
+                  className="research-input"
+                  value={pollQuestion}
+                  onChange={(e) => setPollQuestion(e.target.value)}
+                  required
+                  style={{ fontSize: '13px', width: '100%', boxSizing: 'border-box', padding: '10px 12px' }}
                 />
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Options (Min 2, Max 4) *</label>
+                {pollOptions.map((opt, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      placeholder={`Option ${idx + 1}`}
+                      className="research-input"
+                      style={{ flex: 1, fontSize: '13px', padding: '8px 12px' }}
+                      value={opt}
+                      onChange={(e) => {
+                        const updated = [...pollOptions];
+                        updated[idx] = e.target.value;
+                        setPollOptions(updated);
+                      }}
+                      required={idx < 2}
+                    />
+                    {pollOptions.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => setPollOptions(prev => prev.filter((_, i) => i !== idx))}
+                        style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
+                      >
+                        <X size={18} />
+                      </button>
+                    )}
+                  </div>
+                ))}
                 
-                <p style={{ color: '#aaa', fontSize: '11px', margin: '8px 0 0 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Info size={12} /> Click and drag on image to redact details or highlight clinical focus regions.
-                </p>
+                {pollOptions.length < 4 && (
+                  <button
+                    type="button"
+                    onClick={() => setPollOptions([...pollOptions, ''])}
+                    style={{
+                      alignSelf: 'flex-start',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--primary)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      padding: '4px 0',
+                    }}
+                  >
+                    + Add Option
+                  </button>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label htmlFor="poll-duration-modal" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Poll Duration</label>
+                <select
+                  id="poll-duration-modal"
+                  className="research-input"
+                  value={pollDurationHours}
+                  onChange={(e) => setPollDurationHours(Number(e.target.value))}
+                  style={{ background: 'var(--bg-secondary)', width: '100%', fontSize: '13px', padding: '8px 12px', boxSizing: 'border-box' }}
+                >
+                  <option value={24}>24 Hours</option>
+                  <option value={72}>3 Days</option>
+                  <option value={168}>7 Days</option>
+                </select>
               </div>
             </div>
-
-            <div className="modal-footer">
+            
+            <div className="modal-footer" style={{ padding: '16px 20px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button
                 type="button"
                 className="btn-secondary"
-                onClick={() => setCanvasModalOpen(false)}
+                onClick={() => setPollModalOpen(false)}
               >
                 Cancel
               </button>
@@ -2358,9 +2551,14 @@ export const Feed: React.FC = () => {
                 type="button"
                 className="btn-primary"
                 style={{ padding: '8px 16px', borderRadius: '4px' }}
-                onClick={handleSaveCanvasAnnotation}
+                disabled={!pollQuestion.trim() || pollOptions.filter(o => o.trim()).length < 2}
+                onClick={() => {
+                  setShowPollComposer(true);
+                  setPollModalOpen(false);
+                  setComposerModalOpen(true);
+                }}
               >
-                Save & Attach
+                Done
               </button>
             </div>
           </div>
