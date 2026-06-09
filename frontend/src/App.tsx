@@ -57,7 +57,7 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
   const [unreadCount, setUnreadCount] = useState(0);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('theme');
-    return (saved as 'light' | 'dark') || 'dark';
+    return (saved as 'light' | 'dark') || 'light';
   });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -79,7 +79,7 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
 
   // Theme synchronization
   useEffect(() => {
-    const activeTheme = user ? theme : 'dark';
+    const activeTheme = user ? theme : 'light';
     document.documentElement.className = activeTheme === 'light' ? 'theme-light' : '';
     if (user) {
       localStorage.setItem('theme', theme);
