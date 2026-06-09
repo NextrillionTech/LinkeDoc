@@ -53,6 +53,8 @@ model User {
   skills        String[]           // Array of strings
   status        Status             @default(PENDING)
   publicKey     String?            // E2EE public key
+  resetToken        String?
+  resetTokenExpires DateTime?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 

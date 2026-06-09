@@ -36,6 +36,24 @@ export const api = {
     return result;
   },
 
+  async forgotPassword(email: string) {
+    const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ email }),
+    });
+    return res.json();
+  },
+
+  async resetPassword(data: any) {
+    const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
   logout() {
     localStorage.removeItem('linkedoc_token');
     localStorage.removeItem('linkedoc_user');

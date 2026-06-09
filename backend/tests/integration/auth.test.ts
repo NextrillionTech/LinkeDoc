@@ -8,6 +8,7 @@ jest.mock('@prisma/client', () => {
     user: {
       findUnique: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
   };
   return {
@@ -92,6 +93,136 @@ describe('Auth Integration Tests (TDD - Route validation)', () => {
       expect(res.status).toBe(403);
       expect(res.body.success).toBe(false);
       expect(res.body.error).toContain('pending');
+    });
+  });
+
+  describe('POST /api/auth/forgot-password', () => {
+    it('should return success and mockResetCode if user exists', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'user-id-123',
+        email: 'sarah@hospital.org',
+      });
+      (prisma.user.update as jest.Mock).mockResolvedValue({
+        id: 'user-id-123',
+      });
+
+      const res = await request(app)
+        .post('/api/auth/forgot-password')
+        .send({ email: 'sarah@hospital.org' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.mockResetCode).toBeDefined();
+      expect(res.body.mockResetCode).toHaveLength(6);
+      expect(prisma.user.update).toHaveBeenCalled();
+    });
+
+    it('should return success but no mockResetCode if user does not exist', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const res = await request(app)
+        .post('/api/auth/forgot-password')
+        .send({ email: 'nonexistent@hospital.org' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.mockResetCode).toBeUndefined();
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('should reject if email format is invalid', async () => {
+      const res = await request(app)
+        .post('/api/auth/forgot-password')
+        .send({ email: 'invalid-email' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+  });
+
+  describe('POST /api/auth/reset-password', () => {
+    it('should reset password successfully if token matches and is not expired', async () => {
+      const futureExpiry = new Date(Date.now() + 5 * 60 * 1000);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'user-id-123',
+        email: 'sarah@hospital.org',
+        resetToken: '123456',
+        resetTokenExpires: futureExpiry,
+      });
+      (prisma.user.update as jest.Mock).mockResolvedValue({
+        id: 'user-id-123',
+      });
+
+      const res = await request(app)
+        .post('/api/auth/reset-password')
+        .send({
+          email: 'sarah@hospital.org',
+          token: '123456',
+          newPassword: 'newsecurepassword123',
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(prisma.user.update).toHaveBeenCalled();
+    });
+
+    it('should reject reset if token does not match', async () => {
+      const futureExpiry = new Date(Date.now() + 5 * 60 * 1000);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'user-id-123',
+        email: 'sarah@hospital.org',
+        resetToken: '123456',
+        resetTokenExpires: futureExpiry,
+      });
+
+      const res = await request(app)
+        .post('/api/auth/reset-password')
+        .send({
+          email: 'sarah@hospital.org',
+          token: '654321',
+          newPassword: 'newsecurepassword123',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('Invalid or expired');
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('should reject reset if token is expired', async () => {
+      const pastExpiry = new Date(Date.now() - 5 * 60 * 1000);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 'user-id-123',
+        email: 'sarah@hospital.org',
+        resetToken: '123456',
+        resetTokenExpires: pastExpiry,
+      });
+
+      const res = await request(app)
+        .post('/api/auth/reset-password')
+        .send({
+          email: 'sarah@hospital.org',
+          token: '123456',
+          newPassword: 'newsecurepassword123',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('Invalid or expired');
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('should reject if token or password is too short', async () => {
+      const res = await request(app)
+        .post('/api/auth/reset-password')
+        .send({
+          email: 'sarah@hospital.org',
+          token: '123',
+          newPassword: '123',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
     });
   });
 });

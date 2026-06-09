@@ -76,6 +76,16 @@ export const commentSchema = z.object({
   content: z.string().min(1, 'Comment content cannot be empty'),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+export const resetPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  token: z.string().length(6, 'Token must be exactly 6 characters'),
+  newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+});
+
 export const validateBody = (schema: z.ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

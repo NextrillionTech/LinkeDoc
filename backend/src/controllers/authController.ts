@@ -150,3 +150,69 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     next(err);
   }
 };
+
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { email } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      res.status(200).json({
+        success: true,
+        message: 'If the email is registered in our database, a verification code was sent to it.',
+      });
+      return;
+    }
+
+    const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetTokenExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken,
+        resetTokenExpires,
+      },
+    });
+
+    console.log(`[PASSWORD RESET SANDBOX] Email: ${email} | Verification Code: ${resetToken}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'If the email is registered in our database, a verification code was sent to it.',
+      mockResetCode: resetToken,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { email, token, newPassword } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || user.resetToken !== token || !user.resetTokenExpires || user.resetTokenExpires < new Date()) {
+      res.status(400).json({ success: false, error: 'Invalid or expired verification code' });
+      return;
+    }
+
+    const passwordHash = bcrypt.hashSync(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        resetToken: null,
+        resetTokenExpires: null,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Your password has been successfully reset. You can now log in with your new password.',
+    });
+  } catch (err) {
+    next(err);
+  }
+};

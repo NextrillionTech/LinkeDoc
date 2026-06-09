@@ -4,14 +4,19 @@ import { CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 import bgImage from './medium-shot-doctors-wearing-protective-equipment.jpg';
 
 export const Auth: React.FC = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [view, setView] = useState<'LOGIN' | 'REGISTER' | 'FORGOT' | 'RESET'>('LOGIN');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'DOCTOR' | 'NURSE' | 'PHARMACIST' | 'RESEARCHER' | 'RECRUITER' | 'ADMIN'>('DOCTOR');
   const [specialty, setSpecialty] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
-
+  
+  // Password Reset State
+  const [token, setToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -19,9 +24,10 @@ export const Auth: React.FC = () => {
     e.preventDefault();
     setMessage('');
     setError('');
+    setSubmitting(true);
 
     try {
-      if (isLogin) {
+      if (view === 'LOGIN') {
         const res = await api.login({ email, password });
         if (res.success) {
           setMessage('Login successful! Welcome back.');
@@ -29,7 +35,7 @@ export const Auth: React.FC = () => {
         } else {
           setError(res.error || 'Invalid credentials');
         }
-      } else {
+      } else if (view === 'REGISTER') {
         const res = await api.register({
           name,
           email,
@@ -40,14 +46,38 @@ export const Auth: React.FC = () => {
         });
         if (res.success) {
           setMessage(res.message || 'Registration successful!');
-          // Reset form fields
-          setIsLogin(true);
+          setView('LOGIN');
         } else {
           setError(res.error || 'Registration failed');
+        }
+      } else if (view === 'FORGOT') {
+        const res = await api.forgotPassword(email);
+        if (res.success) {
+          setMessage(res.message || 'A verification code was dispatched to your email.');
+          if (res.mockResetCode) {
+            setToken(res.mockResetCode); // Auto-fill sandbox code for testing convenience
+            setMessage(`[SANDBOX MOCK] A secure 6-digit verification code (${res.mockResetCode}) has been generated for ${email}.`);
+          }
+          setView('RESET');
+        } else {
+          setError(res.error || 'Password reset request failed');
+        }
+      } else if (view === 'RESET') {
+        const res = await api.resetPassword({ email, token, newPassword });
+        if (res.success) {
+          setMessage(res.message || 'Your password was successfully updated.');
+          setView('LOGIN');
+          setPassword('');
+          setToken('');
+          setNewPassword('');
+        } else {
+          setError(res.error || 'Password reset code is invalid or expired.');
         }
       }
     } catch (err) {
       setError('An unexpected connection error occurred');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -79,9 +109,12 @@ export const Auth: React.FC = () => {
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)'
       }}>
         <h2 style={{ textAlign: 'center', marginBottom: '24px', fontSize: '28px' }}>
-          {isLogin ? 'Sign In to LinkeDoc' : 'Create Your Account'}
+          {view === 'LOGIN' && 'Sign In to LinkeDoc'}
+          {view === 'REGISTER' && 'Create Your Account'}
+          {view === 'FORGOT' && 'Reset Password'}
+          {view === 'RESET' && 'Enter Verification'}
         </h2>
-
+        
         {message && (
           <div style={{
             color: 'var(--success)',
@@ -129,7 +162,7 @@ export const Auth: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {!isLogin && (
+          {view === 'REGISTER' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label htmlFor="name" style={{ fontSize: '14px', fontWeight: 500 }}>Full Name</label>
               <input
@@ -144,34 +177,65 @@ export const Auth: React.FC = () => {
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label htmlFor="email" style={{ fontSize: '14px', fontWeight: 500 }}>Email Address</label>
-            <input
-              id="email"
-              type="email"
-              className="input-glass"
-              placeholder="name@hospital.org"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          {(view === 'LOGIN' || view === 'REGISTER' || view === 'FORGOT') && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label htmlFor="email" style={{ fontSize: '14px', fontWeight: 500 }}>Email Address</label>
+              <input
+                id="email"
+                type="email"
+                className="input-glass"
+                placeholder="name@hospital.org"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label htmlFor="password" style={{ fontSize: '14px', fontWeight: 500 }}>Password</label>
-            <input
-              id="password"
-              type="password"
-              className="input-glass"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {!isLogin && (
+          {view === 'LOGIN' && (
             <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label htmlFor="password" style={{ fontSize: '14px', fontWeight: 500 }}>Password</label>
+                <input
+                  id="password"
+                  type="password"
+                  className="input-glass"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-8px' }}>
+                <span
+                  style={{ color: 'var(--accent)', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+                  onClick={() => {
+                    setView('FORGOT');
+                    setMessage('');
+                    setError('');
+                  }}
+                >
+                  Forgot Password?
+                </span>
+              </div>
+            </>
+          )}
+
+          {view === 'REGISTER' && (
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label htmlFor="password" style={{ fontSize: '14px', fontWeight: 500 }}>Password</label>
+                <input
+                  id="password"
+                  type="password"
+                  className="input-glass"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label htmlFor="role" style={{ fontSize: '14px', fontWeight: 500 }}>Professional Role</label>
                 <select
@@ -239,19 +303,99 @@ export const Auth: React.FC = () => {
             </>
           )}
 
-          <button type="submit" className="btn-primary" style={{ marginTop: '12px' }}>
-            {isLogin ? 'Sign In' : 'Register Account'}
+          {view === 'RESET' && (
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label htmlFor="emailReset" style={{ fontSize: '14px', fontWeight: 500 }}>Confirm Email</label>
+                <input
+                  id="emailReset"
+                  type="email"
+                  className="input-glass"
+                  value={email}
+                  disabled
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label htmlFor="token" style={{ fontSize: '14px', fontWeight: 500 }}>6-Digit Verification Code</label>
+                <input
+                  id="token"
+                  type="text"
+                  className="input-glass"
+                  placeholder="e.g., 123456"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label htmlFor="newPassword" style={{ fontSize: '14px', fontWeight: 500 }}>New Password</label>
+                <input
+                  id="newPassword"
+                  type="password"
+                  className="input-glass"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          <button type="submit" className="btn-primary" style={{ marginTop: '12px' }} disabled={submitting}>
+            {submitting ? 'Please wait...' : (
+              view === 'LOGIN' ? 'Sign In' :
+              view === 'REGISTER' ? 'Register Account' :
+              view === 'FORGOT' ? 'Send Reset Code' : 'Update Password'
+            )}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px' }}>
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <span
-            style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
-            onClick={() => setIsLogin(!isLogin)}
-          >
-            {isLogin ? 'Sign Up' : 'Sign In'}
-          </span>
+        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+          {view === 'LOGIN' && (
+            <>
+              Don't have an account?{' '}
+              <span
+                style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+                onClick={() => {
+                  setView('REGISTER');
+                  setMessage('');
+                  setError('');
+                }}
+              >
+                Sign Up
+              </span>
+            </>
+          )}
+          {view === 'REGISTER' && (
+            <>
+              Already have an account?{' '}
+              <span
+                style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+                onClick={() => {
+                  setView('LOGIN');
+                  setMessage('');
+                  setError('');
+                }}
+              >
+                Sign In
+              </span>
+            </>
+          )}
+          {(view === 'FORGOT' || view === 'RESET') && (
+            <span
+              style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+              onClick={() => {
+                setView('LOGIN');
+                setMessage('');
+                setError('');
+              }}
+            >
+              ← Back to Sign In
+            </span>
+          )}
         </p>
       </div>
     </div>
