@@ -64,7 +64,7 @@ export const Auth: React.FC = () => {
       padding: '40px 20px',
       backgroundImage: `url(${bgImage})`,
       backgroundSize: 'cover',
-      backgroundPosition: 'right',
+      backgroundPosition: 'left',
       backgroundRepeat: 'no-repeat',
       zIndex: 1,
       boxSizing: 'border-box'
