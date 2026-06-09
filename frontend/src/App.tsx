@@ -232,13 +232,15 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               style={{
-                padding: '6px',
+                width: '40px',
+                height: '40px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'var(--text-muted)',
                 borderRadius: '50%',
-                marginLeft: '4px'
+                marginLeft: '4px',
+                transition: 'all var(--transition-fast)'
               }}
             >
               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
@@ -361,10 +363,11 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: '8px',
-                    height: '36px',
+                    height: '40px',
                     width: 'auto',
                     borderRadius: '20px',
-                    color: 'var(--text-muted)'
+                    color: 'var(--text-muted)',
+                    transition: 'all var(--transition-fast)'
                   }}
                 >
                   <div
