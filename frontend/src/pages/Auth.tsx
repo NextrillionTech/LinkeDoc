@@ -11,7 +11,7 @@ export const Auth: React.FC = () => {
   const [role, setRole] = useState<'DOCTOR' | 'NURSE' | 'PHARMACIST' | 'RESEARCHER' | 'RECRUITER' | 'ADMIN'>('DOCTOR');
   const [specialty, setSpecialty] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
-  
+
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -62,9 +62,9 @@ export const Auth: React.FC = () => {
       justifyContent: 'center',
       alignItems: 'center',
       padding: '40px 20px',
-      backgroundImage: `linear-gradient(rgba(238, 243, 248, 0.55), rgba(238, 243, 248, 0.75)), url(${bgImage})`,
+      backgroundImage: `url(${bgImage})`,
       backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      backgroundPosition: 'right',
       backgroundRepeat: 'no-repeat',
       zIndex: 1,
       boxSizing: 'border-box'
@@ -81,7 +81,7 @@ export const Auth: React.FC = () => {
         <h2 style={{ textAlign: 'center', marginBottom: '24px', fontSize: '28px' }}>
           {isLogin ? 'Sign In to LinkeDoc' : 'Create Your Account'}
         </h2>
-        
+
         {message && (
           <div style={{
             color: 'var(--success)',
