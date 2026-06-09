@@ -62,7 +62,7 @@ export const Auth: React.FC = () => {
       justifyContent: 'center',
       alignItems: 'center',
       padding: '40px 20px',
-      backgroundImage: `linear-gradient(rgba(18, 22, 25, 0.65), rgba(18, 22, 25, 0.85)), url(${bgImage})`,
+      backgroundImage: `linear-gradient(rgba(238, 243, 248, 0.55), rgba(238, 243, 248, 0.75)), url(${bgImage})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
@@ -74,9 +74,9 @@ export const Auth: React.FC = () => {
         maxWidth: '480px',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
-        background: 'rgba(29, 34, 38, 0.75)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)'
+        background: 'rgba(255, 255, 255, 0.9)',
+        border: '1px solid rgba(0, 0, 0, 0.08)',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)'
       }}>
         <h2 style={{ textAlign: 'center', marginBottom: '24px', fontSize: '28px' }}>
           {isLogin ? 'Sign In to LinkeDoc' : 'Create Your Account'}
