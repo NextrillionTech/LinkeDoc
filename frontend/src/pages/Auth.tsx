@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 import bgImage from './medium-shot-doctors-wearing-protective-equipment.jpg';
 
 export const Auth: React.FC = () => {
   const [view, setView] = useState<'LOGIN' | 'REGISTER' | 'FORGOT' | 'RESET'>('LOGIN');
+  
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -90,8 +98,9 @@ export const Auth: React.FC = () => {
       bottom: 0,
       display: 'flex',
       justifyContent: 'center',
-      alignItems: 'center',
-      padding: '40px 20px',
+      alignItems: 'flex-start',
+      padding: '110px 20px 40px',
+      overflowY: 'auto',
       backgroundImage: `url(${bgImage})`,
       backgroundSize: 'cover',
       backgroundPosition: 'left',
