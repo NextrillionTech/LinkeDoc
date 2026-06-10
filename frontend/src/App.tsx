@@ -1,18 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Auth } from './pages/Auth';
-import { Feed } from './pages/Feed';
-import { ProfileBuilder } from './pages/ProfileBuilder';
-import { Network } from './pages/Network';
-import { Forums } from './pages/Forums';
-import { JobBoard } from './pages/JobBoard';
-import { CreateJob } from './pages/CreateJob';
-import { Messaging } from './pages/Messaging';
-import { AdminDashboard } from './pages/AdminDashboard';
-import { Groups } from './pages/Groups';
 import { api } from './services/api';
 import { ToastProvider } from './components/ToastContext';
 import './App.css';
+
+// Lazy-loaded routes for code splitting
+const Feed = React.lazy(() => import('./pages/Feed').then(m => ({ default: m.Feed })));
+const ProfileBuilder = React.lazy(() => import('./pages/ProfileBuilder').then(m => ({ default: m.ProfileBuilder })));
+const Network = React.lazy(() => import('./pages/Network').then(m => ({ default: m.Network })));
+const Forums = React.lazy(() => import('./pages/Forums').then(m => ({ default: m.Forums })));
+const JobBoard = React.lazy(() => import('./pages/JobBoard').then(m => ({ default: m.JobBoard })));
+const CreateJob = React.lazy(() => import('./pages/CreateJob').then(m => ({ default: m.CreateJob })));
+const Messaging = React.lazy(() => import('./pages/Messaging').then(m => ({ default: m.Messaging })));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const Groups = React.lazy(() => import('./pages/Groups').then(m => ({ default: m.Groups })));
 
 // Lucide React Icons
 import {
@@ -476,18 +478,27 @@ export const App: React.FC = () => {
           <HeaderBar user={user} onLogout={handleLogout} />
 
           <main className="app-main-content-container">
-            <Routes>
-              <Route path="/" element={user ? <Feed /> : <Auth />} />
-              <Route path="/profile" element={<ProfileBuilder />} />
-              <Route path="/network" element={<Network />} />
-              <Route path="/groups" element={<Groups />} />
-              <Route path="/groups/:id" element={<Groups />} />
-              <Route path="/forums" element={<Forums />} />
-              <Route path="/jobs" element={<JobBoard />} />
-              <Route path="/jobs/create" element={<CreateJob />} />
-              <Route path="/chat" element={<Messaging />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-            </Routes>
+            <Suspense fallback={
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <div style={{ width: '32px', height: '32px', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 12px' }} />
+                  <span style={{ fontSize: '14px' }}>Loading…</span>
+                </div>
+              </div>
+            }>
+              <Routes>
+                <Route path="/" element={user ? <Feed /> : <Auth />} />
+                <Route path="/profile" element={<ProfileBuilder />} />
+                <Route path="/network" element={<Network />} />
+                <Route path="/groups" element={<Groups />} />
+                <Route path="/groups/:id" element={<Groups />} />
+                <Route path="/forums" element={<Forums />} />
+                <Route path="/jobs" element={<JobBoard />} />
+                <Route path="/jobs/create" element={<CreateJob />} />
+                <Route path="/chat" element={<Messaging />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+              </Routes>
+            </Suspense>
           </main>
         </div>
       </Router>

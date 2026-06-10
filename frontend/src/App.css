@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+/* Google Fonts loaded via <link> in index.html for non-blocking fetch */
 
 :root {
   /* Fonts & Radius & Animations */
@@ -12,6 +12,9 @@
 
   --transition-fast: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  accent-color: #05685e;
+  color-scheme: light;
 
   /* Dark Mode Palette (Default) */
   --bg-primary: #000000;
@@ -46,6 +49,7 @@
 
 /* Light Mode Overrides */
 .theme-light {
+  color-scheme: light;
   --bg-primary: #eef3f8;
   --bg-secondary: #ffffff;
   --bg-tertiary: #eef3f8;
@@ -161,6 +165,11 @@ p {
   border-color: var(--primary);
 }
 
+.input-glass:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 /* LinkedIn Header Layout - Floating Pill Style */
 .linkedin-header {
   background: var(--bg-secondary);
@@ -251,10 +260,10 @@ p {
   border: none;
   background: transparent;
   color: var(--text-primary);
+  outline: none;
   font-family: var(--font-body);
   font-size: 14px;
   width: 100%;
-  outline: none;
 }
 
 .linkedin-header-right {
@@ -979,7 +988,11 @@ p {
   transition: all var(--transition-fast);
   background: none;
   border: none;
-  outline: none;
+}
+
+.linkedin-icon-only-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .linkedin-icon-only-btn:hover {
@@ -1144,4 +1157,35 @@ p {
     transform: translateX(0) translateY(0);
     opacity: 1;
   }
+}
+
+/* ===== Global Focus Visible ===== */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ===== Feed Post Scroll Entry Animation ===== */
+@media (prefers-reduced-motion: no-preference) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes feed-reveal {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+    }
+    .post-card {
+      animation: feed-reveal auto linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 25%;
+    }
+  }
+}
+
+/* ===== Loading Spinner ===== */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

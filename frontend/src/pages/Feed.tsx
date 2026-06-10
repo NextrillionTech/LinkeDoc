@@ -1819,7 +1819,7 @@ export const Feed: React.FC = () => {
                       post.mediaUrls[0].includes('mov_bbb') || post.mediaUrls[0].includes('.mp4') ? (
                         <video src={post.mediaUrls[0]} controls style={{ width: '100%', maxHeight: '420px', display: 'block' }} />
                       ) : (
-                        <img src={post.mediaUrls[0]} alt="Post attachment" style={{ width: '100%', maxHeight: '500px', objectFit: 'contain', display: 'block' }} />
+                        <img src={post.mediaUrls[0]} alt="Post attachment" loading="lazy" style={{ width: '100%', maxHeight: '500px', objectFit: 'contain', display: 'block' }} />
                       )
                     ) : (
                       // Carousel Slider
@@ -1838,7 +1838,7 @@ export const Feed: React.FC = () => {
                         {post.mediaUrls[carouselIdx].includes('mov_bbb') || post.mediaUrls[carouselIdx].includes('.mp4') ? (
                           <video src={post.mediaUrls[carouselIdx]} controls style={{ width: '100%', height: '100%', maxHeight: '420px' }} />
                         ) : (
-                          <img src={post.mediaUrls[carouselIdx]} alt="Post carousel attachment" className="carousel-img" />
+                          <img src={post.mediaUrls[carouselIdx]} alt="Post carousel attachment" loading="lazy" className="carousel-img" />
                         )}
 
                         <button

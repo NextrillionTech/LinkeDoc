@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
+import { CheckCircle, AlertCircle, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import bgImage from './medium-shot-doctors-wearing-protective-equipment.jpg';
 
 export const Auth: React.FC = () => {
@@ -24,6 +24,8 @@ export const Auth: React.FC = () => {
   const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -170,15 +172,18 @@ export const Auth: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }} autoComplete="on">
           {view === 'REGISTER' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label htmlFor="name" style={{ fontSize: '14px', fontWeight: 500 }}>Full Name</label>
               <input
                 id="name"
+                name="name"
                 type="text"
                 className="input-glass"
                 placeholder="Dr. John Doe"
+                autoComplete="name"
+                enterKeyHint="next"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -191,9 +196,12 @@ export const Auth: React.FC = () => {
               <label htmlFor="email" style={{ fontSize: '14px', fontWeight: 500 }}>Email Address</label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 className="input-glass"
                 placeholder="name@hospital.org"
+                autoComplete="username"
+                enterKeyHint={view === 'FORGOT' ? 'done' : 'next'}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -205,19 +213,40 @@ export const Auth: React.FC = () => {
             <>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label htmlFor="password" style={{ fontSize: '14px', fontWeight: 500 }}>Password</label>
-                <input
-                  id="password"
-                  type="password"
-                  className="input-glass"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    className="input-glass"
+                    style={{ width: '100%', paddingRight: '44px', boxSizing: 'border-box' }}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    enterKeyHint="done"
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
+                    style={{
+                      position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+                      color: 'var(--text-muted)', display: 'flex', alignItems: 'center'
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-8px' }}>
-                <span
-                  style={{ color: 'var(--accent)', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+                <button
+                  type="button"
+                  style={{ color: 'var(--accent)', cursor: 'pointer', fontSize: '13px', fontWeight: 500, background: 'none', border: 'none', padding: 0, fontFamily: 'inherit' }}
                   onClick={() => {
                     setView('FORGOT');
                     setMessage('');
@@ -225,7 +254,7 @@ export const Auth: React.FC = () => {
                   }}
                 >
                   Forgot Password?
-                </span>
+                </button>
               </div>
             </>
           )}
@@ -233,22 +262,45 @@ export const Auth: React.FC = () => {
           {view === 'REGISTER' && (
             <>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label htmlFor="password" style={{ fontSize: '14px', fontWeight: 500 }}>Password</label>
-                <input
-                  id="password"
-                  type="password"
-                  className="input-glass"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <label htmlFor="reg-password" style={{ fontSize: '14px', fontWeight: 500 }}>Password</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id="reg-password"
+                    name="new-password"
+                    type={showPassword ? 'text' : 'password'}
+                    className="input-glass"
+                    style={{ width: '100%', paddingRight: '44px', boxSizing: 'border-box' }}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    enterKeyHint="next"
+                    minLength={6}
+                    aria-describedby="password-hint"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
+                    style={{
+                      position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+                      color: 'var(--text-muted)', display: 'flex', alignItems: 'center'
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                <span id="password-hint" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Minimum 6 characters</span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label htmlFor="role" style={{ fontSize: '14px', fontWeight: 500 }}>Professional Role</label>
                 <select
                   id="role"
+                  name="role"
                   className="input-glass"
                   style={{ background: 'var(--bg-primary)' }}
                   value={role}
@@ -269,9 +321,11 @@ export const Auth: React.FC = () => {
                     <label htmlFor="specialty" style={{ fontSize: '14px', fontWeight: 500 }}>Specialty Field</label>
                     <input
                       id="specialty"
+                      name="specialty"
                       type="text"
                       className="input-glass"
                       placeholder="e.g., Cardiology, Pediatrics"
+                      enterKeyHint="next"
                       value={specialty}
                       onChange={(e) => setSpecialty(e.target.value)}
                       required
@@ -282,9 +336,11 @@ export const Auth: React.FC = () => {
                     <label htmlFor="license" style={{ fontSize: '14px', fontWeight: 500 }}>Medical License / NPI Number</label>
                     <input
                       id="license"
+                      name="licenseNumber"
                       type="text"
                       className="input-glass"
                       placeholder="e.g., 10-digit NPI or LIC-123456"
+                      enterKeyHint="done"
                       value={licenseNumber}
                       onChange={(e) => setLicenseNumber(e.target.value)}
                       required
@@ -318,8 +374,10 @@ export const Auth: React.FC = () => {
                 <label htmlFor="emailReset" style={{ fontSize: '14px', fontWeight: 500 }}>Confirm Email</label>
                 <input
                   id="emailReset"
+                  name="email"
                   type="email"
                   className="input-glass"
+                  autoComplete="username"
                   value={email}
                   disabled
                 />
@@ -329,9 +387,13 @@ export const Auth: React.FC = () => {
                 <label htmlFor="token" style={{ fontSize: '14px', fontWeight: 500 }}>6-Digit Verification Code</label>
                 <input
                   id="token"
+                  name="token"
                   type="text"
                   className="input-glass"
                   placeholder="e.g., 123456"
+                  inputMode="numeric"
+                  enterKeyHint="next"
+                  maxLength={6}
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
                   required
@@ -340,15 +402,35 @@ export const Auth: React.FC = () => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label htmlFor="newPassword" style={{ fontSize: '14px', fontWeight: 500 }}>New Password</label>
-                <input
-                  id="newPassword"
-                  type="password"
-                  className="input-glass"
-                  placeholder="••••••••"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id="newPassword"
+                    name="new-password"
+                    type={showNewPassword ? 'text' : 'password'}
+                    className="input-glass"
+                    style={{ width: '100%', paddingRight: '44px', boxSizing: 'border-box' }}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    enterKeyHint="done"
+                    minLength={6}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showNewPassword}
+                    style={{
+                      position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+                      color: 'var(--text-muted)', display: 'flex', alignItems: 'center'
+                    }}
+                  >
+                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -366,8 +448,9 @@ export const Auth: React.FC = () => {
           {view === 'LOGIN' && (
             <>
               Don't have an account?{' '}
-              <span
-                style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+              <button
+                type="button"
+                style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, background: 'none', border: 'none', padding: 0, fontFamily: 'inherit', fontSize: 'inherit' }}
                 onClick={() => {
                   setView('REGISTER');
                   setMessage('');
@@ -375,14 +458,15 @@ export const Auth: React.FC = () => {
                 }}
               >
                 Sign Up
-              </span>
+              </button>
             </>
           )}
           {view === 'REGISTER' && (
             <>
               Already have an account?{' '}
-              <span
-                style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+              <button
+                type="button"
+                style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, background: 'none', border: 'none', padding: 0, fontFamily: 'inherit', fontSize: 'inherit' }}
                 onClick={() => {
                   setView('LOGIN');
                   setMessage('');
@@ -390,12 +474,13 @@ export const Auth: React.FC = () => {
                 }}
               >
                 Sign In
-              </span>
+              </button>
             </>
           )}
           {(view === 'FORGOT' || view === 'RESET') && (
-            <span
-              style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+            <button
+              type="button"
+              style={{ color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, background: 'none', border: 'none', padding: 0, fontFamily: 'inherit', fontSize: 'inherit' }}
               onClick={() => {
                 setView('LOGIN');
                 setMessage('');
@@ -403,7 +488,7 @@ export const Auth: React.FC = () => {
               }}
             >
               ← Back to Sign In
-            </span>
+            </button>
           )}
         </p>
       </div>
