@@ -12,6 +12,7 @@ import messagingRoutes from '../routes/messagingRoutes';
 import feedRoutes from '../routes/feedRoutes';
 import groupRoutes from '../routes/groupRoutes';
 import notificationRoutes from '../routes/notificationRoutes';
+import { scrapeAndSeedJobs } from '../utils/jobScraper';
 
 // Load environment variables
 dotenv.config();
@@ -47,6 +48,8 @@ if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     // eslint-disable-next-line no-console
     console.log(`🚀 LinkeDoc API Server is running on port ${PORT}`);
+    // Run the scraper in the background asynchronously on server startup
+    scrapeAndSeedJobs();
   });
 }
 
