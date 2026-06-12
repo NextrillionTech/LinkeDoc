@@ -16,6 +16,10 @@ const Messaging = React.lazy(() => import('./pages/Messaging').then(m => ({ defa
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const Groups = React.lazy(() => import('./pages/Groups').then(m => ({ default: m.Groups })));
 const NotFound = React.lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
+const About = React.lazy(() => import('./pages/About').then(m => ({ default: m.About })));
+const Accessibility = React.lazy(() => import('./pages/Accessibility').then(m => ({ default: m.Accessibility })));
+const HelpCenter = React.lazy(() => import('./pages/HelpCenter').then(m => ({ default: m.HelpCenter })));
+const PrivacyTerms = React.lazy(() => import('./pages/PrivacyTerms').then(m => ({ default: m.PrivacyTerms })));
 
 // Lucide React Icons
 import {
@@ -498,6 +502,10 @@ export const App: React.FC = () => {
                 <Route path="/jobs/create" element={<CreateJob />} />
                 <Route path="/chat" element={<Messaging />} />
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/accessibility" element={<Accessibility />} />
+                <Route path="/help" element={<HelpCenter />} />
+                <Route path="/privacy" element={<PrivacyTerms />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

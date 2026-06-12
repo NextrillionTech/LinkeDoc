@@ -2107,32 +2107,15 @@ export const Feed: React.FC = () => {
           
           <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 12px', justifyContent: 'center', marginBottom: '16px', fontSize: '11px', color: 'var(--text-muted)' }}>
-              <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>About</Link>
-              <Link to="/network" style={{ textDecoration: 'none', color: 'inherit' }}>Accessibility</Link>
-              <Link to="/jobs" style={{ textDecoration: 'none', color: 'inherit' }}>Help Center</Link>
-              <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy & Terms</Link>
-              <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Ad Choices</Link>
-              <Link to="/jobs" style={{ textDecoration: 'none', color: 'inherit' }}>Advertising</Link>
-              <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Business Services</Link>
-              <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Get the LinkeDoc app</Link>
-              <span style={{ cursor: 'pointer' }}>More</span>
+              <Link to="/about" style={{ textDecoration: 'none', color: 'inherit' }}>About</Link>
+              <Link to="/accessibility" style={{ textDecoration: 'none', color: 'inherit' }}>Accessibility</Link>
+              <Link to="/help" style={{ textDecoration: 'none', color: 'inherit' }}>Help Center</Link>
+              <Link to="/privacy" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy & Terms</Link>
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
-              <div style={{
-                background: 'var(--primary)',
-                color: '#fff',
-                fontWeight: 800,
-                fontSize: '9px',
-                width: '16px',
-                height: '16px',
-                borderRadius: '3px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                letterSpacing: '-0.5px'
-              }}>ld</div>
-              <span>LinkeDoc Corporation © 2021</span>
+              <img src="/logo.svg" alt="LinkeDoc" style={{ height: '14px', opacity: 0.6 }} />
+              <span>@ 2026</span>
             </div>
           </div>
         </div>
