@@ -2,10 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { CheckCircle, AlertCircle, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import bgImage from './medium-shot-doctors-wearing-protective-equipment.jpg';
+import { useSEO } from '../utils/seo';
 
 export const Auth: React.FC = () => {
   const [view, setView] = useState<'LOGIN' | 'REGISTER' | 'FORGOT' | 'RESET'>('LOGIN');
   
+  useSEO(
+    view === 'LOGIN' ? 'Sign In' :
+    view === 'REGISTER' ? 'Register Account' :
+    view === 'FORGOT' ? 'Reset Password' : 'Enter Verification',
+    'Create an account or sign in to LinkeDoc, the professional network for medical practitioners.'
+  );
+
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -119,12 +127,12 @@ export const Auth: React.FC = () => {
         border: '1px solid rgba(0, 0, 0, 0.08)',
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)'
       }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '24px', fontSize: '28px' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '24px', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' }}>
           {view === 'LOGIN' && 'Sign In to LinkeDoc'}
           {view === 'REGISTER' && 'Create Your Account'}
           {view === 'FORGOT' && 'Reset Password'}
           {view === 'RESET' && 'Enter Verification'}
-        </h2>
+        </h1>
         
         {message && (
           <div style={{

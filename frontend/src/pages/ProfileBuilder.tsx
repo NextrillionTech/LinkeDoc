@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useToast } from '../components/ToastContext';
 import { Edit2, MapPin, Building, GraduationCap, X, Plus, Trash2, MoreHorizontal, CheckCircle, Clock, AlertCircle, Award, BookOpen, Users, FileText } from 'lucide-react';
+import { useSEO } from '../utils/seo';
 
 interface EducationEntry {
   degree: string;
@@ -31,6 +32,8 @@ interface GroupEntry {
 export const ProfileBuilder: React.FC = () => {
   const currentUser = api.getCurrentUser();
   const { showToast } = useToast();
+  
+  useSEO('Profile', 'View and customize your clinical professional profile, experience, and indexed medical publications.');
 
   // Profile data state
   const [specialty, setSpecialty] = useState('');
@@ -237,7 +240,8 @@ export const ProfileBuilder: React.FC = () => {
   };
 
   return (
-    <div className="profile-page-container">
+    <section className="profile-page-container">
+      <h1 className="sr-only">Medical Professional Profile</h1>
       {/* Visual styles for LinkedIn Profile bento grid layout */}
       <style>{`
         .profile-page-container {
@@ -1087,7 +1091,7 @@ export const ProfileBuilder: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

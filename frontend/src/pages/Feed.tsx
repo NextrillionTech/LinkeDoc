@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { useSEO } from '../utils/seo';
 
 // Lucide React Icons
 import {
@@ -62,6 +63,8 @@ interface Post {
 
 export const Feed: React.FC = () => {
   const currentUser = api.getCurrentUser();
+  
+  useSEO('Home Feed', 'Interact with other doctors, share clinical updates, read peer-reviewed research, and view medical job listings.');
   const isApproved = currentUser?.status === 'APPROVED';
   const canPostResearch = currentUser?.role === 'DOCTOR' || currentUser?.role === 'RESEARCHER';
 
@@ -1260,7 +1263,7 @@ export const Feed: React.FC = () => {
       `}</style>
 
       {/* Left Sidebar Profile Cards */}
-      <div className="left-sidebar">
+      <aside className="left-sidebar">
         {/* Card 1: Profile Summary */}
         <div className="card-glass profile-summary-card" style={{ marginBottom: '16px' }}>
           <div className="profile-card-banner"></div>
@@ -1352,10 +1355,11 @@ export const Feed: React.FC = () => {
             </span>
           </div>
         </div>
-      </div>
+      </aside>
 
       {/* Center Main Feed Column */}
-      <div className="main-feed-column">
+      <section className="main-feed-column">
+        <h1 className="sr-only">Medical Community Feed</h1>
         {/* Verification Warning Alert for Pending Users */}
         {!isApproved && (
           <div style={{
@@ -2077,10 +2081,10 @@ export const Feed: React.FC = () => {
             );
           })
         )}
-      </div>
+      </section>
 
       {/* Right Sidebar Trending and Community Column */}
-      <div className="right-sidebar">
+      <aside className="right-sidebar">
         <div className="card-glass right-sidebar-sticky" style={{ padding: '16px' }}>
           <h3 style={{ fontSize: '15px', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Sparkles size={16} style={{ color: 'var(--accent)' }} />
@@ -2132,7 +2136,7 @@ export const Feed: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </aside>
        {/* Attachment Upload Modal (Normal file upload + redaction/drawing features) */}
       {mediaModalOpen && (
         <div className="modal-overlay">

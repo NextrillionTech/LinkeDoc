@@ -7,6 +7,7 @@ import {
   decryptMessage,
 } from '../utils/crypto';
 import Pusher from 'pusher-js';
+import { useSEO } from '../utils/seo';
 
 // Lucide React Icons
 import {
@@ -57,6 +58,8 @@ interface ConversationItem {
 
 export const Messaging: React.FC = () => {
   const currentUser = api.getCurrentUser();
+  
+  useSEO('Messages', 'Secure clinical messaging with other doctors and healthcare staff.');
 
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [activeConv, setActiveConv] = useState<ConversationItem | null>(null);
@@ -376,10 +379,10 @@ export const Messaging: React.FC = () => {
               boxShadow: keyGenerating ? '0 0 10px var(--warning)' : '0 0 10px var(--success)',
             }}
           />
-          <h2 style={{ fontSize: '18px', margin: 0, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h1 style={{ fontSize: '18px', margin: 0, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
             <MessageSquare size={20} />
             <span>{keyGenerating ? 'Initializing secure keys...' : 'E2EE Secure Messaging'}</span>
-          </h2>
+          </h1>
         </div>
         <div
           style={{
@@ -431,7 +434,7 @@ export const Messaging: React.FC = () => {
         }}
       >
         {/* Left Side: Directory and Conversations */}
-        <div
+        <aside
           style={{
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(16px)',
@@ -540,10 +543,10 @@ export const Messaging: React.FC = () => {
               })
             )}
           </div>
-        </div>
+        </aside>
 
         {/* Right Side: Active message thread view */}
-        <div
+        <section
           style={{
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(16px)',
@@ -726,7 +729,7 @@ export const Messaging: React.FC = () => {
               </p>
             </div>
           )}
-        </div>
+        </section>
       </div>
 
 

@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useToast } from '../components/ToastContext';
 import { Users, BookOpen, Building, Hash, Search, UserPlus, Check, X, UserCheck, Loader } from 'lucide-react';
+import { useSEO } from '../utils/seo';
 
 export const Network: React.FC = () => {
   const currentUser = api.getCurrentUser();
   const { showToast } = useToast();
+  
+  useSEO('My Network', 'Manage your professional medical network, check incoming invitations, and connect with other clinicians.');
 
   const [connections, setConnections] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -333,7 +336,7 @@ export const Network: React.FC = () => {
       `}</style>
 
       {/* Left Sidebar */}
-      <div className="network-sidebar">
+      <aside className="network-sidebar">
         <div className="card-glass network-sidebar-card">
           <div className="network-sidebar-header">Manage my network</div>
           <div className="network-menu-item">
@@ -365,13 +368,13 @@ export const Network: React.FC = () => {
             <span>8</span>
           </div>
         </div>
-      </div>
+      </aside>
 
       {/* Right Main Column */}
-      <div className="network-main-content">
+      <section className="network-main-content">
         {/* Connection search / directory */}
         <div className="card-glass network-main-card">
-          <h2 style={{ fontSize: '20px', marginBottom: '8px', fontFamily: 'var(--font-display)' }}>Medical Directory Search</h2>
+          <h1 style={{ fontSize: '20px', marginBottom: '8px', fontFamily: 'var(--font-display)', fontWeight: 700, marginTop: 0, color: 'var(--text-primary)' }}>Medical Directory Search</h1>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
             Find Indian doctors and medical professionals by Name, Medical Specialty, State Medical Council, or Unique Registration Number.
           </p>
@@ -500,7 +503,7 @@ export const Network: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 };

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useSEO } from '../utils/seo';
 
 export const CreateJob: React.FC = () => {
   const navigate = useNavigate();
   const currentUser = api.getCurrentUser();
+  
+  useSEO('Post a Job', 'Publish a new medical vacancy to reach thousands of verified clinical professionals.');
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -54,7 +57,7 @@ export const CreateJob: React.FC = () => {
   return (
     <div style={{ maxWidth: '650px', margin: '40px auto', padding: '0 20px' }}>
       <div className="card-glass">
-        <h2 style={{ fontSize: '28px', marginBottom: '8px' }}>Post a Healthcare Job</h2>
+        <h1 style={{ fontSize: '28px', marginBottom: '8px', fontWeight: 700, marginTop: 0, color: 'var(--text-primary)' }}>Post a Healthcare Job</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
           Publish open vacancies to target thousands of verified clinical professionals. MVP postings are free.
         </p>

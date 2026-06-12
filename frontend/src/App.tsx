@@ -15,6 +15,7 @@ const CreateJob = React.lazy(() => import('./pages/CreateJob').then(m => ({ defa
 const Messaging = React.lazy(() => import('./pages/Messaging').then(m => ({ default: m.Messaging })));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const Groups = React.lazy(() => import('./pages/Groups').then(m => ({ default: m.Groups })));
+const NotFound = React.lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 
 // Lucide React Icons
 import {
@@ -497,6 +498,7 @@ export const App: React.FC = () => {
                 <Route path="/jobs/create" element={<CreateJob />} />
                 <Route path="/chat" element={<Messaging />} />
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </main>

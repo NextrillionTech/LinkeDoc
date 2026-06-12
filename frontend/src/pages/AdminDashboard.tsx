@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useToast } from '../components/ToastContext';
+import { useSEO } from '../utils/seo';
 
 interface PendingUser {
   id: string;
@@ -18,6 +19,8 @@ export const AdminDashboard: React.FC = () => {
   const [users, setUsers] = useState<PendingUser[]>([]);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
+
+  useSEO('Admin Dashboard', 'LinkeDoc medical registry verification control panel.');
 
   const fetchPending = async () => {
     try {
@@ -62,7 +65,7 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div style={{ maxWidth: '900px', margin: '40px auto', padding: '0 20px' }}>
       <div className="card-glass">
-        <h2 style={{ fontSize: '28px', marginBottom: '24px' }}>Admin Dashboard</h2>
+        <h1 style={{ fontSize: '28px', marginBottom: '24px', fontWeight: 700 }}>Admin Dashboard</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
           Verification Queue — Review and approve professional licenses for doctor, nurse, pharmacist, and researcher accounts.
         </p>

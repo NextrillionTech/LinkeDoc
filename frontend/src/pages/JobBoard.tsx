@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { Bookmark, Bell, DollarSign, FileText, Plus, MapPin, Building } from 'lucide-react';
+import { useSEO } from '../utils/seo';
 
 interface Job {
   id: string;
@@ -16,6 +17,8 @@ interface Job {
 
 export const JobBoard: React.FC = () => {
   const currentUser = api.getCurrentUser();
+  
+  useSEO('Jobs Board', 'Browse medical residency options, clinical positions, healthcare recruiter posts, and professional roles.');
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [specialtyFilter, setSpecialtyFilter] = useState('');
@@ -128,7 +131,7 @@ export const JobBoard: React.FC = () => {
       `}</style>
 
       {/* Left Sidebar Filters */}
-      <div className="jobs-sidebar">
+      <aside className="jobs-sidebar">
         <div className="card-glass sidebar-jobs-card">
           <h3 style={{ fontSize: '15px', marginBottom: '16px', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
             Search Vacancies
@@ -188,10 +191,10 @@ export const JobBoard: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
+      </aside>
 
       {/* Right Main Panel */}
-      <div className="jobs-main-content">
+      <section className="jobs-main-content">
         <div className="jobs-header-row">
           <div>
             <h1 style={{ fontSize: '28px', marginBottom: '4px' }}>Healthcare Job Board</h1>
@@ -264,7 +267,7 @@ export const JobBoard: React.FC = () => {
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };

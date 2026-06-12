@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { CreateThreadForm, CreateReplyForm, ReportModal } from '../components/ForumPostForm';
 import { ArrowLeft } from 'lucide-react';
+import { useSEO } from '../utils/seo';
 
 export const Forums: React.FC = () => {
   const currentUser = api.getCurrentUser();
@@ -9,6 +10,17 @@ export const Forums: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [threads, setThreads] = useState<any[]>([]);
   const [selectedThread, setSelectedThread] = useState<any>(null);
+
+  useSEO(
+    selectedThread
+      ? `${selectedThread.title} | Clinical Forums`
+      : selectedCategory
+      ? `${selectedCategory.name} Board | Clinical Forums`
+      : 'Clinical Forums',
+    selectedThread
+      ? (selectedThread.body.length > 150 ? `${selectedThread.body.slice(0, 150)}...` : selectedThread.body)
+      : 'Collaborate, share insights, and discuss cases with other verified medical professionals.'
+  );
   
   // Modal state
   const [reportState, setReportState] = useState<{ isOpen: boolean; contentType: 'THREAD' | 'REPLY'; contentId: string } | null>(null);
@@ -74,8 +86,8 @@ export const Forums: React.FC = () => {
     <div style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
       
       {/* Header */}
-      <div>
-        <h2 style={{ fontSize: '32px', marginBottom: '8px' }}>Clinical Discussion Boards</h2>
+      <header>
+        <h1 style={{ fontSize: '32px', marginBottom: '8px', fontWeight: 700 }}>Clinical Discussion Boards</h1>
         <p style={{ color: 'var(--text-secondary)' }}>
           Collaborate, share insights, and discuss cases with other verified medical professionals.
         </p>
@@ -84,12 +96,12 @@ export const Forums: React.FC = () => {
             <strong>Verification Required</strong>: Your account is currently pending administrator review. You have read-only access to the forums and cannot create threads, post replies, or flag posts.
           </div>
         )}
-      </div>
+      </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '30px' }}>
         
         {/* Sidebar: Categories */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <aside style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <h3 style={{ fontSize: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Specialty Boards</h3>
           {categories.map((cat) => (
             <button
@@ -111,10 +123,10 @@ export const Forums: React.FC = () => {
               <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.4' }}>{cat.description}</p>
             </button>
           ))}
-        </div>
+        </aside>
 
         {/* Main Content Area */}
-        <div>
+        <section>
           {!selectedCategory ? (
             <div className="card-glass" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
               <svg width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ opacity: 0.5, marginBottom: '16px' }}>
@@ -276,7 +288,7 @@ export const Forums: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
+        </section>
 
       </div>
 

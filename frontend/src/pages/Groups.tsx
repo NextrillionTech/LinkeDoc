@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useSEO } from '../utils/seo';
 
 // Lucide React Icons
 import {
@@ -72,6 +73,11 @@ export const Groups: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [activeGroup, setActiveGroup] = useState<Group | null>(null);
+
+  useSEO(
+    activeGroup ? `${activeGroup.name} | Clinical Groups` : 'Clinical Groups',
+    activeGroup ? activeGroup.description : 'Participate in medical case discussions and clinical collaboration groups.'
+  );
 
   // Group Feed state
   const [posts, setPosts] = useState<Post[]>([]);
@@ -331,6 +337,7 @@ export const Groups: React.FC = () => {
 
   return (
     <div className="groups-layout-container">
+      <h1 className="sr-only">Clinical Groups</h1>
       {/* Styles for Groups panels */}
       <style>{`
         .groups-layout-container {
@@ -490,7 +497,7 @@ export const Groups: React.FC = () => {
       `}</style>
 
       {/* Left Column: Sidebar with Group listing */}
-      <div className="groups-sidebar">
+      <aside className="groups-sidebar">
         <div className="groups-sidebar-header">
           <h3 style={{ fontSize: '15px', margin: 0, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FolderOpen size={18} />
@@ -575,10 +582,10 @@ export const Groups: React.FC = () => {
             ))
           )}
         </div>
-      </div>
+      </aside>
 
       {/* Right Column: Main detail panel */}
-      <div className="groups-main-panel">
+      <section className="groups-main-panel">
         {activeGroup ? (
           <>
             {/* Group Banner */}
@@ -899,7 +906,7 @@ export const Groups: React.FC = () => {
             </p>
           </div>
         )}
-      </div>
+      </section>
 
       {/* Create Group Modal Overlay */}
       {createModalOpen && (
