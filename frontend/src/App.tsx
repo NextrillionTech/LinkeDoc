@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Auth } from './pages/Auth';
 import { api } from './services/api';
 import { ToastProvider } from './components/ToastContext';
@@ -7,6 +7,7 @@ import './App.css';
 
 // Lazy-loaded routes for code splitting
 const Feed = React.lazy(() => import('./pages/Feed').then(m => ({ default: m.Feed })));
+const Landing = React.lazy(() => import('./pages/Landing').then(m => ({ default: m.Landing })));
 const ProfileBuilder = React.lazy(() => import('./pages/ProfileBuilder').then(m => ({ default: m.ProfileBuilder })));
 const Network = React.lazy(() => import('./pages/Network').then(m => ({ default: m.Network })));
 const Forums = React.lazy(() => import('./pages/Forums').then(m => ({ default: m.Forums })));
@@ -469,10 +470,13 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
             </nav>
           </div>
         ) : (
-          <div className="linkedin-header-right">
-            <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 500 }}>
-              Medical Professionals Network
-            </span>
+          <div className="linkedin-header-right" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <Link to="/login" className="btn-ghost" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--primary)', textDecoration: 'none', padding: '8px 16px', borderRadius: 'var(--radius-sm)' }}>
+              Sign In
+            </Link>
+            <Link to="/signup" className="btn-primary" style={{ fontSize: '13px', fontWeight: 600, textDecoration: 'none', padding: '8px 16px', borderRadius: 'var(--radius-sm)' }}>
+              Join Now
+            </Link>
           </div>
         )}
       </div>
@@ -505,7 +509,9 @@ export const App: React.FC = () => {
               </div>
             }>
               <Routes>
-                <Route path="/" element={user ? <Feed /> : <Auth />} />
+                <Route path="/" element={user ? <Feed /> : <Landing />} />
+                <Route path="/login" element={user ? <Navigate to="/" /> : <Auth initialView="LOGIN" />} />
+                <Route path="/signup" element={user ? <Navigate to="/" /> : <Auth initialView="REGISTER" />} />
                 <Route path="/profile" element={<ProfileBuilder />} />
                 <Route path="/network" element={<Network />} />
                 <Route path="/groups" element={<Groups />} />

@@ -4,8 +4,16 @@ import { CheckCircle, AlertCircle, ShieldCheck, Eye, EyeOff } from 'lucide-react
 import bgImage from './medium-shot-doctors-wearing-protective-equipment.jpg';
 import { useSEO } from '../utils/seo';
 
-export const Auth: React.FC = () => {
-  const [view, setView] = useState<'LOGIN' | 'REGISTER' | 'FORGOT' | 'RESET'>('LOGIN');
+interface AuthProps {
+  initialView?: 'LOGIN' | 'REGISTER';
+}
+
+export const Auth: React.FC<AuthProps> = ({ initialView = 'LOGIN' }) => {
+  const [view, setView] = useState<'LOGIN' | 'REGISTER' | 'FORGOT' | 'RESET'>(initialView);
+  
+  useEffect(() => {
+    setView(initialView);
+  }, [initialView]);
   
   useSEO(
     view === 'LOGIN' ? 'Sign In' :
