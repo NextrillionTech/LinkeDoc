@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Auth } from './pages/Auth';
 import { api } from './services/api';
 import { ToastProvider } from './components/ToastContext';
@@ -66,6 +66,9 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
     const saved = localStorage.getItem('theme');
     return (saved as 'light' | 'dark') || 'light';
   });
+  const [searchVal, setSearchVal] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -255,7 +258,15 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
           )}
 
           {user && (
-            <div className="linkedin-search-container">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!searchVal.trim()) return;
+                const path = location.pathname.startsWith('/jobs') ? '/jobs' : '/network';
+                navigate(`${path}?query=${encodeURIComponent(searchVal.trim())}`);
+              }}
+              className="linkedin-search-container"
+            >
               <span className="linkedin-search-icon">
                 <Search size={18} />
               </span>
@@ -263,8 +274,10 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
                 type="text"
                 placeholder="Search"
                 className="linkedin-search-input"
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
               />
-            </div>
+            </form>
           )}
         </div>
 

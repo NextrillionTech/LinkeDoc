@@ -4,13 +4,16 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import JobBoard from '../../src/pages/JobBoard';
 import CreateJob from '../../src/pages/CreateJob';
+import { ToastProvider } from '../../src/components/ToastContext';
 
 describe('JobBoard page tests', () => {
   it('should render Job Board page and show filters', () => {
     render(
-      <BrowserRouter>
-        <JobBoard />
-      </BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
+          <JobBoard />
+        </BrowserRouter>
+      </ToastProvider>
     );
     expect(screen.getByText(/Healthcare Job Board/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Filter by specialty/i)).toBeInTheDocument();

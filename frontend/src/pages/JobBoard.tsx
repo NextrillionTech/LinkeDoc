@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
-import { Bookmark, Bell, DollarSign, FileText, Plus, MapPin, Building } from 'lucide-react';
+import { Bookmark, Bell, DollarSign, FileText, Plus, MapPin, Building, Trash2, Loader } from 'lucide-react';
 import { useSEO } from '../utils/seo';
+import { useToast } from '../components/ToastContext';
 
 interface Job {
   id: string;
@@ -17,6 +18,7 @@ interface Job {
 
 export const JobBoard: React.FC = () => {
   const currentUser = api.getCurrentUser();
+  const { showToast } = useToast();
   
   useSEO('Jobs Board', 'Browse medical residency options, clinical positions, healthcare recruiter posts, and professional roles.');
 
@@ -25,6 +27,245 @@ export const JobBoard: React.FC = () => {
   const [locationFilter, setLocationFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Search URL Params synchronization
+  const [searchParams] = useSearchParams();
+  const queryParam = searchParams.get('query') || '';
+
+  // Bookmarks state (localStorage persistence)
+  const [savedJobs, setSavedJobs] = useState<string[]>(() => {
+    const saved = localStorage.getItem('linkedoc_saved_jobs');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
+
+  const displayedJobs: Job[] = showSavedOnly
+    ? jobs.filter((j) => savedJobs.includes(j.id))
+    : jobs;
+
+  // Modals state
+  const [salaryCalcOpen, setSalaryCalcOpen] = useState(false);
+  const [jobAlertsOpen, setJobAlertsOpen] = useState(false);
+  const [resumeBuilderOpen, setResumeBuilderOpen] = useState(false);
+
+  // Dialog Refs
+  const salaryDialogRef = useRef<HTMLDialogElement>(null);
+  const alertsDialogRef = useRef<HTMLDialogElement>(null);
+  const resumeDialogRef = useRef<HTMLDialogElement>(null);
+
+  // Click outside listener helper for HTML5 dialogs
+  const setupDialogDismiss = (ref: React.RefObject<HTMLDialogElement>, setOpen: (open: boolean) => void) => {
+    const dialog = ref.current;
+    if (!dialog) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (event.target === dialog) {
+        const rect = dialog.getBoundingClientRect();
+        const isDialogContent = (
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width
+        );
+        if (!isDialogContent) {
+          if (typeof dialog.close === 'function') {
+            dialog.close();
+          }
+          setOpen(false);
+        }
+      }
+    };
+    dialog.addEventListener('click', handleClickOutside);
+    return () => dialog.removeEventListener('click', handleClickOutside);
+  };
+
+  useEffect(() => {
+    const c1 = setupDialogDismiss(salaryDialogRef, setSalaryCalcOpen);
+    const c2 = setupDialogDismiss(alertsDialogRef, setJobAlertsOpen);
+    const c3 = setupDialogDismiss(resumeDialogRef, setResumeBuilderOpen);
+    return () => {
+      if (c1) c1();
+      if (c2) c2();
+      if (c3) c3();
+    };
+  }, [salaryCalcOpen, jobAlertsOpen, resumeBuilderOpen]);
+
+  useEffect(() => {
+    if (salaryCalcOpen) {
+      if (typeof salaryDialogRef.current?.showModal === 'function') {
+        salaryDialogRef.current.showModal();
+      }
+    } else {
+      if (typeof salaryDialogRef.current?.close === 'function') {
+        salaryDialogRef.current.close();
+      }
+    }
+  }, [salaryCalcOpen]);
+
+  useEffect(() => {
+    if (jobAlertsOpen) {
+      if (typeof alertsDialogRef.current?.showModal === 'function') {
+        alertsDialogRef.current.showModal();
+      }
+    } else {
+      if (typeof alertsDialogRef.current?.close === 'function') {
+        alertsDialogRef.current.close();
+      }
+    }
+  }, [jobAlertsOpen]);
+
+  useEffect(() => {
+    if (resumeBuilderOpen) {
+      if (typeof resumeDialogRef.current?.showModal === 'function') {
+        resumeDialogRef.current.showModal();
+      }
+    } else {
+      if (typeof resumeDialogRef.current?.close === 'function') {
+        resumeDialogRef.current.close();
+      }
+    }
+  }, [resumeBuilderOpen]);
+
+  // Sync query parameter
+  useEffect(() => {
+    if (queryParam) {
+      setSpecialtyFilter(queryParam);
+    }
+  }, [queryParam]);
+
+  // Salary Calculator State & Logic
+  const [calcSpecialty, setCalcSpecialty] = useState('');
+  const [calcExperience, setCalcExperience] = useState('2');
+  const [calcLocation, setCalcLocation] = useState('Mumbai');
+  const [salaryResult, setSalaryResult] = useState<any>(null);
+
+  const handleCalculateSalary = (e: React.FormEvent) => {
+    e.preventDefault();
+    const spec = calcSpecialty.trim().toLowerCase();
+    const exp = parseInt(calcExperience) || 0;
+    
+    let baseMin = 60000;
+    let baseMax = 90000;
+    let tier = 'General MBBS / Junior Resident';
+
+    if (spec.includes('cardio') || spec.includes('neuro') || spec.includes('oncology') || spec.includes('radiology') || spec.includes('ortho') || spec.includes('surger')) {
+      baseMin = 180000;
+      baseMax = 320000;
+      tier = 'Super-Specialty Consultant (DM / MCh / Senior Specialist)';
+    } else if (spec.includes('pedia') || spec.includes('med') || spec.includes('anesthes') || spec.includes('gyn') || spec.includes('derm') || spec.includes('ophthal')) {
+      baseMin = 110000;
+      baseMax = 180000;
+      tier = 'Postgraduate Specialist (MD / MS)';
+    }
+
+    const expMultiplier = 1 + Math.min(15, exp) * 0.08;
+    let minSal = baseMin * expMultiplier;
+    let maxSal = baseMax * expMultiplier;
+
+    let locMultiplier = 1.0;
+    const loc = calcLocation.toLowerCase();
+    if (loc.includes('mumbai') || loc.includes('delhi') || loc.includes('bengaluru') || loc.includes('bangalore')) {
+      locMultiplier = 1.15;
+    } else if (loc.includes('rural') || loc.includes('tier') || loc.includes('village')) {
+      locMultiplier = 0.8;
+    }
+    
+    minSal *= locMultiplier;
+    maxSal *= locMultiplier;
+
+    const roundedMin = Math.round(minSal / 5000) * 5000;
+    const roundedMax = Math.round(maxSal / 5000) * 5000;
+
+    const toLakhs = (val: number) => {
+      return (val * 12 / 100000).toFixed(1);
+    };
+
+    setSalaryResult({
+      monthlyMin: roundedMin,
+      monthlyMax: roundedMax,
+      annualMin: toLakhs(roundedMin),
+      annualMax: toLakhs(roundedMax),
+      tier,
+      specialty: calcSpecialty || 'General Practitioner',
+      location: calcLocation
+    });
+  };
+
+  // Job Alerts State & Logic
+  const [alerts, setAlerts] = useState<any[]>(() => {
+    const saved = localStorage.getItem('linkedoc_job_alerts');
+    return saved ? JSON.parse(saved) : [
+      { id: '1', name: 'Cardiology Consultant', specialty: 'Cardiology', location: 'Delhi', frequency: 'Daily' },
+      { id: '2', name: 'Residency Openings', specialty: 'Pediatrics', location: 'Mumbai', frequency: 'Weekly' }
+    ];
+  });
+  const [alertName, setAlertName] = useState('');
+  const [alertSpecialty, setAlertSpecialty] = useState('');
+  const [alertLocation, setAlertLocation] = useState('');
+  const [alertFreq, setAlertFreq] = useState('Daily');
+
+  const handleCreateAlert = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!alertName.trim()) return;
+    const newAlert = {
+      id: Date.now().toString(),
+      name: alertName,
+      specialty: alertSpecialty,
+      location: alertLocation,
+      frequency: alertFreq
+    };
+    const updated = [newAlert, ...alerts];
+    setAlerts(updated);
+    localStorage.setItem('linkedoc_job_alerts', JSON.stringify(updated));
+    setAlertName('');
+    setAlertSpecialty('');
+    setAlertLocation('');
+    showToast(`Job Alert "${alertName}" created!`, 'success');
+  };
+
+  const handleDeleteAlert = (id: string, name: string) => {
+    const updated = alerts.filter(a => a.id !== id);
+    setAlerts(updated);
+    localStorage.setItem('linkedoc_job_alerts', JSON.stringify(updated));
+    showToast(`Alert "${name}" removed`, 'info');
+  };
+
+  // Resume CV Builder State & Logic
+  const [profileData, setProfileData] = useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+
+  const handleOpenResumeBuilder = async () => {
+    setResumeBuilderOpen(true);
+    if (!currentUser) return;
+    setLoadingProfile(true);
+    try {
+      const res = await api.getProfile(currentUser.id);
+      if (res && res.id) {
+        setProfileData(res);
+      } else {
+        setProfileData(currentUser);
+      }
+    } catch (e) {
+      console.error(e);
+      setProfileData(currentUser);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  // Bookmark Toggle logic
+  const handleToggleSaveJob = (jobId: string, jobTitle: string) => {
+    let updated = [];
+    if (savedJobs.includes(jobId)) {
+      updated = savedJobs.filter(id => id !== jobId);
+      showToast(`Removed "${jobTitle}" from Saved Jobs`, 'info');
+    } else {
+      updated = [...savedJobs, jobId];
+      showToast(`Saved "${jobTitle}"`, 'success');
+    }
+    setSavedJobs(updated);
+    localStorage.setItem('linkedoc_saved_jobs', JSON.stringify(updated));
+  };
 
   const fetchJobs = async () => {
     setLoading(true);
@@ -172,20 +413,101 @@ export const JobBoard: React.FC = () => {
 
         <div className="card-glass sidebar-jobs-card">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <span className="jobs-nav-item" style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Bookmark size={14} /> Saved Jobs
-            </span>
-            <span className="jobs-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              className={`jobs-nav-item ${showSavedOnly ? 'active' : ''}`}
+              onClick={() => setShowSavedOnly(!showSavedOnly)}
+              style={{
+                width: '100%',
+                background: 'none',
+                border: 'none',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '10px 12px',
+                fontSize: '13px',
+                color: showSavedOnly ? 'var(--primary)' : 'var(--text-secondary)',
+                backgroundColor: showSavedOnly ? 'var(--bg-tertiary)' : 'transparent',
+                fontWeight: showSavedOnly ? 600 : 400,
+                cursor: 'pointer',
+                borderRadius: 'var(--radius-sm)'
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Bookmark size={14} fill={showSavedOnly ? 'var(--primary)' : 'none'} /> Saved Jobs
+              </span>
+              <span style={{ fontWeight: 600 }}>{savedJobs.length}</span>
+            </button>
+
+            <button
+              type="button"
+              className="jobs-nav-item"
+              onClick={() => setJobAlertsOpen(true)}
+              style={{
+                width: '100%',
+                background: 'none',
+                border: 'none',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 12px',
+                fontSize: '13px',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                borderRadius: 'var(--radius-sm)'
+              }}
+            >
               <Bell size={14} /> Job Alerts
-            </span>
-            <span className="jobs-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            </button>
+
+            <button
+              type="button"
+              className="jobs-nav-item"
+              onClick={() => setSalaryCalcOpen(true)}
+              style={{
+                width: '100%',
+                background: 'none',
+                border: 'none',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 12px',
+                fontSize: '13px',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                borderRadius: 'var(--radius-sm)'
+              }}
+            >
               <DollarSign size={14} /> Salary Calculator
-            </span>
-            <span className="jobs-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            </button>
+
+            <button
+              type="button"
+              className="jobs-nav-item"
+              onClick={handleOpenResumeBuilder}
+              style={{
+                width: '100%',
+                background: 'none',
+                border: 'none',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 12px',
+                fontSize: '13px',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                borderRadius: 'var(--radius-sm)'
+              }}
+            >
               <FileText size={14} /> Resume Builder
-            </span>
+            </button>
+
             {currentUser?.role === 'RECRUITER' && (
-              <Link to="/jobs/create" className="jobs-nav-item" style={{ color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link to="/jobs/create" className="jobs-nav-item" style={{ color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
                 <Plus size={14} /> Post a Free Job
               </Link>
             )}
@@ -223,53 +545,475 @@ export const JobBoard: React.FC = () => {
           }}>
             {error}
           </div>
-        ) : jobs.length === 0 ? (
+        ) : displayedJobs.length === 0 ? (
           <div className="card-glass" style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--text-muted)' }}>
             <p style={{ fontSize: '18px', fontWeight: 500, marginBottom: '8px' }}>No Vacancies Found</p>
-            <p style={{ fontSize: '13px' }}>Try adjusting your specialty or location filter strings.</p>
+            <p style={{ fontSize: '13px' }}>{showSavedOnly ? 'You haven\'t bookmarked any jobs yet.' : 'Try adjusting your specialty or location filter strings.'}</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {jobs.map((job) => (
-              <div key={job.id} className="card-glass job-card-item">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <div>
-                    <h3 style={{ fontSize: '18px', marginBottom: '2px', fontWeight: 700 }}>{job.title}</h3>
-                    <p style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Building size={14} /> {job.recruiterName || 'Verified Healthcare Recruiter'}
-                    </p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                    <span className="job-metadata-pill">{job.specialty}</span>
-                    <span className="job-metadata-pill" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={12} /> {job.location}
-                    </span>
-                  </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {displayedJobs.map((job) => {
+                  const isSaved = savedJobs.includes(job.id);
+                  return (
+                    <div key={job.id} className="card-glass job-card-item">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <div>
+                          <h3 style={{ fontSize: '18px', marginBottom: '2px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {job.title}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleSaveJob(job.id, job.title)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: isSaved ? 'var(--primary)' : 'var(--text-muted)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                padding: '4px'
+                              }}
+                              title={isSaved ? "Remove from Saved Jobs" : "Save Job"}
+                            >
+                              <Bookmark size={18} fill={isSaved ? "var(--primary)" : "none"} />
+                            </button>
+                          </h3>
+                          <p style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Building size={14} /> {job.recruiterName || 'Verified Healthcare Recruiter'}
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <span className="job-metadata-pill">{job.specialty}</span>
+                          <span className="job-metadata-pill" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <MapPin size={12} /> {job.location}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', marginBottom: '16px', lineHeight: 1.5 }}>
+                        {job.description}
+                      </p>
+
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        borderTop: '1px solid var(--border)',
+                        paddingTop: '12px',
+                        fontSize: '11px',
+                        color: 'var(--text-muted)'
+                      }}>
+                        <span>Posted on: {formatDate(job.createdAt)}</span>
+                        <span>Expires on: {formatDate(job.expiresAt)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          {/* Salary Calculator Dialog */}
+          <dialog
+            ref={salaryDialogRef}
+            className="card-glass"
+            style={{
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '24px',
+              maxWidth: '500px',
+              width: '90%',
+              boxShadow: 'var(--shadow-lg)',
+              color: 'var(--text-primary)',
+              background: 'var(--bg-primary)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <DollarSign size={18} /> Medical Salary Calculator (India)
+              </h2>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ padding: '4px 8px', fontSize: '18px', cursor: 'pointer', background: 'none', border: 'none', color: 'var(--text-muted)' }}
+                onClick={() => setSalaryCalcOpen(false)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Calculate realistic salary packages for clinical roles in India based on specialty, experience, and metropolitan location index.
+            </p>
+
+            <form onSubmit={handleCalculateSalary} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Specialty</label>
+                <input
+                  type="text"
+                  className="input-glass"
+                  placeholder="e.g. Cardiology, Pediatrics, MBBS"
+                  value={calcSpecialty}
+                  onChange={(e) => setCalcSpecialty(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Years of Experience</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="40"
+                    className="input-glass"
+                    value={calcExperience}
+                    onChange={(e) => setCalcExperience(e.target.value)}
+                    required
+                  />
                 </div>
 
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', marginBottom: '16px', lineHeight: 1.5 }}>
-                  {job.description}
-                </p>
-
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderTop: '1px solid var(--border)',
-                  paddingTop: '12px',
-                  fontSize: '11px',
-                  color: 'var(--text-muted)'
-                }}>
-                  <span>Posted on: {formatDate(job.createdAt)}</span>
-                  <span>Expires on: {formatDate(job.expiresAt)}</span>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Location Index</label>
+                  <select
+                    className="input-glass"
+                    value={calcLocation}
+                    onChange={(e) => setCalcLocation(e.target.value)}
+                    style={{ padding: '8px' }}
+                  >
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Delhi NCR">Delhi NCR</option>
+                    <option value="Bengaluru">Bengaluru</option>
+                    <option value="Chennai">Chennai</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Tier-2 Cities (Pune, Jaipur, etc)">Tier-2 Cities</option>
+                    <option value="Rural / Tier-3 Regions">Rural / Tier-3</option>
+                  </select>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
-    </div>
-  );
-};
+
+              <button type="submit" className="btn-primary" style={{ marginTop: '8px' }}>
+                Calculate Salary Range
+              </button>
+            </form>
+
+            {salaryResult && (
+              <div
+                style={{
+                  marginTop: '20px',
+                  padding: '16px',
+                  background: 'var(--bg-tertiary)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  textAlign: 'center'
+                }}
+              >
+                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  {salaryResult.tier}
+                </span>
+                <h3 style={{ fontSize: '22px', margin: '6px 0', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  ₹{salaryResult.monthlyMin.toLocaleString('en-IN')} - ₹{salaryResult.monthlyMax.toLocaleString('en-IN')}
+                  <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)' }}> / month</span>
+                </h3>
+                <p style={{ fontSize: '13px', margin: '4px 0', color: 'var(--text-secondary)' }}>
+                  Estimated Annual Package: <strong>₹{salaryResult.annualMin}L - ₹{salaryResult.annualMax}L</strong>
+                </p>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '10px 0 0 0', fontStyle: 'italic' }}>
+                  Based on clinical market averages in {salaryResult.location}. Super-specialty clinical roles with intensive call hours skew towards upper ranges.
+                </p>
+              </div>
+            )}
+          </dialog>
+
+          {/* Job Alerts Dialog */}
+          <dialog
+            ref={alertsDialogRef}
+            className="card-glass"
+            style={{
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '24px',
+              maxWidth: '500px',
+              width: '90%',
+              boxShadow: 'var(--shadow-lg)',
+              color: 'var(--text-primary)',
+              background: 'var(--bg-primary)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Bell size={18} /> Job Alerts Manager
+              </h2>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ padding: '4px 8px', fontSize: '18px', cursor: 'pointer', background: 'none', border: 'none', color: 'var(--text-muted)' }}
+                onClick={() => setJobAlertsOpen(false)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Create custom notifications for clinical vacancies. We will alert you when postings match these criteria.
+            </p>
+
+            <form onSubmit={handleCreateAlert} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Alert Name</label>
+                <input
+                  type="text"
+                  className="input-glass"
+                  placeholder="e.g. Cardiologist in Delhi"
+                  value={alertName}
+                  onChange={(e) => setAlertName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Specialty</label>
+                  <input
+                    type="text"
+                    className="input-glass"
+                    placeholder="Cardiology"
+                    value={alertSpecialty}
+                    onChange={(e) => setAlertSpecialty(e.target.value)}
+                  />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Location</label>
+                  <input
+                    type="text"
+                    className="input-glass"
+                    placeholder="Delhi"
+                    value={alertLocation}
+                    onChange={(e) => setAlertLocation(e.target.value)}
+                  />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Frequency</label>
+                  <select
+                    className="input-glass"
+                    value={alertFreq}
+                    onChange={(e) => setAlertFreq(e.target.value)}
+                    style={{ padding: '8px' }}
+                  >
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly">Weekly</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" className="btn-primary" style={{ marginTop: '8px' }}>
+                Create Job Alert
+              </button>
+            </form>
+
+            <h3 style={{ fontSize: '14px', borderTop: '1px solid var(--border)', paddingTop: '16px', marginBottom: '10px', fontWeight: 600 }}>Active Alerts</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto' }}>
+              {alerts.length === 0 ? (
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', margin: '12px 0' }}>No job alerts set.</p>
+              ) : (
+                alerts.map((al) => (
+                  <div
+                    key={al.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '8px 12px',
+                      background: 'var(--bg-tertiary)',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border)'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600 }}>{al.name}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        Specialty: {al.specialty || 'Any'} • Location: {al.location || 'Any'} • {al.frequency}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteAlert(al.id, al.name)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </dialog>
+
+          {/* Resume Builder Dialog */}
+          <dialog
+            ref={resumeDialogRef}
+            className="card-glass"
+            style={{
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '24px',
+              maxWidth: '650px',
+              width: '90%',
+              boxShadow: 'var(--shadow-lg)',
+              color: 'var(--text-primary)',
+              background: 'var(--bg-primary)'
+            }}
+          >
+            <style>{`
+              @media print {
+                body * {
+                  visibility: hidden;
+                }
+                #printable-cv-content, #printable-cv-content * {
+                  visibility: visible;
+                }
+                #printable-cv-content {
+                  position: absolute;
+                  left: 0;
+                  top: 0;
+                  width: 100%;
+                  color: black !important;
+                  background: white !important;
+                  padding: 20px;
+                }
+                .no-print {
+                  display: none !important;
+                }
+              }
+            `}</style>
+            
+            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FileText size={18} /> Medical CV Builder
+              </h2>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ padding: '4px 8px', fontSize: '18px', cursor: 'pointer', background: 'none', border: 'none', color: 'var(--text-muted)' }}
+                onClick={() => setResumeBuilderOpen(false)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <p className="no-print" style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px' }}>
+              Your clinical curriculum vitae has been generated automatically from your verified profile fields. You can review, print, or export it to PDF.
+            </p>
+
+            {loadingProfile ? (
+              <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
+                <Loader size={24} className="animate-spin" style={{ margin: '0 auto 10px auto' }} />
+                Assembling profile data...
+              </div>
+            ) : profileData ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Printable CV Box */}
+                <div
+                  id="printable-cv-content"
+                  style={{
+                    border: '1px solid var(--border)',
+                    padding: '24px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'var(--bg-tertiary)',
+                    maxHeight: '400px',
+                    overflowY: 'auto'
+                  }}
+                >
+                  {/* Header */}
+                  <div style={{ borderBottom: '2px solid var(--primary)', paddingBottom: '12px', marginBottom: '16px' }}>
+                    <h2 style={{ fontSize: '22px', margin: '0 0 4px 0', fontWeight: 700 }}>
+                      Dr. {profileData.name}
+                    </h2>
+                    <p style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 600, margin: '0 0 6px 0' }}>
+                      {profileData.specialty || 'General Practitioner'} • Clinical Professional
+                    </p>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                      <span>Email: {profileData.email}</span>
+                      {profileData.medicalRegistrationNumber && (
+                        <span>MRN: {profileData.medicalRegistrationNumber} ({profileData.stateMedicalCouncil || 'NMC'})</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Education */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <h4 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--primary)', margin: '0 0 6px 0', borderBottom: '1px solid var(--border)', paddingBottom: '2px', fontWeight: 700 }}>
+                      Education & Training
+                    </h4>
+                    {profileData.education ? (
+                      <p style={{ fontSize: '12px', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{profileData.education}</p>
+                    ) : (
+                      <p style={{ fontSize: '12px', margin: 0, fontStyle: 'italic', color: 'var(--text-muted)' }}>No education history provided. Update your profile to add.</p>
+                    )}
+                  </div>
+
+                  {/* Experience */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <h4 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--primary)', margin: '0 0 6px 0', borderBottom: '1px solid var(--border)', paddingBottom: '2px', fontWeight: 700 }}>
+                      Clinical Experience
+                    </h4>
+                    {profileData.experience ? (
+                      <p style={{ fontSize: '12px', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{profileData.experience}</p>
+                    ) : (
+                      <p style={{ fontSize: '12px', margin: 0, fontStyle: 'italic', color: 'var(--text-muted)' }}>No experience details provided.</p>
+                    )}
+                  </div>
+
+                  {/* Skills */}
+                  <div>
+                    <h4 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--primary)', margin: '0 0 6px 0', borderBottom: '1px solid var(--border)', paddingBottom: '2px', fontWeight: 700 }}>
+                      Clinical Expertise & Skills
+                    </h4>
+                    {profileData.skills ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                        {profileData.skills.split(',').map((s: string) => (
+                          <span
+                            key={s}
+                            style={{
+                              fontSize: '10px',
+                              background: 'var(--bg-secondary)',
+                              padding: '4px 8px',
+                              borderRadius: 'var(--radius-sm)',
+                              border: '1px solid var(--border)'
+                            }}
+                          >
+                            {s.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: '12px', margin: 0, fontStyle: 'italic', color: 'var(--text-muted)' }}>No specific skills registered.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="no-print" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => setResumeBuilderOpen(false)}
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => window.print()}
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <FileText size={14} /> Print / Export CV
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>Could not compile profile data.</p>
+            )}
+          </dialog>
+        </div>
+      );
+    };
 
 export default JobBoard;
