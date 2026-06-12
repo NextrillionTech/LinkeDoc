@@ -1,0 +1,19 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /accessibility
+Allow: /help
+Allow: /privacy
+Disallow: /login
+Disallow: /signup
+Disallow: /profile
+Disallow: /network
+Disallow: /groups
+Disallow: /forums
+Disallow: /jobs
+Disallow: /chat
+Disallow: /admin
+
+# Host and Sitemap
+Sitemap: https://linkedoc.com/sitemap.xml

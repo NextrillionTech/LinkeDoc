@@ -49,7 +49,7 @@ export const Landing: React.FC = () => {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   useSEO(
-    'LinkeDoc | The Verified Medical Professional Network',
+    'Verified Medical Professional Network',
     'Join LinkeDoc, the professional network exclusively for verified medical practitioners. Secure E2EE chats, specialty forums, scraped clinical jobs, and CV tools.'
   );
 

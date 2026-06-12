@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 /**
- * Reusable hook to dynamically update document title and description meta tag.
+ * Reusable hook to dynamically update document title, description, and canonical link.
  * Automatically appends suffix ' | LinkeDoc' to the title.
  */
 export const useSEO = (title: string, description?: string) => {
@@ -19,6 +19,15 @@ export const useSEO = (title: string, description?: string) => {
         document.head.appendChild(metaDesc);
       }
     }
+
+    // Dynamic self-referencing canonical tag
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', window.location.origin + window.location.pathname);
   }, [title, description]);
 };
 
