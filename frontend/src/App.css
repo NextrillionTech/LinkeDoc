@@ -772,6 +772,13 @@ p {
   }
 }
 
+.app-main-content-container-landing {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
 /* ===== Notifications System ===== */
 .linkedin-notif-dropdown-card {
   position: absolute;

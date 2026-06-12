@@ -9,142 +9,282 @@ import {
   CheckCircle, 
   TrendingUp, 
   ArrowRight,
-  Star
+  HelpCircle,
+  ChevronDown,
+  UserPlus,
+  Award,
+  Sparkles
 } from 'lucide-react';
 import { useSEO } from '../utils/seo';
 
-interface SpecialtyInfo {
-  name: string;
-  tagline: string;
-  desc: string;
-  activeDoctors: string;
-  threadsCount: string;
-  recentTopic: string;
+interface FaqItem {
+  question: string;
+  answer: string;
 }
 
-const specialtiesData: Record<string, SpecialtyInfo> = {
-  Cardiology: {
-    name: 'Cardiology',
-    tagline: 'Heart Health & Vascular Medicine',
-    desc: 'Collaborate with electrophysiologists and interventional cardiologists to review ECG anomalies, angiogram reports, and discuss clinical trials on heart failures.',
-    activeDoctors: '4,500+ Boarded Doctors',
-    threadsCount: '1,200+ Case Reviews',
-    recentTopic: 'Interpretation of unusual ST-elevation in a 45-year-old active runner'
+const faqData: FaqItem[] = [
+  {
+    question: 'Who is eligible to join LinkeDoc?',
+    answer: 'LinkeDoc is strictly reserved for verified healthcare professionals. This includes Doctors/Physicians, Residents, Nurses, Pharmacists, and Medical Researchers. Healthcare Recruiters can join to post job listings, while administrators audit the registry. General public access is restricted to ensure professional integrity.'
   },
-  Pediatrics: {
-    name: 'Pediatrics',
-    tagline: 'Neonatal & Child Healthcare',
-    desc: 'Discuss childhood immunization guidelines, developmental milestones, neonatology cases, and pediatric emergency protocols with global practitioners.',
-    activeDoctors: '3,800+ Verified Pediatricians',
-    threadsCount: '980+ Thread Topics',
-    recentTopic: 'Managing drug dosages in neonates with congenital renal dysfunction'
+  {
+    question: 'How does automated credential verification work?',
+    answer: 'During registration, clinical professionals submit their Medical Registration Number (MRN) or National Provider Identifier (NPI). The LinkeDoc backend queries official databases (such as the CMS NPPES registry or State Medical Councils) to validate credentials. Accounts matching official entries are approved instantly; others enter the manual administrator audit queue.'
   },
-  Oncology: {
-    name: 'Oncology',
-    tagline: 'Cancer Research & Care',
-    desc: 'Share insights on radiotherapy mapping, target therapies, clinical chemotherapy doses, and read research paper abstracts on oncology trials.',
-    activeDoctors: '2,900+ Specialists',
-    threadsCount: '740+ Active Research Papers',
-    recentTopic: 'Outcome trends in immunotherapy combinations for advanced NSCLC'
+  {
+    question: 'Are case discussions and direct messages secure?',
+    answer: 'Yes. Direct messages use client-side End-to-End Encryption (E2EE), meaning keys are generated and stored locally in your browser. No plaintext message data is stored on our servers. Specialty discussion boards are restricted to verified clinical roles, enforcing a professional, distraction-free atmosphere.'
   },
-  Neurology: {
-    name: 'Neurology',
-    tagline: 'Brain & Nervous System Sciences',
-    desc: 'Exchange case files on stroke protocols, neuropathies, neuro-oncology diagnostics, and surgical intervention timelines with neurologists and neurosurgeons.',
-    activeDoctors: '3,200+ Active Clinicians',
-    threadsCount: '850+ Deep Discussions',
-    recentTopic: 'Atypical presentation of Guillain-Barré syndrome post-viral infection'
+  {
+    question: 'How does the Job Board get its clinical vacancies?',
+    answer: 'LinkeDoc features a background scraping engine that automatically ingests clinical openings from vetted health RSS feeds (like HigherEdJobs Medical). Vetted Recruiters can also publish custom job openings. In addition, candidates can use our built-in Indian Medical Salary Calculator and verified PDF Resume Builder.'
   },
-  'General Medicine': {
-    name: 'General Medicine',
-    tagline: 'Primary Care & Clinical Practice',
-    desc: 'The central hub for general practitioners, family physicians, and residents. Discuss diagnostics, diagnostic tools, patient triaging, and clinic management.',
-    activeDoctors: '8,000+ Medical Members',
-    threadsCount: '3,100+ Diagnostic Cases',
-    recentTopic: 'Refractory hypertension control strategies in elderly diabetic patients'
+  {
+    question: 'How do specialty forums and post flagging work?',
+    answer: 'Discussion categories (e.g., Cardiology, Pediatrics, Neurology) are curated for clinical peer review. Users can compose posts, upload research paper abstracts, and reply inline. To maintain HIPAA principles, any post or comment can be flagged. Flagging content immediately hides it from peer view and sends it to the Administrator review queue.'
   }
-};
+];
 
 export const Landing: React.FC = () => {
-  const [selectedTab, setSelectedTab] = useState<string>('Cardiology');
-  
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+
   useSEO(
-    'Professional Medical Network',
-    'Join LinkeDoc, the secure, verified network exclusively for medical professionals. Connect with peers, share research, and explore clinical vacancies.'
+    'LinkeDoc | The Verified Medical Professional Network',
+    'Join LinkeDoc, the professional network exclusively for verified medical practitioners. Secure E2EE chats, specialty forums, scraped clinical jobs, and CV tools.'
   );
 
-  const activeSpecialty = specialtiesData[selectedTab];
+  const toggleFaq = (index: number) => {
+    setActiveFaq(activeFaq === index ? null : index);
+  };
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
-    <div className="landing-page-root">
+    <div className="landing-root">
       <style>{`
-        /* Landing Page Specific Design Variables & Animations */
-        .landing-page-root {
-          width: 100%;
-          overflow-x: hidden;
-          background-color: var(--bg-primary);
-          color: var(--text-primary);
+        /* Global & Reset variables for Landing Page */
+        .landing-root {
           font-family: var(--font-body);
+          width: 100%;
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          background-color: #fcfdfe;
+          color: #1e293b;
+          overflow-x: hidden;
         }
 
-        /* Hero Wave Background Layout */
-        .hero-section-container {
-          position: relative;
-          padding: 80px 24px 100px;
-          background: linear-gradient(135deg, rgba(8, 145, 178, 0.08) 0%, rgba(5, 104, 94, 0.04) 100%);
+        /* Helper to ensure box-sizing across landing elements */
+        .landing-root * {
+          box-sizing: border-box;
+        }
+
+        /* Core Text Styling overrides */
+        .landing-root h1, .landing-root h2, .landing-root h3, .landing-root h4 {
+          font-family: var(--font-display);
+          color: #0f172a;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+        }
+
+        /* 1. Custom Full-Width Header */
+        .landing-nav {
+          position: sticky;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 72px;
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+          z-index: 1000;
           display: flex;
           justify-content: center;
           align-items: center;
-          border-bottom: 1px solid var(--border);
+          transition: all var(--transition-fast);
         }
 
-        .hero-grid {
+        .nav-container {
           max-width: 1200px;
           width: 100%;
+          padding: 0 24px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .nav-logo-link {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          text-decoration: none;
+          transition: transform var(--transition-fast);
+        }
+
+        .nav-logo-link:hover {
+          transform: scale(1.02);
+        }
+
+        .nav-logo-img {
+          height: 38px;
+          object-fit: contain;
+        }
+
+        .nav-logo-text {
+          font-family: var(--font-display);
+          font-weight: 800;
+          font-size: 20px;
+          color: #05685e;
+          letter-spacing: -0.03em;
+        }
+
+        .nav-links-list {
+          display: flex;
+          align-items: center;
+          gap: 32px;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+
+        @media (max-width: 768px) {
+          .nav-links-list {
+            display: none; /* Hide on mobile/tablet */
+          }
+        }
+
+        .nav-link-item {
+          background: none;
+          border: none;
+          font-size: 14px;
+          font-weight: 600;
+          color: #475569;
+          cursor: pointer;
+          transition: color var(--transition-fast);
+          padding: 8px 4px;
+        }
+
+        .nav-link-item:hover {
+          color: #05685e;
+        }
+
+        .nav-actions-col {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .nav-btn-signin {
+          font-size: 14px;
+          font-weight: 600;
+          color: #05685e;
+          text-decoration: none;
+          padding: 8px 16px;
+          border-radius: var(--radius-sm);
+          transition: background-color var(--transition-fast);
+        }
+
+        .nav-btn-signin:hover {
+          background-color: rgba(5, 104, 94, 0.06);
+        }
+
+        .nav-btn-join {
+          font-size: 14px;
+          font-weight: 600;
+          color: #ffffff;
+          background: #05685e;
+          text-decoration: none;
+          padding: 10px 20px;
+          border-radius: var(--radius-sm);
+          box-shadow: 0 4px 10px rgba(5, 104, 94, 0.15);
+          transition: transform var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .nav-btn-join:hover {
+          transform: translateY(-1px);
+          background-color: #034b44;
+          box-shadow: 0 6px 14px rgba(5, 104, 94, 0.25);
+        }
+
+        /* 2. Hero Section */
+        .hero-outer-section {
+          background: radial-gradient(circle at top right, rgba(8, 145, 178, 0.07) 0%, rgba(255, 255, 255, 0) 60%), linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+        }
+
+        .hero-inner-content {
+          max-width: 1200px;
+          width: 100%;
+          padding: 96px 24px 80px 24px;
           display: grid;
-          grid-template-columns: 1.1fr 0.9fr;
-          gap: 48px;
+          grid-template-columns: 1.15fr 0.85fr;
+          gap: 64px;
           align-items: center;
         }
 
         @media (max-width: 968px) {
-          .hero-grid {
+          .hero-inner-content {
             grid-template-columns: 1fr;
+            padding: 60px 20px;
+            gap: 48px;
             text-align: center;
-            gap: 32px;
           }
-          .hero-buttons-row {
+        }
+
+        .hero-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: #05685e;
+          background-color: rgba(5, 104, 94, 0.08);
+          padding: 6px 12px;
+          border-radius: var(--radius-full);
+          margin-bottom: 24px;
+          letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 968px) {
+          .hero-tag {
             justify-content: center;
           }
         }
 
-        .hero-title-text {
-          font-size: 52px;
-          line-height: 1.15;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-          margin-bottom: 20px;
-          background: linear-gradient(120deg, var(--text-primary) 40%, var(--primary) 90%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+        .hero-h1 {
+          font-size: 48px;
+          line-height: 1.12;
+          color: #0f172a;
+          margin-bottom: 24px;
+          font-weight: 850;
         }
 
         @media (max-width: 640px) {
-          .hero-title-text {
-            font-size: 38px;
+          .hero-h1 {
+            font-size: 34px;
           }
         }
 
-        .hero-body-text {
+        .hero-p {
           font-size: 17px;
-          line-height: 1.6;
-          color: var(--text-secondary);
-          margin-bottom: 32px;
+          line-height: 1.65;
+          color: #475569;
+          margin-bottom: 36px;
           max-width: 640px;
         }
 
         @media (max-width: 968px) {
-          .hero-body-text {
+          .hero-p {
             margin-left: auto;
             margin-right: auto;
           }
@@ -156,109 +296,175 @@ export const Landing: React.FC = () => {
           flex-wrap: wrap;
         }
 
-        .btn-landing-cta {
-          font-family: var(--font-display);
+        @media (max-width: 968px) {
+          .hero-buttons-row {
+            justify-content: center;
+          }
+        }
+
+        .hero-btn-primary {
+          font-size: 15px;
           font-weight: 600;
+          color: #ffffff;
+          background: #05685e;
+          text-decoration: none;
           padding: 14px 28px;
           border-radius: var(--radius-sm);
-          font-size: 15px;
-          text-decoration: none;
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          cursor: pointer;
-          transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+          box-shadow: 0 10px 20px rgba(5, 104, 94, 0.15);
+          transition: all var(--transition-smooth);
         }
 
-        .btn-landing-primary {
-          background: var(--primary);
-          color: #ffffff;
-          box-shadow: 0 4px 14px var(--primary-glow);
-        }
-
-        .btn-landing-primary:hover {
+        .hero-btn-primary:hover {
           transform: translateY(-2px);
-          opacity: 0.95;
-          box-shadow: 0 6px 20px var(--primary-glow);
+          background-color: #034b44;
+          box-shadow: 0 12px 24px rgba(5, 104, 94, 0.25);
         }
 
-        .btn-landing-secondary {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          color: var(--text-primary);
+        .hero-btn-secondary {
+          font-size: 15px;
+          font-weight: 600;
+          color: #0f172a;
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          text-decoration: none;
+          padding: 14px 28px;
+          border-radius: var(--radius-sm);
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          transition: all var(--transition-fast);
         }
 
-        .btn-landing-secondary:hover {
-          background: var(--bg-tertiary);
-          border-color: var(--border-hover);
+        .hero-btn-secondary:hover {
+          background-color: #f8fafc;
+          border-color: #94a3b8;
+        }
+
+        .hero-meta-checks {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          margin-top: 36px;
+          font-size: 13px;
+          color: #64748b;
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 968px) {
+          .hero-meta-checks {
+            justify-content: center;
+          }
+        }
+
+        .hero-meta-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-weight: 500;
         }
 
         .hero-image-wrapper {
           position: relative;
           display: flex;
           justify-content: center;
+          align-items: center;
         }
 
-        .hero-main-img {
+        .hero-img {
           width: 100%;
           max-width: 440px;
-          border-radius: var(--radius-lg);
-          border: 1px solid var(--border);
-          box-shadow: var(--shadow-lg);
-          object-fit: cover;
           aspect-ratio: 1;
+          object-fit: cover;
+          border-radius: var(--radius-lg);
+          border: 6px solid #ffffff;
+          box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+          z-index: 10;
         }
 
-        .hero-badge-overlay {
+        .hero-floating-badge {
           position: absolute;
           bottom: 24px;
-          left: 10%;
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid #dcdcdc;
+          left: -10px;
+          background: #ffffff;
+          border: 1px solid rgba(15, 23, 42, 0.08);
           border-radius: var(--radius-md);
-          padding: 10px 18px;
+          padding: 12px 20px;
           display: flex;
           align-items: center;
-          gap: 10px;
-          box-shadow: var(--shadow-md);
-          animation: floatOverlay 3s ease-in-out infinite alternate;
+          gap: 12px;
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1);
+          z-index: 20;
+          animation: badgeFloat 4s ease-in-out infinite alternate;
         }
 
-        .theme-dark .hero-badge-overlay {
-          background: rgba(29, 34, 38, 0.9);
-          border-color: rgba(255, 255, 255, 0.15);
+        @media (max-width: 640px) {
+          .hero-floating-badge {
+            left: 5%;
+            bottom: 10px;
+          }
         }
 
-        @keyframes floatOverlay {
+        @keyframes badgeFloat {
           0% { transform: translateY(0); }
-          100% { transform: translateY(-8px); }
+          100% { transform: translateY(-12px); }
         }
 
-        /* sliding marquee style */
-        .marquee-strip-container {
-          background: linear-gradient(90deg, #05685e 0%, #0891b2 100%);
-          padding: 14px 0;
-          color: #ffffff;
+        .badge-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background-color: #10b981;
+          position: relative;
+        }
+
+        .badge-dot::after {
+          content: '';
+          position: absolute;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background-color: rgba(16, 185, 129, 0.4);
+          left: -4px;
+          top: -4px;
+          animation: dotPulse 1.8s infinite;
+        }
+
+        @keyframes dotPulse {
+          0% { transform: scale(0.9); opacity: 0.8; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        /* 3. Infinite Scrolling Marquee */
+        .marquee-container {
+          background-color: #05685e;
+          width: 100%;
           overflow: hidden;
-          white-space: nowrap;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 16px 0;
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .marquee-track {
-          display: inline-block;
+          display: flex;
+          white-space: nowrap;
           animation: marqueeScroll 25s linear infinite;
         }
 
         .marquee-item {
-          display: inline-flex;
+          display: flex;
           align-items: center;
-          font-weight: 600;
+          gap: 8px;
           font-size: 13px;
-          letter-spacing: 0.5px;
+          font-weight: 700;
           text-transform: uppercase;
-          margin-right: 48px;
+          letter-spacing: 0.08em;
+          margin-right: 64px;
+          color: rgba(255, 255, 255, 0.95);
         }
 
         @keyframes marqueeScroll {
@@ -266,659 +472,936 @@ export const Landing: React.FC = () => {
           100% { transform: translate3d(-50%, 0, 0); }
         }
 
-        /* Sections standard layout */
-        .landing-section-wrapper {
-          padding: 80px 24px;
+        /* 4. About Section */
+        .about-outer-section {
+          background-color: #ffffff;
+          width: 100%;
           display: flex;
           justify-content: center;
+          border-bottom: 1px solid rgba(15, 23, 42, 0.05);
         }
 
-        .landing-section-inner {
+        .about-inner-content {
           max-width: 1200px;
           width: 100%;
-        }
-
-        .section-header {
-          text-align: center;
-          margin-bottom: 50px;
-        }
-
-        .section-tagline {
-          font-size: 12px;
-          font-weight: 700;
-          color: var(--primary);
-          text-transform: uppercase;
-          letter-spacing: 1.5px;
-          display: block;
-          margin-bottom: 8px;
-        }
-
-        .section-main-title {
-          font-size: 32px;
-          font-weight: 800;
-          margin: 0;
-        }
-
-        /* Mission & Stats */
-        .mission-grid {
+          padding: 100px 24px;
           display: grid;
-          grid-template-columns: 1fr 1.2fr;
-          gap: 60px;
+          grid-template-columns: 1.1fr 0.9fr;
+          gap: 80px;
           align-items: center;
         }
 
-        @media (max-width: 868px) {
-          .mission-grid {
+        @media (max-width: 968px) {
+          .about-inner-content {
             grid-template-columns: 1fr;
-            gap: 40px;
+            padding: 64px 20px;
+            gap: 48px;
           }
         }
 
-        .stats-block-row {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 16px;
-          margin-top: 32px;
-        }
-
-        .stat-card-item {
-          padding: 20px;
-          border-radius: var(--radius-md);
-          text-align: center;
-        }
-
-        .stat-value {
-          font-size: 32px;
+        .section-category {
+          font-size: 12px;
           font-weight: 800;
-          color: var(--primary);
+          color: #05685e;
+          text-transform: uppercase;
+          letter-spacing: 0.15em;
+          display: block;
+          margin-bottom: 12px;
+        }
+
+        .section-h2 {
+          font-size: 38px;
+          line-height: 1.2;
+          color: #0f172a;
+          margin-bottom: 24px;
+          font-weight: 800;
+        }
+
+        .about-desc {
+          font-size: 16px;
+          line-height: 1.7;
+          color: #475569;
+          margin-bottom: 32px;
+        }
+
+        .about-checklist {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .checklist-item {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+        }
+
+        .checklist-icon {
+          color: #05685e;
+          flex-shrink: 0;
+          margin-top: 3px;
+        }
+
+        .checklist-title {
+          font-weight: 700;
+          font-size: 15px;
+          color: #0f172a;
+          display: block;
+          margin-bottom: 2px;
+        }
+
+        .checklist-text {
+          font-size: 13.5px;
+          color: #475569;
+          line-height: 1.5;
+        }
+
+        /* Mock Interactive Verification UI */
+        .verification-mockup-wrapper {
+          background: #f8fafc;
+          border: 1px solid rgba(15, 23, 42, 0.08);
+          border-radius: var(--radius-lg);
+          padding: 32px;
+          box-shadow: 0 10px 35px rgba(15, 23, 42, 0.03);
+          position: relative;
+        }
+
+        .mockup-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+          padding-bottom: 16px;
+          margin-bottom: 24px;
+        }
+
+        .mockup-header-title {
+          font-size: 13px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #64748b;
+          margin: 0;
+        }
+
+        .mockup-form {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .mockup-input-container {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: var(--radius-sm);
+          padding: 12px 16px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .mockup-label {
+          font-size: 11px;
+          color: #64748b;
+          font-weight: 700;
+          text-transform: uppercase;
           display: block;
           margin-bottom: 4px;
         }
 
-        .stat-label {
-          font-size: 11px;
+        .mockup-val {
+          font-size: 14px;
           font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          color: var(--text-muted);
+          color: #0f172a;
         }
 
-        /* Specialty Selector Tabs */
-        .specialty-selector-container {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-lg);
-          padding: 30px;
-          box-shadow: var(--shadow-sm);
-        }
-
-        .specialty-tabs-row {
-          display: flex;
-          justify-content: center;
-          gap: 8px;
-          margin-bottom: 32px;
-          overflow-x: auto;
-          padding-bottom: 6px;
-          border-bottom: 1px solid var(--border);
-        }
-
-        .specialty-tab-btn {
-          background: none;
-          border: none;
-          font-family: var(--font-display);
-          font-size: 13px;
-          font-weight: 600;
-          padding: 10px 18px;
-          color: var(--text-muted);
-          cursor: pointer;
-          white-space: nowrap;
+        .mockup-status-box {
+          background-color: rgba(16, 185, 129, 0.08);
+          border: 1px dashed rgba(16, 185, 129, 0.4);
           border-radius: var(--radius-sm);
-          transition: all var(--transition-fast);
-        }
-
-        .specialty-tab-btn:hover {
-          color: var(--text-primary);
-          background: var(--bg-tertiary);
-        }
-
-        .specialty-tab-btn.active {
-          color: var(--primary);
-          background: var(--primary-glow);
-        }
-
-        .specialty-showcase-box {
-          display: grid;
-          grid-template-columns: 1.2fr 0.8fr;
-          gap: 32px;
-          align-items: center;
-        }
-
-        @media (max-width: 768px) {
-          .specialty-showcase-box {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        /* Feature Cards Grid */
-        .features-quad-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 24px;
-        }
-
-        @media (max-width: 768px) {
-          .features-quad-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        .feature-card-item {
-          padding: 24px;
-          border-radius: var(--radius-md);
-          display: flex;
-          gap: 20px;
-        }
-
-        .feature-icon-wrapper {
-          width: 48px;
-          height: 48px;
-          border-radius: var(--radius-sm);
-          background: var(--primary-glow);
-          color: var(--primary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        /* Testimonials Layout */
-        .testimonials-masonry {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 24px;
-        }
-
-        @media (max-width: 968px) {
-          .testimonials-masonry {
-            grid-template-columns: 1fr 1fr;
-          }
-        }
-
-        @media (max-width: 640px) {
-          .testimonials-masonry {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        .review-card-item {
-          padding: 24px;
-          border-radius: var(--radius-md);
-        }
-
-        .reviewer-info-row {
+          padding: 16px;
           display: flex;
           align-items: center;
           gap: 12px;
-          margin-bottom: 16px;
+          margin-top: 10px;
         }
 
-        .reviewer-avatar-placeholder {
-          width: 38px;
-          height: 38px;
-          border-radius: 50%;
-          background: var(--primary-glow);
-          color: var(--primary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
+        .mockup-status-title {
           font-size: 13px;
+          font-weight: 700;
+          color: #065f46;
+          margin: 0 0 2px 0;
         }
 
-        /* Banner CTA Bottom Section */
-        .cta-bottom-banner {
-          background: linear-gradient(135deg, #05685e 0%, #164e63 100%);
-          color: #ffffff;
-          padding: 60px 40px;
-          border-radius: var(--radius-lg);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          text-align: center;
-          box-shadow: var(--shadow-lg);
-        }
-
-        .cta-bottom-banner h2 {
-          color: #ffffff;
-          font-size: 36px;
-          margin-bottom: 12px;
-        }
-
-        .cta-bottom-banner p {
-          color: rgba(255, 255, 255, 0.85);
-          font-size: 16px;
-          max-width: 600px;
-          margin: 0 auto 32px;
-        }
-
-        /* Footer Layout overrides for landing */
-        .landing-footer {
-          background: #033f39;
-          color: rgba(255, 255, 255, 0.7);
-          border-top: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 60px 24px 30px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .footer-columns-row {
-          max-width: 1200px;
-          width: 100%;
-          display: grid;
-          grid-template-columns: 1.5fr repeat(3, 1fr);
-          gap: 40px;
-          margin-bottom: 40px;
-        }
-
-        @media (max-width: 768px) {
-          .footer-columns-row {
-            grid-template-columns: 1fr;
-            text-align: center;
-            gap: 30px;
-          }
-        }
-
-        .footer-brand-column img {
-          height: 38px;
-          margin-bottom: 16px;
-        }
-
-        .footer-links-list {
-          list-style: none;
-          padding: 0;
+        .mockup-status-desc {
+          font-size: 11px;
+          color: #047857;
           margin: 0;
         }
 
-        .footer-links-list li {
-          margin-bottom: 10px;
+        /* 5. Features Section */
+        .features-outer-section {
+          background-color: #f8fafc;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          border-bottom: 1px solid rgba(15, 23, 42, 0.05);
         }
 
-        .footer-link-item {
-          color: rgba(255, 255, 255, 0.65);
-          text-decoration: none;
-          font-size: 13px;
-          transition: color var(--transition-fast);
-        }
-
-        .footer-link-item:hover {
-          color: #ffffff;
-        }
-
-        .footer-bottom-bar {
+        .features-inner-content {
           max-width: 1200px;
           width: 100%;
-          border-top: 1px solid rgba(255, 255, 255, 0.08);
-          padding-top: 24px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.45);
+          padding: 100px 24px;
+        }
+
+        .features-header {
+          text-align: center;
+          max-width: 720px;
+          margin: 0 auto 60px auto;
+        }
+
+        .features-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 28px;
+        }
+
+        @media (max-width: 968px) {
+          .features-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
         }
 
         @media (max-width: 640px) {
-          .footer-bottom-bar {
+          .features-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .feature-item-card {
+          background: #ffffff;
+          border: 1px solid rgba(15, 23, 42, 0.06);
+          border-radius: var(--radius-md);
+          padding: 36px 30px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+          transition: transform var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+        }
+
+        .feature-item-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(5, 104, 94, 0.3);
+          box-shadow: 0 20px 25px -5px rgba(5, 104, 94, 0.05), 0 10px 10px -5px rgba(5, 104, 94, 0.02);
+        }
+
+        .feature-icon-box {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          background-color: rgba(5, 104, 94, 0.08);
+          color: #05685e;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 24px;
+          transition: background-color var(--transition-fast), color var(--transition-fast);
+        }
+
+        .feature-item-card:hover .feature-icon-box {
+          background-color: #05685e;
+          color: #ffffff;
+        }
+
+        .feature-h3 {
+          font-size: 19px;
+          font-weight: 750;
+          color: #0f172a;
+          margin-bottom: 12px;
+        }
+
+        .feature-desc {
+          font-size: 13.5px;
+          line-height: 1.6;
+          color: #475569;
+          margin: 0;
+        }
+
+        /* 6. FAQ Accordion Section */
+        .faq-outer-section {
+          background-color: #ffffff;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+        }
+
+        .faq-inner-content {
+          max-width: 800px;
+          width: 100%;
+          padding: 100px 24px;
+        }
+
+        .faq-header {
+          text-align: center;
+          margin-bottom: 54px;
+        }
+
+        .faq-accordion-list {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .faq-row-card {
+          border: 1px solid #e2e8f0;
+          border-radius: var(--radius-sm);
+          background: #ffffff;
+          overflow: hidden;
+          transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .faq-row-card.active {
+          border-color: #05685e;
+          box-shadow: 0 4px 12px rgba(5, 104, 94, 0.04);
+        }
+
+        .faq-trigger-btn {
+          width: 100%;
+          background: none;
+          border: none;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px 24px;
+          cursor: pointer;
+          text-align: left;
+          gap: 16px;
+        }
+
+        .faq-question-box {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-family: var(--font-display);
+          font-size: 15.5px;
+          font-weight: 700;
+          color: #0f172a;
+          transition: color var(--transition-fast);
+        }
+
+        .faq-row-card.active .faq-question-box {
+          color: #05685e;
+        }
+
+        .faq-row-card:hover:not(.active) .faq-question-box {
+          color: #05685e;
+        }
+
+        .faq-chevron {
+          color: #94a3b8;
+          transition: transform var(--transition-smooth), color var(--transition-fast);
+          flex-shrink: 0;
+        }
+
+        .faq-row-card.active .faq-chevron {
+          transform: rotate(180deg);
+          color: #05685e;
+        }
+
+        .faq-pane {
+          max-height: 0;
+          overflow: hidden;
+          opacity: 0;
+          transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .faq-row-card.active .faq-pane {
+          max-height: 200px;
+          opacity: 1;
+        }
+
+        .faq-answer-p {
+          padding: 0 24px 20px 52px;
+          margin: 0;
+          font-size: 14px;
+          line-height: 1.6;
+          color: #475569;
+          border-top: 1px solid transparent;
+        }
+
+        .faq-row-card.active .faq-answer-p {
+          border-top-color: #f1f5f9;
+        }
+
+        /* 7. Call To Action (CTA) Section */
+        .cta-outer-section {
+          background-color: #f8fafc;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          padding: 80px 24px;
+        }
+
+        .cta-inner-card {
+          max-width: 1200px;
+          width: 100%;
+          background: linear-gradient(135deg, #05685e 0%, #0c4a43 100%);
+          border-radius: var(--radius-lg);
+          padding: 72px 40px;
+          text-align: center;
+          color: #ffffff;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 20px 40px rgba(5, 104, 94, 0.15);
+        }
+
+        /* Ambient light overlay for premium CTA look */
+        .cta-inner-card::after {
+          content: '';
+          position: absolute;
+          width: 300px;
+          height: 300px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(8, 145, 178, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
+          top: -100px;
+          right: -50px;
+          pointer-events: none;
+        }
+
+        .cta-inner-card::before {
+          content: '';
+          position: absolute;
+          width: 250px;
+          height: 250px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
+          bottom: -80px;
+          left: -50px;
+          pointer-events: none;
+        }
+
+        .cta-h2 {
+          font-size: 38px;
+          color: #ffffff !important;
+          margin-bottom: 20px;
+          font-weight: 850;
+        }
+
+        .cta-p {
+          font-size: 16.5px;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.85);
+          max-width: 600px;
+          margin: 0 auto 36px auto;
+        }
+
+        .cta-btn-white-pill {
+          background: #ffffff;
+          color: #05685e;
+          font-size: 15px;
+          font-weight: 700;
+          text-decoration: none;
+          padding: 16px 32px;
+          border-radius: var(--radius-sm);
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+          transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+        }
+
+        .cta-btn-white-pill:hover {
+          transform: translateY(-2px);
+          opacity: 0.98;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 8. Footer Section */
+        .footer-outer-section {
+          background-color: #03201d;
+          color: rgba(255, 255, 255, 0.6);
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .footer-inner-content {
+          max-width: 1200px;
+          width: 100%;
+          padding: 80px 24px 40px 24px;
+        }
+
+        .footer-grid {
+          display: grid;
+          grid-template-columns: 1.5fr repeat(3, 1fr);
+          gap: 48px;
+          margin-bottom: 64px;
+        }
+
+        @media (max-width: 768px) {
+          .footer-grid {
+            grid-template-columns: 1fr;
+            text-align: center;
+            gap: 36px;
+          }
+        }
+
+        .footer-brand-logo-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+          margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+          .footer-brand-logo-row {
+            justify-content: center;
+          }
+        }
+
+        .footer-brand-text {
+          font-family: var(--font-display);
+          font-weight: 850;
+          font-size: 20px;
+          color: #ffffff;
+          letter-spacing: -0.03em;
+        }
+
+        .footer-tagline {
+          font-size: 13px;
+          line-height: 1.5;
+          margin: 0;
+          color: rgba(255, 255, 255, 0.5);
+          max-width: 260px;
+        }
+
+        @media (max-width: 768px) {
+          .footer-tagline {
+            margin: 0 auto;
+          }
+        }
+
+        .footer-column-title {
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 20px;
+        }
+
+        .footer-links-ul {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .footer-link-a {
+          color: rgba(255, 255, 255, 0.6);
+          text-decoration: none;
+          font-size: 13.5px;
+          transition: color var(--transition-fast);
+        }
+
+        .footer-link-a:hover {
+          color: #ffffff;
+        }
+
+        .footer-bottom-row {
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          padding-top: 32px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 12.5px;
+          color: rgba(255, 255, 255, 0.4);
+        }
+
+        @media (max-width: 640px) {
+          .footer-bottom-row {
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             text-align: center;
           }
         }
+
+        .footer-credits {
+          font-weight: 500;
+        }
+
+        .footer-sublinks {
+          display: flex;
+          gap: 24px;
+        }
       `}</style>
 
-      {/* Hero Section */}
-      <section className="hero-section-container">
-        <div className="hero-grid">
-          <div className="hero-content">
-            <span className="section-tagline">LinkeDoc Professional</span>
-            <h1 className="hero-title-text">
-              The Secure Gateway for Clinicians & Researchers
-            </h1>
-            <p className="hero-body-text">
-              Join the dedicated network for verified medical practitioners. Collaborate on complex clinical cases, share peer-reviewed articles, exchange secure messages, and explore residency or specialist job postings under a single protected portal.
-            </p>
-            <div className="hero-buttons-row">
-              <Link to="/signup" className="btn-landing-cta btn-landing-primary">
-                Join the Network <ArrowRight size={16} />
-              </Link>
-              <Link to="/login" className="btn-landing-cta btn-landing-secondary">
-                Doctor Sign In
-              </Link>
-            </div>
-          </div>
-          
-          <div className="hero-image-wrapper">
-            <img 
-              src="/smiling_doctor_hero.png" 
-              alt="Verified Physician smiling" 
-              className="hero-main-img" 
-            />
-            <div className="hero-badge-overlay">
-              <Shield size={20} style={{ color: 'var(--primary)' }} />
-              <div>
-                <strong style={{ fontSize: '12px', display: 'block', color: 'var(--text-primary)' }}>NPPES Verified</strong>
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>HIPAA Compliant discussions</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* 1. Navbar Header */}
+      <nav className="landing-nav" aria-label="Main Navigation">
+        <div className="nav-container">
+          <Link to="/" className="nav-logo-link">
+            <img src="/logo.svg" alt="LinkeDoc Logo" className="nav-logo-img" />
+            <span className="nav-logo-text">LinkeDoc</span>
+          </Link>
 
-      {/* sliding trust bar */}
-      <div className="marquee-strip-container" aria-hidden="true">
-        <div className="marquee-track">
-          <span className="marquee-item"><Shield size={13} style={{ marginRight: '6px' }} /> End-to-End Encrypted</span>
-          <span className="marquee-item"><CheckCircle size={13} style={{ marginRight: '6px' }} /> NMC & NPI Credential Seeding</span>
-          <span className="marquee-item"><Users size={13} style={{ marginRight: '6px' }} /> Medical Specialty Forums</span>
-          <span className="marquee-item"><Lock size={13} style={{ marginRight: '6px' }} /> Zero Ad-Targeting</span>
-          <span className="marquee-item"><Briefcase size={13} style={{ marginRight: '6px' }} /> Healthcare Job Vacancies</span>
-          <span className="marquee-item"><FileText size={13} style={{ marginRight: '6px' }} /> HIPAA Discussion Shield</span>
-          {/* duplicate for infinite looping scroll scroll */}
-          <span className="marquee-item"><Shield size={13} style={{ marginRight: '6px' }} /> End-to-End Encrypted</span>
-          <span className="marquee-item"><CheckCircle size={13} style={{ marginRight: '6px' }} /> NMC & NPI Credential Seeding</span>
-          <span className="marquee-item"><Users size={13} style={{ marginRight: '6px' }} /> Medical Specialty Forums</span>
-          <span className="marquee-item"><Lock size={13} style={{ marginRight: '6px' }} /> Zero Ad-Targeting</span>
-          <span className="marquee-item"><Briefcase size={13} style={{ marginRight: '6px' }} /> Healthcare Job Vacancies</span>
-          <span className="marquee-item"><FileText size={13} style={{ marginRight: '6px' }} /> HIPAA Discussion Shield</span>
-        </div>
-      </div>
+          <ul className="nav-links-list">
+            <li>
+              <button 
+                type="button" 
+                className="nav-link-item" 
+                onClick={() => scrollToSection('about')}
+              >
+                About
+              </button>
+            </li>
+            <li>
+              <button 
+                type="button" 
+                className="nav-link-item" 
+                onClick={() => scrollToSection('features')}
+              >
+                Features
+              </button>
+            </li>
+            <li>
+              <button 
+                type="button" 
+                className="nav-link-item" 
+                onClick={() => scrollToSection('faqs')}
+              >
+                FAQs
+              </button>
+            </li>
+          </ul>
 
-      {/* Mission & Stats */}
-      <section className="landing-section-wrapper">
-        <div className="landing-section-inner">
-          <div className="mission-grid">
-            <div className="hero-image-wrapper">
-              <img 
-                src="/medium-shot-doctors-wearing-protective-equipment.jpg" 
-                alt="Medical team collaborating" 
-                style={{ width: '100%', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)' }} 
-              />
-            </div>
-            <div>
-              <span className="section-tagline">Our Clinical Mission</span>
-              <h2 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '16px' }}>
-                Bridging Professional Distance Securely
-              </h2>
-              <p style={{ fontSize: '14px', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
-                Healthcare is demanding, and discussions require absolute confidentiality and verification. LinkeDoc eliminates non-medical distractions by strictly vetting each user role (Doctors, Nurses, Pharmacists, and Researchers) via public licensing databases. Join colleagues in specialized discussions, access job boards containing scraped medical openings, and exchange diagnostic notes without privacy vulnerabilities.
-              </p>
-              
-              <div className="stats-block-row">
-                <div className="card-glass stat-card-item">
-                  <span className="stat-value">140+</span>
-                  <span className="stat-label">Medical Specialisms</span>
-                </div>
-                <div className="card-glass stat-card-item">
-                  <span className="stat-value">120K+</span>
-                  <span className="stat-label">Verified Members</span>
-                </div>
-                <div className="card-glass stat-card-item">
-                  <span className="stat-value">8K+</span>
-                  <span className="stat-label">Research Shares</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Dynamic Specialty Forums Selector Showcase */}
-      <section className="landing-section-wrapper" style={{ background: 'var(--bg-tertiary)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-        <div className="landing-section-inner">
-          <div className="section-header">
-            <span className="section-tagline">Specialty Directory</span>
-            <h2 className="section-main-title">Specialty-Specific Medical Forums</h2>
-          </div>
-
-          <div className="specialty-selector-container">
-            <div className="specialty-tabs-row">
-              {Object.keys(specialtiesData).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={`specialty-tab-btn ${selectedTab === key ? 'active' : ''}`}
-                  onClick={() => setSelectedTab(key)}
-                >
-                  {key}
-                </button>
-              ))}
-            </div>
-
-            <div className="specialty-showcase-box">
-              <div>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  {activeSpecialty.tagline}
-                </span>
-                <h3 style={{ fontSize: '24px', margin: '8px 0 16px 0', fontWeight: 800 }}>
-                  Explore {activeSpecialty.name} Conversations
-                </h3>
-                <p style={{ fontSize: '14px', lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: '24px' }}>
-                  {activeSpecialty.desc}
-                </p>
-                <div className="stats-block-row" style={{ marginTop: '0', marginBottom: '24px', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div style={{ background: 'var(--bg-primary)', padding: '12px', borderRadius: 'var(--radius-sm)' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, display: 'block', color: 'var(--primary)' }}>
-                      {activeSpecialty.activeDoctors}
-                    </span>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Verified active peers</span>
-                  </div>
-                  <div style={{ background: 'var(--bg-primary)', padding: '12px', borderRadius: 'var(--radius-sm)' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, display: 'block', color: 'var(--primary)' }}>
-                      {activeSpecialty.threadsCount}
-                    </span>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Topics & Case Studies</span>
-                  </div>
-                </div>
-
-                <Link to="/forums" className="btn-landing-cta btn-landing-primary" style={{ padding: '10px 20px', fontSize: '13px' }}>
-                  Open {activeSpecialty.name} Forums
-                </Link>
-              </div>
-
-              <div className="card-glass" style={{ borderLeft: '3px solid var(--primary)', padding: '20px' }}>
-                <span className="stat-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-                  <TrendingUp size={12} /> Recent Hot Topic
-                </span>
-                <h4 style={{ fontSize: '15px', fontWeight: 600, lineHeight: 1.4, marginBottom: '12px' }}>
-                  "{activeSpecialty.recentTopic}"
-                </h4>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>Dr</div>
-                  <span>Shared by verified Practitioner • 3h ago</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Core Features Grid */}
-      <section className="landing-section-wrapper">
-        <div className="landing-section-inner">
-          <div className="section-header">
-            <span className="section-tagline">Integrated Capabilities</span>
-            <h2 className="section-main-title">Core Features Built for Healthcare</h2>
-          </div>
-
-          <div className="features-quad-grid">
-            <div className="card-glass feature-card-item">
-              <div className="feature-icon-wrapper">
-                <Lock size={20} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '18px', marginBottom: '8px', fontWeight: 700 }}>E2EE Direct Messaging</h3>
-                <p style={{ fontSize: '13px', margin: 0, color: 'var(--text-secondary)' }}>
-                  Message colleagues directly with robust cryptographical client-side encryption keys. Share medical feedback, coordinate care, or exchange advice with total privacy.
-                </p>
-              </div>
-            </div>
-
-            <div className="card-glass feature-card-item">
-              <div className="feature-icon-wrapper">
-                <Users size={20} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '18px', marginBottom: '8px', fontWeight: 700 }}>Verified Specialty Forums</h3>
-                <p style={{ fontSize: '13px', margin: 0, color: 'var(--text-secondary)' }}>
-                  Access structured categories dedicated to clinical specialties. Write updates, attach medical research papers, collect community likes, and write replies.
-                </p>
-              </div>
-            </div>
-
-            <div className="card-glass feature-card-item">
-              <div className="feature-icon-wrapper">
-                <Briefcase size={20} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '18px', marginBottom: '8px', fontWeight: 700 }}>Medical Vacancies Scraper</h3>
-                <p style={{ fontSize: '13px', margin: 0, color: 'var(--text-secondary)' }}>
-                  Explore active clinical listings fetched dynamically from HigherEdJobs RSS feeds and seeded by hospitals, filterable by location index and specialties.
-                </p>
-              </div>
-            </div>
-
-            <div className="card-glass feature-card-item">
-              <div className="feature-icon-wrapper">
-                <FileText size={20} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '18px', marginBottom: '8px', fontWeight: 700 }}>Verified Profile Resume Builder</h3>
-                <p style={{ fontSize: '13px', margin: 0, color: 'var(--text-secondary)' }}>
-                  Generate professional, beautifully formatted PDF clinical CV summaries directly from your license-verified profile details, complete with printing stylesheet formatting.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Clinician Reviews / Testimonials */}
-      <section className="landing-section-wrapper" style={{ background: 'var(--bg-tertiary)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-        <div className="landing-section-inner">
-          <div className="section-header">
-            <span className="section-tagline">Clinician Reviews</span>
-            <h2 className="section-main-title">What Our Verified Members Say</h2>
-          </div>
-
-          <div className="testimonials-masonry">
-            <div className="card-glass review-card-item">
-              <div className="reviewer-info-row">
-                <div className="reviewer-avatar-placeholder">AS</div>
-                <div>
-                  <strong style={{ fontSize: '14px', display: 'block', color: 'var(--text-primary)' }}>Dr. Amit Sharma, MD</strong>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Cardiologist • Delhi</span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '2px', color: 'var(--warning)', marginBottom: '12px' }}>
-                <Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" />
-              </div>
-              <p style={{ fontSize: '13px', fontStyle: 'italic', margin: 0 }}>
-                "LinkeDoc has completely transformed how I discuss anomalies with colleagues. The NPI verification gives me confidence that I am talking to real, verified peers. The E2EE chat is extremely fast."
-              </p>
-            </div>
-
-            <div className="card-glass review-card-item">
-              <div className="reviewer-info-row">
-                <div className="reviewer-avatar-placeholder">PP</div>
-                <div>
-                  <strong style={{ fontSize: '14px', display: 'block', color: 'var(--text-primary)' }}>Dr. Priya Patel, DNB</strong>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Pediatrician • Mumbai</span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '2px', color: 'var(--warning)', marginBottom: '12px' }}>
-                <Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" />
-              </div>
-              <p style={{ fontSize: '13px', fontStyle: 'italic', margin: 0 }}>
-                "I use the medical job board to keep track of residency and fellowship vacancies. Having real scraped listings with salary calculators made finding clinical opportunities incredibly easy."
-              </p>
-            </div>
-
-            <div className="card-glass review-card-item">
-              <div className="reviewer-info-row">
-                <div className="reviewer-avatar-placeholder">RK</div>
-                <div>
-                  <strong style={{ fontSize: '14px', display: 'block', color: 'var(--text-primary)' }}>Dr. Rajesh Kumar, PhD</strong>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Oncology Researcher • Bengaluru</span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '2px', color: 'var(--warning)', marginBottom: '12px' }}>
-                <Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" /><Star size={14} fill="currentColor" />
-              </div>
-              <p style={{ fontSize: '13px', fontStyle: 'italic', margin: 0 }}>
-                "Sharing oncological research updates here gets direct visibility from practicing clinical consultants. LinkeDoc bridges clinical practice and medical research beautifully."
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Bottom Banner */}
-      <section className="landing-section-wrapper">
-        <div className="landing-section-inner">
-          <div className="cta-bottom-banner">
-            <h2>Ready to Build Your Clinical Network?</h2>
-            <p>
-              Join a dedicated professional medical community. Vetting takes less than 2 minutes via automated registry verification.
-            </p>
-            <Link to="/signup" className="btn-landing-cta btn-landing-primary" style={{ background: '#ffffff', color: 'var(--primary)', padding: '14px 32px' }}>
-              Create Your Free Account <ArrowRight size={16} />
+          <div className="nav-actions-col">
+            <Link to="/login" className="nav-btn-signin">
+              Sign In
+            </Link>
+            <Link to="/signup" className="nav-btn-join">
+              Join Now
             </Link>
           </div>
         </div>
-      </section>
+      </nav>
 
-      {/* Landing Footer */}
-      <footer className="landing-footer">
-        <div className="footer-columns-row">
-          <div className="footer-brand-column">
-            <img src="/logo.svg" alt="LinkeDoc Logo" />
-            <p style={{ fontSize: '12px', lineHeight: 1.5, color: 'rgba(255, 255, 255, 0.55)', margin: '8px 0 0 0' }}>
-              The secure professional gateway for clinicians, residents, and researchers.
+      {/* 2. Hero Section */}
+      <section className="hero-outer-section" id="hero">
+        <div className="hero-inner-content">
+          <div className="hero-content-left">
+            <div className="hero-tag">
+              <Sparkles size={13} style={{ color: '#05685e' }} /> Sovereign Medical Network
+            </div>
+            <h1 className="hero-h1">
+              Where Verified Medical Professionals Connect
+            </h1>
+            <p className="hero-p">
+              LinkeDoc is an exclusive ecosystem where verified healthcare providers, residents, nurses, pharmacists, and researchers share clinical insights. Exchange E2EE discussions, post peer studies, and navigate dedicated medical career boards.
             </p>
+            <div className="hero-buttons-row">
+              <Link to="/signup" className="hero-btn-primary">
+                Join the Registry <UserPlus size={16} />
+              </Link>
+              <Link to="/login" className="hero-btn-secondary">
+                Member Sign In <ArrowRight size={16} />
+              </Link>
+            </div>
+            <div className="hero-meta-checks">
+              <span className="hero-meta-item">
+                <CheckCircle size={14} style={{ color: '#05685e' }} /> NPI / NMC Audited
+              </span>
+              <span className="hero-meta-item">
+                <CheckCircle size={14} style={{ color: '#05685e' }} /> HIPAA Aligned
+              </span>
+              <span className="hero-meta-item">
+                <CheckCircle size={14} style={{ color: '#05685e' }} /> Zero Ad Tracking
+              </span>
+            </div>
           </div>
-          <div>
-            <h4 style={{ fontSize: '14px', color: '#ffffff', marginBottom: '16px', fontWeight: 600 }}>Pages</h4>
-            <ul className="footer-links-list">
-              <li><Link to="/about" className="footer-link-item">About Us</Link></li>
-              <li><Link to="/accessibility" className="footer-link-item">Accessibility</Link></li>
-              <li><Link to="/help" className="footer-link-item">Help Center</Link></li>
-              <li><Link to="/privacy" className="footer-link-item">Privacy & Terms</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 style={{ fontSize: '14px', color: '#ffffff', marginBottom: '16px', fontWeight: 600 }}>Features</h4>
-            <ul className="footer-links-list">
-              <li><Link to="/forums" className="footer-link-item">Clinical Forums</Link></li>
-              <li><Link to="/jobs" className="footer-link-item">Vacancies Board</Link></li>
-              <li><Link to="/chat" className="footer-link-item">Encrypted Chat</Link></li>
-              <li><Link to="/groups" className="footer-link-item">Medical Groups</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 style={{ fontSize: '14px', color: '#ffffff', marginBottom: '16px', fontWeight: 600 }}>Verification</h4>
-            <p style={{ fontSize: '12px', lineHeight: 1.4, color: 'rgba(255, 255, 255, 0.45)', margin: 0 }}>
-              Automatic vetting enabled via NPPES NPI registries and NMC Medical Registration records.
-            </p>
+
+          <div className="hero-image-wrapper">
+            <img 
+              src="/smiling_doctor_hero.png" 
+              alt="Healthcare professional verified by LinkeDoc credentialing system" 
+              className="hero-img" 
+            />
+            <div className="hero-floating-badge" role="status">
+              <div className="badge-dot"></div>
+              <div>
+                <strong style={{ fontSize: '12.5px', display: 'block', color: '#0f172a' }}>Dr. Ananya Sharma</strong>
+                <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: 600 }}>Registry Verified: NMC Active</span>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div className="footer-bottom-bar">
-          <span>LinkeDoc Corporation © 2026. All rights reserved.</span>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <Link to="/privacy" className="footer-link-item" style={{ fontSize: '11px' }}>Privacy Policy</Link>
-            <Link to="/privacy" className="footer-link-item" style={{ fontSize: '11px' }}>Terms of Service</Link>
-            <Link to="/accessibility" className="footer-link-item" style={{ fontSize: '11px' }}>ADA Compliance</Link>
+      {/* 3. Ticker Bar */}
+      <div className="marquee-container" aria-hidden="true">
+        <div className="marquee-track">
+          <span className="marquee-item"><Shield size={14} /> Automated Registry Audits</span>
+          <span className="marquee-item"><Lock size={14} /> End-to-End Encrypted DMs</span>
+          <span className="marquee-item"><Users size={14} /> Specialty-Specific Forums</span>
+          <span className="marquee-item"><Award size={14} /> NPI / NMC Verification</span>
+          <span className="marquee-item"><Briefcase size={14} /> Scraped Medical Vacancies</span>
+          <span className="marquee-item"><FileText size={14} /> Verified CV Generator</span>
+          {/* Repeat items for smooth infinite loop scroll */}
+          <span className="marquee-item"><Shield size={14} /> Automated Registry Audits</span>
+          <span className="marquee-item"><Lock size={14} /> End-to-End Encrypted DMs</span>
+          <span className="marquee-item"><Users size={14} /> Specialty-Specific Forums</span>
+          <span className="marquee-item"><Award size={14} /> NPI / NMC Verification</span>
+          <span className="marquee-item"><Briefcase size={14} /> Scraped Medical Vacancies</span>
+          <span className="marquee-item"><FileText size={14} /> Verified CV Generator</span>
+        </div>
+      </div>
+
+      {/* 4. About Section */}
+      <section className="about-outer-section" id="about">
+        <div className="about-inner-content">
+          <div className="about-content-left">
+            <span className="section-category">About LinkeDoc</span>
+            <h2 className="section-h2">A Verified Workspace to Elevate Your Practice</h2>
+            <p className="about-desc">
+              Healthcare discussions demand professional accuracy and confidentiality. General social platforms fail to verify licenses, leading to clinical noise, commercial targeting, and privacy risks. LinkeDoc solves this by creating a peer-only sanctuary.
+            </p>
+
+            <div className="about-checklist">
+              <div className="checklist-item">
+                <CheckCircle size={18} className="checklist-icon" />
+                <div>
+                  <strong className="checklist-title">Real-Time Registry Checks</strong>
+                  <span className="checklist-text">We query CMS NPPES (NPI) and State Medical Councils (NMC) to validate every doctor, resident, and researcher.</span>
+                </div>
+              </div>
+              <div className="checklist-item">
+                <CheckCircle size={18} className="checklist-icon" />
+                <div>
+                  <strong className="checklist-title">Academic Publications First</strong>
+                  <span className="checklist-text">Share clinical findings and research paper abstracts directly with verified colleagues and receive clinical peer feedback.</span>
+                </div>
+              </div>
+              <div className="checklist-item">
+                <CheckCircle size={18} className="checklist-icon" />
+                <div>
+                  <strong className="checklist-title">Dedicated HIPAA Flags</strong>
+                  <span className="checklist-text">Our peer reporting shield immediately hides any posts flagged for patient confidentiality violations from view.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="verification-mockup-wrapper">
+            <div className="mockup-header">
+              <Award size={16} style={{ color: '#05685e' }} />
+              <h3 className="mockup-header-title">LinkeDoc Verification Check</h3>
+            </div>
+            <div className="mockup-form">
+              <div>
+                <span className="mockup-label">Professional Role</span>
+                <div className="mockup-input-container">
+                  <span className="mockup-val">Clinical Consultant (Oncology)</span>
+                </div>
+              </div>
+              <div>
+                <span className="mockup-label">Medical Registration ID / NPI</span>
+                <div className="mockup-input-container">
+                  <span className="mockup-val">NMC-2026-98745-A</span>
+                  <CheckCircle size={16} style={{ color: '#10b981' }} />
+                </div>
+              </div>
+              <div className="mockup-status-box">
+                <Shield size={22} style={{ color: '#059669', flexShrink: 0 }} />
+                <div>
+                  <h4 className="mockup-status-title">Database Match Confirmed</h4>
+                  <p className="mockup-status-desc">License is active. Profile credential badge issued.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Features Section */}
+      <section className="features-outer-section" id="features">
+        <div className="features-inner-content">
+          <div className="features-header">
+            <span className="section-category">Platform Features</span>
+            <h2 className="section-h2">Engineered Specially for Healthcare Professionals</h2>
+          </div>
+
+          <div className="features-grid">
+            <div className="feature-item-card">
+              <div className="feature-icon-box">
+                <Award size={22} />
+              </div>
+              <h3 className="feature-h3">Registry Auditing</h3>
+              <p className="feature-desc">
+                Instant license checks query official NPI and NMC databases at signup to block non-clinicians and public accounts.
+              </p>
+            </div>
+
+            <div className="feature-item-card">
+              <div className="feature-icon-box">
+                <Lock size={22} />
+              </div>
+              <h3 className="feature-h3">Encrypted DMs</h3>
+              <p className="feature-desc">
+                Examine clinical cases securely. Messages use client-side end-to-end encryption so keys stay locally in your browser.
+              </p>
+            </div>
+
+            <div className="feature-item-card">
+              <div className="feature-icon-box">
+                <Users size={22} />
+              </div>
+              <h3 className="feature-h3">Specialty Forums</h3>
+              <p className="feature-desc">
+                Discuss complex patient charts on boards filtered by specialty (Cardiology, Pediatrics, Oncology, Neurology).
+              </p>
+            </div>
+
+            <div className="feature-item-card">
+              <div className="feature-icon-box">
+                <Briefcase size={22} />
+              </div>
+              <h3 className="feature-h3">Clinical Jobs</h3>
+              <p className="feature-desc">
+                Discover clinical jobs scraped daily from major medical portals, or post openings directly as an approved recruiter.
+              </p>
+            </div>
+
+            <div className="feature-item-card">
+              <div className="feature-icon-box">
+                <TrendingUp size={22} />
+              </div>
+              <h3 className="feature-h3">Salary Estimator</h3>
+              <p className="feature-desc">
+                Evaluate regional clinical salary indexes and calculate typical medical CTC packages in India based on specialization.
+              </p>
+            </div>
+
+            <div className="feature-item-card">
+              <div className="feature-icon-box">
+                <FileText size={22} />
+              </div>
+              <h3 className="feature-h3">CV Builder</h3>
+              <p className="feature-desc">
+                Generate and download formatted, print-ready medical CVs displaying your verified license and clinical experience.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. FAQ Section */}
+      <section className="faq-outer-section" id="faqs">
+        <div className="faq-inner-content">
+          <div className="faq-header">
+            <span className="section-category">Common Inquiries</span>
+            <h2 className="section-h2">Frequently Asked Questions</h2>
+          </div>
+
+          <div className="faq-accordion-list">
+            {faqData.map((item, index) => {
+              const isActive = activeFaq === index;
+              return (
+                <div 
+                  key={index} 
+                  className={`faq-row-card ${isActive ? 'active' : ''}`}
+                >
+                  <button 
+                    type="button"
+                    className="faq-trigger-btn"
+                    onClick={() => toggleFaq(index)}
+                    aria-expanded={isActive}
+                  >
+                    <span className="faq-question-box">
+                      <HelpCircle size={18} style={{ color: isActive ? '#05685e' : '#64748b', flexShrink: 0 }} />
+                      {item.question}
+                    </span>
+                    <ChevronDown size={18} className="faq-chevron" />
+                  </button>
+                  <div className="faq-pane" aria-hidden={!isActive}>
+                    <p className="faq-answer-p">
+                      {item.answer}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. CTA Section */}
+      <section className="cta-outer-section">
+        <div className="cta-inner-card">
+          <h2 className="cta-h2">Connect with Your Verified Peers Today</h2>
+          <p className="cta-p">
+            License vetting takes less than 2 minutes. Secure a verified professional registry profile to unlock encrypted chats, specialty case review boards, and tailored medical vacancies.
+          </p>
+          <Link to="/signup" className="cta-btn-white-pill">
+            Register Verified Profile <UserPlus size={16} />
+          </Link>
+        </div>
+      </section>
+
+      {/* 8. Footer Section */}
+      <footer className="footer-outer-section" role="contentinfo">
+        <div className="footer-inner-content">
+          <div className="footer-grid">
+            <div className="footer-brand-column">
+              <Link to="/" className="footer-brand-logo-row">
+                <img src="/logo.svg" alt="LinkeDoc Logo" style={{ height: '36px' }} />
+                <span className="footer-brand-text">LinkeDoc</span>
+              </Link>
+              <p className="footer-tagline">
+                The secure professional network for doctors, residents, nurses, pharmacists, and medical researchers.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="footer-column-title">Community</h4>
+              <ul className="footer-links-ul">
+                <li><Link to="/forums" className="footer-link-a">Specialty Forums</Link></li>
+                <li><Link to="/jobs" className="footer-link-a">Clinical Jobs</Link></li>
+                <li><Link to="/groups" className="footer-link-a">Medical Groups</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="footer-column-title">Information</h4>
+              <ul className="footer-links-ul">
+                <li><Link to="/about" className="footer-link-a">About Us</Link></li>
+                <li><Link to="/accessibility" className="footer-link-a">Accessibility</Link></li>
+                <li><Link to="/privacy" className="footer-link-a">Privacy & Terms</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="footer-column-title">Support</h4>
+              <ul className="footer-links-ul">
+                <li><Link to="/help" className="footer-link-a">Help Center</Link></li>
+                <li><a href="mailto:support@linkedoc.com" className="footer-link-a">Support Desk</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="footer-bottom-row">
+            <span className="footer-credits">LinkeDoc @ 2026. All rights reserved.</span>
+            <div className="footer-sublinks">
+              <Link to="/privacy" className="footer-link-a" style={{ fontSize: '11.5px' }}>Privacy Policy</Link>
+              <Link to="/privacy" className="footer-link-a" style={{ fontSize: '11.5px' }}>Terms of Service</Link>
+              <Link to="/accessibility" className="footer-link-a" style={{ fontSize: '11.5px' }}>ADA Compliance</Link>
+            </div>
           </div>
         </div>
       </footer>
     </div>
   );
 };
+
+export default Landing;

@@ -484,6 +484,49 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
   );
 };
 
+const AppContent: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogout }) => {
+  const location = useLocation();
+  const isLanding = location.pathname === '/';
+  const showHeader = !!user || !isLanding;
+
+  return (
+    <div className="app-viewport-wrapper">
+      {showHeader && <HeaderBar user={user} onLogout={onLogout} />}
+
+      <main className={isLanding && !user ? "app-main-content-container-landing" : "app-main-content-container"}>
+        <Suspense fallback={
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+            <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+              <div style={{ width: '32px', height: '32px', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 12px' }} />
+              <span style={{ fontSize: '14px' }}>Loading…</span>
+            </div>
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={user ? <Feed /> : <Landing />} />
+            <Route path="/login" element={user ? <Navigate to="/" /> : <Auth initialView="LOGIN" />} />
+            <Route path="/signup" element={user ? <Navigate to="/" /> : <Auth initialView="REGISTER" />} />
+            <Route path="/profile" element={<ProfileBuilder />} />
+            <Route path="/network" element={<Network />} />
+            <Route path="/groups" element={<Groups />} />
+            <Route path="/groups/:id" element={<Groups />} />
+            <Route path="/forums" element={<Forums />} />
+            <Route path="/jobs" element={<JobBoard />} />
+            <Route path="/jobs/create" element={<CreateJob />} />
+            <Route path="/chat" element={<Messaging />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/accessibility" element={<Accessibility />} />
+            <Route path="/help" element={<HelpCenter />} />
+            <Route path="/privacy" element={<PrivacyTerms />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </main>
+    </div>
+  );
+};
+
 export const App: React.FC = () => {
   const [user, setUser] = useState(api.getCurrentUser());
 
@@ -496,40 +539,7 @@ export const App: React.FC = () => {
   return (
     <ToastProvider>
       <Router>
-        <div className="app-viewport-wrapper">
-          <HeaderBar user={user} onLogout={handleLogout} />
-
-          <main className="app-main-content-container">
-            <Suspense fallback={
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-                <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                  <div style={{ width: '32px', height: '32px', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 12px' }} />
-                  <span style={{ fontSize: '14px' }}>Loading…</span>
-                </div>
-              </div>
-            }>
-              <Routes>
-                <Route path="/" element={user ? <Feed /> : <Landing />} />
-                <Route path="/login" element={user ? <Navigate to="/" /> : <Auth initialView="LOGIN" />} />
-                <Route path="/signup" element={user ? <Navigate to="/" /> : <Auth initialView="REGISTER" />} />
-                <Route path="/profile" element={<ProfileBuilder />} />
-                <Route path="/network" element={<Network />} />
-                <Route path="/groups" element={<Groups />} />
-                <Route path="/groups/:id" element={<Groups />} />
-                <Route path="/forums" element={<Forums />} />
-                <Route path="/jobs" element={<JobBoard />} />
-                <Route path="/jobs/create" element={<CreateJob />} />
-                <Route path="/chat" element={<Messaging />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/accessibility" element={<Accessibility />} />
-                <Route path="/help" element={<HelpCenter />} />
-                <Route path="/privacy" element={<PrivacyTerms />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </main>
-        </div>
+        <AppContent user={user} onLogout={handleLogout} />
       </Router>
     </ToastProvider>
   );
