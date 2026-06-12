@@ -57,12 +57,7 @@ export const Landing: React.FC = () => {
     setActiveFaq(activeFaq === index ? null : index);
   };
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+
 
   return (
     <div className="landing-root">
@@ -1039,54 +1034,7 @@ export const Landing: React.FC = () => {
         }
       `}</style>
 
-      {/* 1. Navbar Header */}
-      <nav className="landing-nav" aria-label="Main Navigation">
-        <div className="nav-container">
-          <Link to="/" className="nav-logo-link">
-            <img src="/logo.svg" alt="LinkeDoc Logo" className="nav-logo-img" />
-            <span className="nav-logo-text">LinkeDoc</span>
-          </Link>
 
-          <ul className="nav-links-list">
-            <li>
-              <button 
-                type="button" 
-                className="nav-link-item" 
-                onClick={() => scrollToSection('about')}
-              >
-                About
-              </button>
-            </li>
-            <li>
-              <button 
-                type="button" 
-                className="nav-link-item" 
-                onClick={() => scrollToSection('features')}
-              >
-                Features
-              </button>
-            </li>
-            <li>
-              <button 
-                type="button" 
-                className="nav-link-item" 
-                onClick={() => scrollToSection('faqs')}
-              >
-                FAQs
-              </button>
-            </li>
-          </ul>
-
-          <div className="nav-actions-col">
-            <Link to="/login" className="nav-btn-signin">
-              Sign In
-            </Link>
-            <Link to="/signup" className="nav-btn-join">
-              Join Now
-            </Link>
-          </div>
-        </div>
-      </nav>
 
       {/* 2. Hero Section */}
       <section className="hero-outer-section" id="hero">
@@ -1131,7 +1079,7 @@ export const Landing: React.FC = () => {
             <div className="hero-floating-badge" role="status">
               <div className="badge-dot"></div>
               <div>
-                <strong style={{ fontSize: '12.5px', display: 'block', color: '#0f172a' }}>Dr. Ananya Sharma</strong>
+                <strong style={{ fontSize: '12.5px', display: 'block', color: '#0f172a' }}>Dr. Naresh Trehan</strong>
                 <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: 600 }}>Registry Verified: NMC Active</span>
               </div>
             </div>

@@ -487,7 +487,7 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
 const AppContent: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogout }) => {
   const location = useLocation();
   const isLanding = location.pathname === '/';
-  const showHeader = !!user || !isLanding;
+  const showHeader = true;
 
   return (
     <div className="app-viewport-wrapper">
