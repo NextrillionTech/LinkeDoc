@@ -853,6 +853,8 @@ export const JobBoard: React.FC = () => {
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '8px',
                         borderTop: '1px solid var(--border)',
                         paddingTop: '12px',
                         fontSize: '11px',

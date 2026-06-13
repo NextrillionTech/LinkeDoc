@@ -196,9 +196,19 @@ export const Network: React.FC = () => {
         @media (max-width: 768px) {
           .network-page-container {
             grid-template-columns: 1fr;
+            padding: 0 12px !important;
+            margin: 15px auto !important;
           }
           .network-sidebar {
             display: none;
+          }
+          .network-main-card form {
+            flex-direction: column !important;
+            gap: 12px !important;
+          }
+          .network-main-card form button {
+            width: 100% !important;
+            justify-content: center !important;
           }
         }
 
@@ -395,11 +405,7 @@ export const Network: React.FC = () => {
           border-color: rgba(239, 68, 68, 0.3);
         }
 
-        @media (max-width: 480px) {
-          .network-page-container {
-            padding: 0 12px !important;
-            margin: 15px auto !important;
-          }
+        @media (max-width: 768px) {
           .network-main-card {
             padding: 16px !important;
           }
@@ -413,6 +419,9 @@ export const Network: React.FC = () => {
             width: 100% !important;
             justify-content: flex-end !important;
           }
+        }
+
+        @media (max-width: 480px) {
           .recommendations-grid {
             grid-template-columns: 1fr !important;
           }

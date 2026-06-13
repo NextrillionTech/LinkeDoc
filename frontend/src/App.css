@@ -80,6 +80,10 @@
   --glass-border: #dcdcdc;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* Base Body Styles */
 body {
   margin: 0;
