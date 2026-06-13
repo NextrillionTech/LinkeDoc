@@ -25,7 +25,7 @@ interface FaqItem {
 const faqData: FaqItem[] = [
   {
     question: 'Who is eligible to join LinkeDoc?',
-    answer: 'LinkeDoc is strictly reserved for verified healthcare professionals. This includes Doctors/Physicians, Residents, Nurses, Pharmacists, and Medical Researchers. Healthcare Recruiters can join to post job listings, while administrators audit the registry. General public access is restricted to ensure professional integrity.'
+    answer: 'LinkeDoc is strictly reserved for verified healthcare professionals. This includes Doctors/Physicians, Residents, Nurses, Pharmacists, and Medical Researchers. Healthcare Recruiters can join to post job listings, while administrators audit the credentials. General public access is restricted to ensure professional integrity.'
   },
   {
     question: 'How does automated credential verification work?',
@@ -1051,7 +1051,7 @@ export const Landing: React.FC = () => {
             </p>
             <div className="hero-buttons-row">
               <Link to="/signup" className="hero-btn-primary">
-                Join the Registry <UserPlus size={16} />
+                Join the Community <UserPlus size={16} />
               </Link>
               <Link to="/login" className="hero-btn-secondary">
                 Member Sign In <ArrowRight size={16} />
@@ -1080,7 +1080,7 @@ export const Landing: React.FC = () => {
               <div className="badge-dot"></div>
               <div>
                 <strong style={{ fontSize: '12.5px', display: 'block', color: '#0f172a' }}>Dr. Naresh Trehan</strong>
-                <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: 600 }}>Registry Verified: NMC Active</span>
+                <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: 600 }}>License Verified: NMC Active</span>
               </div>
             </div>
           </div>
@@ -1090,14 +1090,14 @@ export const Landing: React.FC = () => {
       {/* 3. Ticker Bar */}
       <div className="marquee-container" aria-hidden="true">
         <div className="marquee-track">
-          <span className="marquee-item"><Shield size={14} /> Automated Registry Audits</span>
+          <span className="marquee-item"><Shield size={14} /> Automated License Audits</span>
           <span className="marquee-item"><Lock size={14} /> End-to-End Encrypted DMs</span>
           <span className="marquee-item"><Users size={14} /> Specialty-Specific Forums</span>
           <span className="marquee-item"><Award size={14} /> NPI / NMC Verification</span>
           <span className="marquee-item"><Briefcase size={14} /> Scraped Medical Vacancies</span>
           <span className="marquee-item"><FileText size={14} /> Verified CV Generator</span>
           {/* Repeat items for smooth infinite loop scroll */}
-          <span className="marquee-item"><Shield size={14} /> Automated Registry Audits</span>
+          <span className="marquee-item"><Shield size={14} /> Automated License Audits</span>
           <span className="marquee-item"><Lock size={14} /> End-to-End Encrypted DMs</span>
           <span className="marquee-item"><Users size={14} /> Specialty-Specific Forums</span>
           <span className="marquee-item"><Award size={14} /> NPI / NMC Verification</span>
@@ -1120,7 +1120,7 @@ export const Landing: React.FC = () => {
               <div className="checklist-item">
                 <CheckCircle size={18} className="checklist-icon" />
                 <div>
-                  <strong className="checklist-title">Real-Time Registry Checks</strong>
+                  <strong className="checklist-title">Real-Time License Checks</strong>
                   <span className="checklist-text">We query CMS NPPES (NPI) and State Medical Councils (NMC) to validate every doctor, resident, and researcher.</span>
                 </div>
               </div>
@@ -1185,7 +1185,7 @@ export const Landing: React.FC = () => {
               <div className="feature-icon-box">
                 <Award size={22} />
               </div>
-              <h3 className="feature-h3">Registry Auditing</h3>
+              <h3 className="feature-h3">License Auditing</h3>
               <p className="feature-desc">
                 Instant license checks query official NPI and NMC databases at signup to block non-clinicians and public accounts.
               </p>
@@ -1289,7 +1289,7 @@ export const Landing: React.FC = () => {
         <div className="cta-inner-card">
           <h2 className="cta-h2">Connect with Your Verified Peers Today</h2>
           <p className="cta-p">
-            License vetting takes less than 2 minutes. Secure a verified professional registry profile to unlock encrypted chats, specialty case review boards, and tailored medical vacancies.
+            License vetting takes less than 2 minutes. Secure a verified professional network profile to unlock encrypted chats, specialty case review boards, and tailored medical vacancies.
           </p>
           <Link to="/signup" className="cta-btn-white-pill">
             Register Verified Profile <UserPlus size={16} />

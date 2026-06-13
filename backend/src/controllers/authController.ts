@@ -28,7 +28,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
           isVerified = true;
           verificationMessageDetails = ' Verified via test mock credentials.';
         } else {
-          verificationMessageDetails = ' Pending manual administrator review via NMC Registry.';
+          verificationMessageDetails = ' Pending manual administrator review via NMC Database.';
         }
       } else {
         verificationMessageDetails = ' Medical Registration Number (MRN) is required for doctor accounts.';
@@ -46,17 +46,17 @@ export const register = async (req: Request, res: Response, next: NextFunction):
               isVerified = true;
               verificationMessageDetails = ` Verified registered name: ${providerName}.`;
             } else {
-              verificationMessageDetails = ` Entered NPI was not found in the NPPES Registry.`;
+              verificationMessageDetails = ` Entered NPI was not found in the NPPES Database.`;
             }
           } else {
             // NPPES Registry returned error
             isVerified = true; // Fallback
-            verificationMessageDetails = ` Registry offline (Status ${response.status}). Verified by license format.`;
+            verificationMessageDetails = ` Verification service offline (Status ${response.status}). Verified by license format.`;
           }
         } catch (err) {
           console.error('NPI Registry Lookup Error', err);
           isVerified = true; // Fallback
-          verificationMessageDetails = ` Registry connection issue. Verified by license format.`;
+          verificationMessageDetails = ` Verification database connection issue. Verified by license format.`;
         }
       } else if (trimmedLicense.toUpperCase().startsWith('NPI-')) {
         isVerified = true;

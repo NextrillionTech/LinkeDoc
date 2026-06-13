@@ -347,7 +347,7 @@ export const Feed: React.FC = () => {
         setPubmedAlert('No articles found matching that query. Pre-filled standard details.');
       }
     } catch (e) {
-      setPubmedAlert('Could not connect to database registry. Entered demo records.');
+      setPubmedAlert('Could not connect to medical database. Entered demo records.');
     } finally {
       setPubmedSearching(false);
     }

@@ -22,7 +22,7 @@ export const PrivacyTerms: React.FC = () => {
         <h2 style={{ fontSize: '20px', marginTop: '30px', marginBottom: '12px', color: 'var(--text-primary)', fontWeight: 600 }}>2. Professional Conduct & HIPAA</h2>
         
         <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-          By registering on LinkeDoc, you agree that you are a certified medical professional or official healthcare recruiter. Any medical discussions, research papers, or clinical case sharing must follow HIPAA and national healthcare patient privacy rules. Any violation of licensing verification checks or patient privacy will lead to permanent registry bans.
+          By registering on LinkeDoc, you agree that you are a certified medical professional or official healthcare recruiter. Any medical discussions, research papers, or clinical case sharing must follow HIPAA and national healthcare patient privacy rules. Any violation of licensing verification checks or patient privacy will lead to permanent platform bans.
         </p>
       </div>
     </div>

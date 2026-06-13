@@ -20,7 +20,7 @@ export const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
 
-  useSEO('Admin Dashboard', 'LinkeDoc medical registry verification control panel.');
+  useSEO('Admin Dashboard', 'LinkeDoc medical network verification control panel.');
 
   const fetchPending = async () => {
     try {

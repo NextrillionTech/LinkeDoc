@@ -19,7 +19,7 @@ export const HelpCenter: React.FC = () => {
           <div>
             <h3 style={{ fontSize: '16px', color: 'var(--text-primary)', fontWeight: 600, margin: '0 0 6px 0' }}>How do I verify my clinical license?</h3>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
-              Provide your Medical Registration Number (MRN) or professional license details during profile onboarding. Our administrator team validates credentials against official registry databases before approving full read-write privileges.
+              Provide your Medical Registration Number (MRN) or professional license details during profile onboarding. Our administrator team validates credentials against official licensing databases before approving full read-write privileges.
             </p>
           </div>
           <div>

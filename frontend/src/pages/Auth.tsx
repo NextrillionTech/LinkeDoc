@@ -163,7 +163,7 @@ export const Auth: React.FC<AuthProps> = ({ initialView = 'LOGIN' }) => {
             <div>
               {message.includes('verified') && (
                 <strong style={{ display: 'block', marginBottom: '2px', color: 'var(--success)' }}>
-                  NPI Registry Verified!
+                  NPI Credentials Verified!
                 </strong>
               )}
               <span>{message}</span>
