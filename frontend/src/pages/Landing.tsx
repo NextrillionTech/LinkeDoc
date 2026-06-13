@@ -1304,7 +1304,6 @@ export const Landing: React.FC = () => {
             <div className="footer-brand-column">
               <Link to="/" className="footer-brand-logo-row">
                 <img src="/logo.svg" alt="LinkeDoc Logo" style={{ height: '36px' }} />
-                <span className="footer-brand-text">LinkeDoc</span>
               </Link>
               <p className="footer-tagline">
                 The secure professional network for doctors, residents, nurses, pharmacists, and medical researchers.
