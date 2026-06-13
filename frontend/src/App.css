@@ -1209,3 +1209,118 @@ textarea:focus-visible {
   white-space: nowrap;
   border: 0;
 }
+
+/* ===== Responsive Mobile Navigation Drawer ===== */
+.linkedin-mobile-menu-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .linkedin-header-right {
+    display: none !important;
+  }
+  .linkedin-mobile-menu-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: none !important;
+    border: none !important;
+    color: var(--text-primary) !important;
+    cursor: pointer;
+    padding: 8px;
+    margin-left: auto;
+  }
+  
+  .linkedin-mobile-drawer {
+    display: flex !important;
+    flex-direction: column;
+    gap: 16px;
+    position: fixed !important;
+    top: 80px !important;
+    right: 20px !important;
+    width: calc(100% - 40px) !important;
+    max-width: 320px !important;
+    z-index: 999999 !important;
+    box-shadow: var(--shadow-lg) !important;
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 20px !important;
+    animation: slideInRight 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .mobile-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  
+  .mobile-drawer-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  
+  .mobile-drawer-profile-summary {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .mobile-drawer-divider {
+    height: 1px;
+    background-color: var(--border);
+  }
+  
+  .mobile-drawer-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .mobile-drawer-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s;
+  }
+  
+  .mobile-drawer-link:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--primary);
+  }
+  
+  .mobile-drawer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .linkedin-search-container {
+    max-width: 140px !important;
+  }
+  .linkedin-search-container:focus-within {
+    max-width: 180px !important;
+  }
+  .theme-toggle-btn {
+    display: none !important; /* Managed inside mobile drawer now */
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

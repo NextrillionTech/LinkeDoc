@@ -36,7 +36,9 @@ import {
   FolderOpen,
   Bell,
   Sun,
-  Moon
+  Moon,
+  Menu,
+  X
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -60,6 +62,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label }) => {
 
 const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogout }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -284,191 +287,312 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
 
         {/* Right: Nav items */}
         {user ? (
-          <div className="linkedin-header-right">
-            <nav className="linkedin-nav-menu" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <NavItem to="/home" icon={<Home size={20} />} label="Home" />
-              <NavItem to="/network" icon={<Users size={20} />} label="My Network" />
-              <NavItem to="/jobs" icon={<Briefcase size={20} />} label="Jobs" />
+          <>
+            <div className="linkedin-header-right">
+              <nav className="linkedin-nav-menu" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <NavItem to="/home" icon={<Home size={20} />} label="Home" />
+                <NavItem to="/network" icon={<Users size={20} />} label="My Network" />
+                <NavItem to="/jobs" icon={<Briefcase size={20} />} label="Jobs" />
 
-              <div className="linkedin-nav-divider"></div>
+                <div className="linkedin-nav-divider"></div>
 
-              {/* Notification bell item */}
-              <div className="linkedin-notif-menu-container" ref={notifRef} style={{ position: 'relative' }}>
-                <button
-                  type="button"
-                  className={`linkedin-icon-only-btn ${notificationsOpen ? 'active' : ''}`}
-                  onClick={() => setNotificationsOpen(!notificationsOpen)}
-                  title="Notifications"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 0
-                  }}
-                >
-                  <Bell size={20} />
-                  {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
-                </button>
-
-                {notificationsOpen && (
-                  <div className="card-glass linkedin-notif-dropdown-card">
-                    <div className="notif-dropdown-header">
-                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Notifications</h4>
-                      {unreadCount > 0 && (
-                        <button
-                          type="button"
-                          onClick={handleMarkAllRead}
-                          className="btn-ghost"
-                          style={{ fontSize: '11px', padding: '4px 8px', margin: 0 }}
-                        >
-                          Mark all as read
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="notif-dropdown-list">
-                      {notifications.length === 0 ? (
-                        <div className="notif-empty-state">No notifications yet.</div>
-                      ) : (
-                        notifications.map((n) => (
-                          <Link
-                            key={n.id}
-                            to={getNotificationLink(n)}
-                            onClick={() => handleNotificationClick(n)}
-                            className={`notif-item-link ${!n.isRead ? 'unread' : ''}`}
-                            style={{ textDecoration: 'none', color: 'inherit' }}
-                          >
-                            <div className="notif-content-col">
-                              <p className="notif-text">{formatNotificationMessage(n)}</p>
-                              <span className="notif-time">
-                                {new Date(n.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                            {!n.isRead && <div className="notif-dot"></div>}
-                          </Link>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Messaging item */}
-              <Link
-                to="/chat"
-                className="linkedin-icon-only-btn"
-                title="Messaging"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <MessageSquare size={20} />
-              </Link>
-
-              {/* "Me" Profile dropdown */}
-              <div className="linkedin-me-menu-container" ref={dropdownRef}>
-                <button
-                  className="linkedin-me-trigger-btn"
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: '0 8px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: '8px',
-                    height: '40px',
-                    width: 'auto',
-                    borderRadius: '20px',
-                    color: 'var(--text-muted)',
-                    transition: 'all var(--transition-fast)'
-                  }}
-                >
-                  <div
-                    className="linkedin-me-avatar"
+                {/* Notification bell item */}
+                <div className="linkedin-notif-menu-container" ref={notifRef} style={{ position: 'relative' }}>
+                  <button
+                    type="button"
+                    className={`linkedin-icon-only-btn ${notificationsOpen ? 'active' : ''}`}
+                    onClick={() => setNotificationsOpen(!notificationsOpen)}
+                    title="Notifications"
                     style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      background: 'var(--primary-glow)',
-                      color: 'var(--primary)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontWeight: 700,
-                      fontSize: '10px',
-                      border: '1px solid var(--border)'
+                      padding: 0
                     }}
                   >
-                    {getInitials(user.name)}
-                  </div>
-                </button>
+                    <Bell size={20} />
+                    {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+                  </button>
 
-                {dropdownOpen && (
-                  <div className="card-glass linkedin-me-dropdown-card">
-                    <div className="me-dropdown-profile-summary">
-                      <div className="me-dropdown-avatar">
-                        {getInitials(user.name)}
+                  {notificationsOpen && (
+                    <div className="card-glass linkedin-notif-dropdown-card">
+                      <div className="notif-dropdown-header">
+                        <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Notifications</h4>
+                        {unreadCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleMarkAllRead}
+                            className="btn-ghost"
+                            style={{ fontSize: '11px', padding: '4px 8px', margin: 0 }}
+                          >
+                            Mark all as read
+                          </button>
+                        )}
                       </div>
-                      <div className="me-dropdown-details">
-                        <div className="me-dropdown-name">{user.role === 'ADMIN' ? user.name : `Dr. ${user.name}`}</div>
-                        <div className="me-dropdown-specialty">
-                          {user.role} {user.specialty ? `• ${user.specialty}` : ''}
+
+                      <div className="notif-dropdown-list">
+                        {notifications.length === 0 ? (
+                          <div className="notif-empty-state">No notifications yet.</div>
+                        ) : (
+                          notifications.map((n) => (
+                            <Link
+                              key={n.id}
+                              to={getNotificationLink(n)}
+                              onClick={() => handleNotificationClick(n)}
+                              className={`notif-item-link ${!n.isRead ? 'unread' : ''}`}
+                              style={{ textDecoration: 'none', color: 'inherit' }}
+                            >
+                              <div className="notif-content-col">
+                                <p className="notif-text">{formatNotificationMessage(n)}</p>
+                                <span className="notif-time">
+                                  {new Date(n.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                              {!n.isRead && <div className="notif-dot"></div>}
+                            </Link>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Messaging item */}
+                <Link
+                  to="/chat"
+                  className="linkedin-icon-only-btn"
+                  title="Messaging"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <MessageSquare size={20} />
+                </Link>
+
+                {/* "Me" Profile dropdown */}
+                <div className="linkedin-me-menu-container" ref={dropdownRef}>
+                  <button
+                    className="linkedin-me-trigger-btn"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '0 8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: '8px',
+                      height: '40px',
+                      width: 'auto',
+                      borderRadius: '20px',
+                      color: 'var(--text-muted)',
+                      transition: 'all var(--transition-fast)'
+                    }}
+                  >
+                    <div
+                      className="linkedin-me-avatar"
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: 'var(--primary-glow)',
+                        color: 'var(--primary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: '10px',
+                        border: '1px solid var(--border)'
+                      }}
+                    >
+                      {getInitials(user.name)}
+                    </div>
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="card-glass linkedin-me-dropdown-card">
+                      <div className="me-dropdown-profile-summary">
+                        <div className="me-dropdown-avatar">
+                          {getInitials(user.name)}
+                        </div>
+                        <div className="me-dropdown-details">
+                          <div className="me-dropdown-name">{user.role === 'ADMIN' ? user.name : `Dr. ${user.name}`}</div>
+                          <div className="me-dropdown-specialty">
+                            {user.role} {user.specialty ? `• ${user.specialty}` : ''}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <Link
-                      to="/profile"
-                      className="btn-primary me-dropdown-view-profile-btn"
-                      onClick={() => setDropdownOpen(false)}
-                      style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                    >
-                      <User size={14} /> View Profile
-                    </Link>
-
-                    <div className="me-dropdown-divider"></div>
-
-                    <div className="me-dropdown-section">
-                      <h4 className="me-dropdown-section-header">Manage</h4>
-                      <Link to="/forums" className="me-dropdown-link" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Layers size={14} /> Posts & Discussions
+                      <Link
+                        to="/profile"
+                        className="btn-primary me-dropdown-view-profile-btn"
+                        onClick={() => setDropdownOpen(false)}
+                        style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                      >
+                        <User size={14} /> View Profile
                       </Link>
-                      <Link to="/groups" className="me-dropdown-link" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FolderOpen size={14} /> Groups
-                      </Link>
-                      {user.role === 'ADMIN' && (
-                        <Link to="/admin" className="me-dropdown-link" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <Shield size={14} /> Admin Dashboard
+
+                      <div className="me-dropdown-divider"></div>
+
+                      <div className="me-dropdown-section">
+                        <h4 className="me-dropdown-section-header">Manage</h4>
+                        <Link to="/forums" className="me-dropdown-link" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Layers size={14} /> Posts & Discussions
                         </Link>
-                      )}
+                        <Link to="/groups" className="me-dropdown-link" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <FolderOpen size={14} /> Groups
+                        </Link>
+                        {user.role === 'ADMIN' && (
+                          <Link to="/admin" className="me-dropdown-link" onClick={() => setDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Shield size={14} /> Admin Dashboard
+                          </Link>
+                        )}
+                      </div>
+
+                      <div className="me-dropdown-divider"></div>
+
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          onLogout();
+                        }}
+                        className="me-dropdown-logout-btn"
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%' }}
+                      >
+                        <LogOut size={14} /> Sign Out
+                      </button>
                     </div>
+                  )}
+                </div>
 
-                    <div className="me-dropdown-divider"></div>
+              </nav>
+            </div>
 
-                    <button
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        onLogout();
-                      }}
-                      className="me-dropdown-logout-btn"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%' }}
-                    >
-                      <LogOut size={14} /> Sign Out
-                    </button>
+            {/* Mobile menu hamburger button */}
+            <button
+              type="button"
+              className="linkedin-mobile-menu-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              title="Menu"
+            >
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+
+            {/* Mobile navigation drawer/card */}
+            {mobileMenuOpen && (
+              <div className="linkedin-mobile-drawer card-glass">
+                <div className="mobile-drawer-header">
+                  <span className="mobile-drawer-title">Navigation</span>
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => setMobileMenuOpen(false)}
+                    style={{ padding: '4px', border: 'none', background: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                <div className="mobile-drawer-profile-summary">
+                  <div className="me-dropdown-avatar" style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: 'var(--primary-glow)',
+                    color: 'var(--primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    border: '1px solid var(--border)',
+                    flexShrink: 0
+                  }}>
+                    {getInitials(user.name)}
                   </div>
-                )}
-              </div>
+                  <div className="me-dropdown-details">
+                    <div className="me-dropdown-name" style={{ fontSize: '14px', fontWeight: 600 }}>
+                      {user.role === 'ADMIN' ? user.name : `Dr. ${user.name}`}
+                    </div>
+                    <div className="me-dropdown-specialty" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                      {user.role} {user.specialty ? `• ${user.specialty}` : ''}
+                    </div>
+                  </div>
+                </div>
 
-            </nav>
-          </div>
+                <Link
+                  to="/profile"
+                  className="btn-primary"
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px', fontSize: '13px' }}
+                >
+                  <User size={14} /> View Profile
+                </Link>
+
+                <div className="mobile-drawer-divider"></div>
+
+                <nav className="mobile-drawer-nav">
+                  <Link to="/home" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                    <Home size={18} /> Home
+                  </Link>
+                  <Link to="/network" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                    <Users size={18} /> My Network
+                  </Link>
+                  <Link to="/jobs" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                    <Briefcase size={18} /> Jobs
+                  </Link>
+                  <Link to="/chat" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                    <MessageSquare size={18} /> Messaging
+                  </Link>
+                  <Link to="/forums" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                    <Layers size={18} /> Posts & Discussions
+                  </Link>
+                  <Link to="/groups" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                    <FolderOpen size={18} /> Groups
+                  </Link>
+                  {user.role === 'ADMIN' && (
+                    <Link to="/admin" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                      <Shield size={18} /> Admin Dashboard
+                    </Link>
+                  )}
+                </nav>
+
+                <div className="mobile-drawer-divider"></div>
+
+                <div className="mobile-drawer-actions">
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => {
+                      setTheme(theme === 'dark' ? 'light' : 'dark');
+                      setMobileMenuOpen(false);
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', justifyContent: 'flex-start', padding: '6px 0', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '13px' }}
+                  >
+                    {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                    Toggle {theme === 'dark' ? 'Light' : 'Dark'} Mode
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="me-dropdown-logout-btn"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '8px', border: '1px solid var(--border)', background: 'none', color: 'var(--danger)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: '13px' }}
+                  >
+                    <LogOut size={14} /> Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="linkedin-header-right" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <Link to="/login" className="btn-ghost" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--primary)', textDecoration: 'none', padding: '8px 16px', borderRadius: 'var(--radius-sm)' }}>
