@@ -12,7 +12,7 @@
       "destination": "/api/index"
     },
     {
-      "source": "/((?!api|health|assets|favicon.ico).*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]

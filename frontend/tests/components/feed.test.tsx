@@ -7,6 +7,7 @@ import { api } from '../../src/services/api';
 
 // Mock API service layer
 vi.mock('../../src/services/api', () => ({
+  API_BASE_URL: '/api',
   api: {
     getCurrentUser: vi.fn().mockReturnValue({
       id: '11111111-1111-1111-1111-111111111111',

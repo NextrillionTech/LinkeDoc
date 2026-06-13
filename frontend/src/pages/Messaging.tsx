@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { api } from '../services/api';
+import { api, API_BASE_URL } from '../services/api';
 import {
   generateAndStoreKeys,
   deriveSharedKey,
@@ -157,7 +157,7 @@ export const Messaging: React.FC = () => {
     try {
       pusher = new Pusher(PUSHER_KEY, {
         cluster: PUSHER_CLUSTER,
-        authEndpoint: `/api/conversations/pusher/auth`,
+        authEndpoint: `${API_BASE_URL}/conversations/pusher/auth`,
         auth: {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('linkedoc_token')}`,

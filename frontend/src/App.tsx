@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Auth } from './pages/Auth';
-import { api } from './services/api';
+import { api, API_BASE_URL } from './services/api';
 import { ToastProvider } from './components/ToastContext';
 import './App.css';
 
@@ -124,7 +124,7 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
       import('pusher-js').then(({ default: PusherJS }) => {
         pusher = new PusherJS(PUSHER_KEY, {
           cluster: PUSHER_CLUSTER,
-          authEndpoint: '/api/conversations/pusher/auth',
+          authEndpoint: `${API_BASE_URL}/conversations/pusher/auth`,
           auth: {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('linkedoc_token') || ''}`,
