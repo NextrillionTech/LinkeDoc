@@ -761,7 +761,7 @@ p {
 
 /* App structure safe offset */
 .app-main-content-container {
-  max-width: 1200px;
+  max-width: 1128px;
   margin: 0 auto;
   padding: 0 16px;
   box-sizing: border-box;

@@ -595,7 +595,7 @@ export const Feed: React.FC = () => {
       {/* Styles inline for advanced LinkedIn components */}
       <style>{`
         .feed-layout-container {
-          max-width: 1200px;
+          max-width: 1128px;
           margin: 30px auto;
           padding: 0 20px;
           display: grid;

@@ -83,7 +83,7 @@ export const Forums: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+    <div style={{ maxWidth: '1128px', margin: '40px auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
       <style>{`
         .forums-grid-layout {
           display: grid;

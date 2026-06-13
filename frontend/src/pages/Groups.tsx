@@ -341,7 +341,7 @@ export const Groups: React.FC = () => {
       {/* Styles for Groups panels */}
       <style>{`
         .groups-layout-container {
-          max-width: 1200px;
+          max-width: 1128px;
           margin: 30px auto;
           padding: 0 20px;
           display: grid;

@@ -185,7 +185,7 @@ export const Network: React.FC = () => {
     <div className="network-page-container">
       <style>{`
         .network-page-container {
-          max-width: 1200px;
+          max-width: 1128px;
           margin: 30px auto;
           padding: 0 20px;
           display: grid;

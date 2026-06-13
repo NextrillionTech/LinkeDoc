@@ -310,7 +310,7 @@ export const JobBoard: React.FC = () => {
     <div className="jobs-page-container">
       <style>{`
         .jobs-page-container {
-          max-width: 1200px;
+          max-width: 1128px;
           margin: 30px auto;
           padding: 0 20px;
           display: grid;

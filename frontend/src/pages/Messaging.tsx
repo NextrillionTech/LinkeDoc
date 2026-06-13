@@ -354,7 +354,7 @@ export const Messaging: React.FC = () => {
   };
 
   return (
-    <div className="messaging-page-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '10px 0' }}>
+    <div className="messaging-page-container" style={{ maxWidth: '1128px', margin: '0 auto', padding: '10px 0' }}>
       <style>{`
         .messaging-layout-container {
           display: grid;
