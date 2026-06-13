@@ -526,26 +526,26 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
                 <div className="mobile-drawer-divider"></div>
 
                 <nav className="mobile-drawer-nav">
-                  <Link to="/home" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/home" className={`mobile-drawer-link ${location.pathname === '/home' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
                     <Home size={18} /> Home
                   </Link>
-                  <Link to="/network" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/network" className={`mobile-drawer-link ${location.pathname === '/network' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
                     <Users size={18} /> My Network
                   </Link>
-                  <Link to="/jobs" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/jobs" className={`mobile-drawer-link ${location.pathname.startsWith('/jobs') ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
                     <Briefcase size={18} /> Jobs
                   </Link>
-                  <Link to="/chat" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/chat" className={`mobile-drawer-link ${location.pathname === '/chat' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
                     <MessageSquare size={18} /> Messaging
                   </Link>
-                  <Link to="/forums" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/forums" className={`mobile-drawer-link ${location.pathname === '/forums' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
                     <Layers size={18} /> Posts & Discussions
                   </Link>
-                  <Link to="/groups" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/groups" className={`mobile-drawer-link ${location.pathname.startsWith('/groups') ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
                     <FolderOpen size={18} /> Groups
                   </Link>
                   {user.role === 'ADMIN' && (
-                    <Link to="/admin" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>
+                    <Link to="/admin" className={`mobile-drawer-link ${location.pathname === '/admin' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
                       <Shield size={18} /> Admin Dashboard
                     </Link>
                   )}

@@ -1296,9 +1296,11 @@ textarea:focus-visible {
     transition: background-color 0.2s;
   }
   
-  .mobile-drawer-link:hover {
+  .mobile-drawer-link:hover,
+  .mobile-drawer-link.active {
     background-color: var(--bg-tertiary);
     color: var(--primary);
+    font-weight: 600;
   }
   
   .mobile-drawer-actions {
