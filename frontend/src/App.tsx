@@ -286,7 +286,7 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
         {user ? (
           <div className="linkedin-header-right">
             <nav className="linkedin-nav-menu" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <NavItem to="/" icon={<Home size={20} />} label="Home" />
+              <NavItem to="/home" icon={<Home size={20} />} label="Home" />
               <NavItem to="/network" icon={<Users size={20} />} label="My Network" />
               <NavItem to="/jobs" icon={<Briefcase size={20} />} label="Jobs" />
 
@@ -503,9 +503,10 @@ const AppContent: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLog
           </div>
         }>
           <Routes>
-            <Route path="/" element={user ? <Feed /> : <Landing />} />
-            <Route path="/login" element={user ? <Navigate to="/" /> : <Auth initialView="LOGIN" />} />
-            <Route path="/signup" element={user ? <Navigate to="/" /> : <Auth initialView="REGISTER" />} />
+            <Route path="/" element={user ? <Navigate to="/home" /> : <Landing />} />
+            <Route path="/home" element={user ? <Feed /> : <Navigate to="/" />} />
+            <Route path="/login" element={user ? <Navigate to="/home" /> : <Auth initialView="LOGIN" />} />
+            <Route path="/signup" element={user ? <Navigate to="/home" /> : <Auth initialView="REGISTER" />} />
             <Route path="/profile" element={<ProfileBuilder />} />
             <Route path="/network" element={<Network />} />
             <Route path="/groups" element={<Groups />} />
