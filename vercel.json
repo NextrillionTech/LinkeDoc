@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "cleanUrls": true,
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
@@ -12,7 +11,7 @@
       "destination": "/api/index"
     },
     {
-      "source": "/:path*",
+      "source": "/((?!api|health).*)",
       "destination": "/index.html"
     }
   ]
