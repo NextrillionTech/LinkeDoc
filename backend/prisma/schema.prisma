@@ -140,6 +140,7 @@ model JobListing {
   description String
   specialty   String
   location    String
+  applyUrl    String?
   expiresAt   DateTime
   createdAt   DateTime @default(now())
 

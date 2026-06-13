@@ -9,42 +9,49 @@ const fallbackJobs = [
     description: 'Seeking an experienced Cardiology Senior Resident for clinical cardiology ward supervision, echocardiography reporting, and intensive care management. Candidates must hold MD/DNB in General Medicine or Cardiology.',
     specialty: 'Cardiology',
     location: 'Delhi NCR',
+    applyUrl: 'mailto:hr@aiims.edu',
   },
   {
     title: 'Pediatrician (MD/DNB)',
     description: 'Seeking a compassionate Pediatrician for outpatient clinical care, immunization schedule management, and neonatal ICU support. Full-time position with competitive benefits.',
     specialty: 'Pediatrics',
     location: 'Mumbai',
+    applyUrl: 'mailto:careers@fortishealthcare.com',
   },
   {
     title: 'Clinical Oncology Consultant',
     description: 'Tata Memorial affiliated center is recruiting a Consultant in Clinical Oncology to manage chemotherapy plans, radiotherapy mapping, and inpatient oncology services.',
     specialty: 'Oncology',
     location: 'Mumbai',
+    applyUrl: 'https://tmc.gov.in/m_events/Events/JobVacancies',
   },
   {
     title: 'Consultant Neurosurgeon',
     description: 'NIMHANS is inviting applications for a Consultant Neurosurgeon to manage trauma neurosurgery and coordinate clinical research programs.',
     specialty: 'Neurology',
     location: 'Bengaluru',
+    applyUrl: 'https://nimhans.ac.in/careers',
   },
   {
     title: 'General Practitioner / MBBS Duty Doctor',
     description: 'Duties include primary patient triaging, emergency ward cover, and minor surgical procedures under supervision. Shift-based schedule.',
     specialty: 'General Medicine',
     location: 'Chennai',
+    applyUrl: 'mailto:careers@apollohospitals.com',
   },
   {
     title: 'Clinical Pharmacist',
     description: 'Hospital pharmacist required for inpatient prescription audits, drug reconciliation, and medication counseling.',
     specialty: 'Pharmacist',
     location: 'Hyderabad',
+    applyUrl: 'mailto:hr@maxhealthcare.com',
   },
   {
     title: 'Senior Nurse - Intensive Care Unit',
     description: 'ICU Senior Nurse wanted for critical care monitoring, ventilator patient care, and assistant duties for senior intensivists.',
     specialty: 'Nurse',
     location: 'Pune',
+    applyUrl: 'mailto:nursing.careers@medanta.org',
   }
 ];
 
@@ -110,7 +117,7 @@ export const scrapeAndSeedJobs = async (): Promise<void> => {
       orderBy: { createdAt: 'desc' }
     });
 
-    if (latestJob) {
+    if (latestJob && process.env.FORCE_SEED !== 'true') {
       const oneDayAgo = new Date();
       oneDayAgo.setDate(oneDayAgo.getDate() - 1);
       if (latestJob.createdAt > oneDayAgo) {
@@ -119,7 +126,7 @@ export const scrapeAndSeedJobs = async (): Promise<void> => {
       }
     }
 
-    let jobsParsed: Array<{ title: string; description: string; specialty: string; location: string }> = [];
+    let jobsParsed: Array<{ title: string; description: string; specialty: string; location: string; applyUrl?: string }> = [];
 
     try {
       console.log('[Scraper] Fetching medical/clinical vacancies from HigherEdJobs RSS...');
@@ -148,13 +155,15 @@ export const scrapeAndSeedJobs = async (): Promise<void> => {
         const itemXml = match[1];
         const title = extractTagContent(itemXml, 'title');
         const description = extractTagContent(itemXml, 'description');
+        const link = extractTagContent(itemXml, 'link');
         
         if (title) {
           jobsParsed.push({
             title,
             description: description || 'No description provided.',
             specialty: detectSpecialty(title, description),
-            location: detectLocation(title)
+            location: detectLocation(title),
+            applyUrl: link || 'https://www.higheredjobs.com'
           });
         }
       }
@@ -162,17 +171,16 @@ export const scrapeAndSeedJobs = async (): Promise<void> => {
       console.error('[Scraper] Network or parsing error. Falling back to local medical listings.', err);
     }
 
-    if (jobsParsed.length === 0) {
-      console.log('[Scraper] No jobs scraped from RSS feed. Using local clinical fallback database.');
-      jobsParsed = fallbackJobs;
-    }
+    // Combine local Indian fallback jobs and any scraped jobs
+    const allJobsToSeed = [...fallbackJobs, ...jobsParsed];
 
     // Seed listings in DB
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30);
 
     let createdCount = 0;
-    for (const job of jobsParsed) {
+    let updatedCount = 0;
+    for (const job of allJobsToSeed) {
       const title = job.title.trim();
       const description = job.description.trim();
 
@@ -183,7 +191,15 @@ export const scrapeAndSeedJobs = async (): Promise<void> => {
         }
       });
 
-      if (!existing) {
+      if (existing) {
+        if (existing.applyUrl !== (job.applyUrl || null)) {
+          await prisma.jobListing.update({
+            where: { id: existing.id },
+            data: { applyUrl: job.applyUrl || null }
+          });
+          updatedCount++;
+        }
+      } else {
         await prisma.jobListing.create({
           data: {
             recruiterId: recruiter.id,
@@ -191,13 +207,24 @@ export const scrapeAndSeedJobs = async (): Promise<void> => {
             description,
             specialty: job.specialty,
             location: job.location,
+            applyUrl: job.applyUrl || null,
             expiresAt,
           }
         });
         createdCount++;
       }
     }
-    console.log(`[Scraper] Seeded ${createdCount} new medical vacancies successfully.`);
+    
+    // Cleanup: remove expired jobs from DB
+    const deleted = await prisma.jobListing.deleteMany({
+      where: {
+        expiresAt: {
+          lt: new Date()
+        }
+      }
+    });
+    
+    console.log(`[Scraper] Seeding complete: Created ${createdCount}, updated ${updatedCount}, and cleaned up ${deleted.count} expired listings.`);
 
   } catch (err) {
     console.error('[Scraper] Fatal error in scrapeAndSeedJobs:', err);

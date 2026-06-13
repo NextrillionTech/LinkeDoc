@@ -14,6 +14,7 @@ interface Job {
   recruiterName: string;
   createdAt: string;
   expiresAt: string;
+  applyUrl?: string;
 }
 
 export const JobBoard: React.FC = () => {
@@ -25,6 +26,8 @@ export const JobBoard: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [specialtyFilter, setSpecialtyFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [datePostedFilter, setDatePostedFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -129,7 +132,7 @@ export const JobBoard: React.FC = () => {
   // Sync query parameter
   useEffect(() => {
     if (queryParam) {
-      setSpecialtyFilter(queryParam);
+      setSearchQuery(queryParam);
     }
   }, [queryParam]);
 
@@ -274,6 +277,8 @@ export const JobBoard: React.FC = () => {
       const res = await api.getJobs({
         specialty: specialtyFilter,
         location: locationFilter,
+        query: searchQuery,
+        datePosted: datePostedFilter
       });
       if (res.success) {
         setJobs(res.results || []);
@@ -293,7 +298,7 @@ export const JobBoard: React.FC = () => {
     }, 300);
 
     return () => clearTimeout(delayDebounce);
-  }, [specialtyFilter, locationFilter]);
+  }, [specialtyFilter, locationFilter, searchQuery, datePostedFilter]);
 
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
@@ -312,6 +317,27 @@ export const JobBoard: React.FC = () => {
           gap: 24px;
         }
 
+        .jobs-sidebar {
+          position: sticky;
+          top: 110px;
+          align-self: start;
+          max-height: calc(100vh - 140px);
+          overflow-y: auto;
+          scrollbar-width: thin;
+          padding-right: 4px;
+        }
+
+        .jobs-sidebar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .jobs-sidebar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .jobs-sidebar::-webkit-scrollbar-thumb {
+          background-color: var(--border);
+          border-radius: var(--radius-full);
+        }
+
         @media (max-width: 768px) {
           .jobs-page-container {
             grid-template-columns: 1fr;
@@ -325,6 +351,10 @@ export const JobBoard: React.FC = () => {
         .sidebar-jobs-card {
           padding: 16px;
           margin-bottom: 16px;
+        }
+
+        .sidebar-jobs-card:hover {
+          transform: none !important;
         }
 
         .jobs-nav-item {
@@ -354,6 +384,7 @@ export const JobBoard: React.FC = () => {
           margin-bottom: 16px;
           padding: 20px;
           transition: transform var(--transition-smooth), border-color var(--transition-fast);
+          position: relative;
         }
 
         .job-card-item:hover {
@@ -378,7 +409,24 @@ export const JobBoard: React.FC = () => {
             Search Vacancies
           </h3>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* General Keyword Search */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label htmlFor="search-keyword" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Search Keyword
+              </label>
+              <input
+                id="search-keyword"
+                type="text"
+                className="input-glass"
+                style={{ padding: '8px 12px', fontSize: '13px' }}
+                placeholder="Title, description, company..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {/* Specialty Search & Suggestions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label htmlFor="search-specialty" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 Specialty
@@ -392,8 +440,30 @@ export const JobBoard: React.FC = () => {
                 value={specialtyFilter}
                 onChange={(e) => setSpecialtyFilter(e.target.value)}
               />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
+                {['Cardiology', 'Pediatrics', 'Oncology', 'Neurology', 'Surgery', 'General Medicine'].map((spec) => (
+                  <button
+                    key={spec}
+                    type="button"
+                    onClick={() => setSpecialtyFilter(specialtyFilter === spec ? '' : spec)}
+                    style={{
+                      fontSize: '10px',
+                      padding: '3px 8px',
+                      background: specialtyFilter === spec ? 'var(--primary-glow)' : 'var(--bg-tertiary)',
+                      color: specialtyFilter === spec ? 'var(--primary)' : 'var(--text-secondary)',
+                      border: `1px solid ${specialtyFilter === spec ? 'var(--primary-border-glow)' : 'var(--border)'}`,
+                      borderRadius: 'var(--radius-full)',
+                      cursor: 'pointer',
+                      transition: 'all var(--transition-fast)'
+                    }}
+                  >
+                    {spec}
+                  </button>
+                ))}
+              </div>
             </div>
 
+            {/* Location Search & Suggestions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label htmlFor="search-location" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 Location
@@ -407,7 +477,71 @@ export const JobBoard: React.FC = () => {
                 value={locationFilter}
                 onChange={(e) => setLocationFilter(e.target.value)}
               />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
+                {['Mumbai', 'Delhi NCR', 'Bengaluru', 'Hyderabad', 'Chennai', 'Remote'].map((loc) => (
+                  <button
+                    key={loc}
+                    type="button"
+                    onClick={() => setLocationFilter(locationFilter === loc ? '' : loc)}
+                    style={{
+                      fontSize: '10px',
+                      padding: '3px 8px',
+                      background: locationFilter === loc ? 'var(--primary-glow)' : 'var(--bg-tertiary)',
+                      color: locationFilter === loc ? 'var(--primary)' : 'var(--text-secondary)',
+                      border: `1px solid ${locationFilter === loc ? 'var(--primary-border-glow)' : 'var(--border)'}`,
+                      borderRadius: 'var(--radius-full)',
+                      cursor: 'pointer',
+                      transition: 'all var(--transition-fast)'
+                    }}
+                  >
+                    {loc}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Date Posted Dropdown */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label htmlFor="filter-date-posted" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Date Posted
+              </label>
+              <select
+                id="filter-date-posted"
+                className="input-glass"
+                value={datePostedFilter}
+                onChange={(e) => setDatePostedFilter(e.target.value)}
+                style={{ padding: '8px', fontSize: '13px', cursor: 'pointer' }}
+              >
+                <option value="">Any Time</option>
+                <option value="24h">Past 24 Hours</option>
+                <option value="3d">Past 3 Days</option>
+                <option value="7d">Past Week</option>
+              </select>
+            </div>
+
+            {/* Clear All Filters button */}
+            {(specialtyFilter || locationFilter || searchQuery || datePostedFilter) && (
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => {
+                  setSpecialtyFilter('');
+                  setLocationFilter('');
+                  setSearchQuery('');
+                  setDatePostedFilter('');
+                }}
+                style={{
+                  fontSize: '12px',
+                  padding: '8px',
+                  width: '100%',
+                  color: 'var(--danger)',
+                  marginTop: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Clear All Filters
+              </button>
+            )}
           </div>
         </div>
 
@@ -554,45 +688,94 @@ export const JobBoard: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {displayedJobs.map((job) => {
                   const isSaved = savedJobs.includes(job.id);
+                  const applyLink = job.applyUrl ? (
+                    job.applyUrl.trim().startsWith('mailto:') || job.applyUrl.trim().startsWith('http://') || job.applyUrl.trim().startsWith('https://')
+                      ? job.applyUrl.trim()
+                      : job.applyUrl.trim().includes('@')
+                        ? `mailto:${job.applyUrl.trim()}`
+                        : `https://${job.applyUrl.trim()}`
+                  ) : '';
+
                   return (
                     <div key={job.id} className="card-glass job-card-item">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div>
-                          <h3 style={{ fontSize: '18px', marginBottom: '2px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {/* Bookmark icon consistently in top-right */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSaveJob(job.id, job.title)}
+                        style={{
+                          position: 'absolute',
+                          top: '20px',
+                          right: '20px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: isSaved ? 'var(--primary)' : 'var(--text-muted)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          padding: '4px',
+                          zIndex: 10,
+                          transition: 'color var(--transition-fast)'
+                        }}
+                        title={isSaved ? "Remove from Saved Jobs" : "Save Job"}
+                      >
+                        <Bookmark size={20} fill={isSaved ? "var(--primary)" : "none"} />
+                      </button>
+
+                      {/* Header with Title, Company & Pills aligned vertically on left */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+                        <div style={{ paddingRight: '40px' }}>
+                          <h3 style={{ fontSize: '18px', marginBottom: '4px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
                             {job.title}
-                            <button
-                              type="button"
-                              onClick={() => handleToggleSaveJob(job.id, job.title)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                color: isSaved ? 'var(--primary)' : 'var(--text-muted)',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                padding: '4px'
-                              }}
-                              title={isSaved ? "Remove from Saved Jobs" : "Save Job"}
-                            >
-                              <Bookmark size={18} fill={isSaved ? "var(--primary)" : "none"} />
-                            </button>
                           </h3>
-                          <p style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Building size={14} /> {job.recruiterName || 'Verified Healthcare Recruiter'}
-                          </p>
+                          {job.recruiterName && job.recruiterName !== 'LinkeDoc Scraping System' && (
+                            <p style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 600, margin: 0, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              <Building size={14} /> {job.recruiterName}
+                            </p>
+                          )}
                         </div>
-                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                          <span className="job-metadata-pill">{job.specialty}</span>
-                          <span className="job-metadata-pill" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+
+                        {/* Pills below Title & Company */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                          <span className="job-metadata-pill" style={{ background: 'var(--primary-glow)', color: 'var(--primary)', border: '1px solid var(--primary-border-glow)' }}>
+                            {job.specialty}
+                          </span>
+                          <span className="job-metadata-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                             <MapPin size={12} /> {job.location}
                           </span>
                         </div>
                       </div>
 
+                      {/* Description */}
                       <p style={{ fontSize: '13px', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', marginBottom: '16px', lineHeight: 1.5 }}>
                         {job.description}
                       </p>
 
+                      {/* Apply Now button when applyUrl is provided */}
+                      {applyLink && (
+                        <div style={{ marginBottom: '16px' }}>
+                          <a
+                            href={applyLink}
+                            target={applyLink.startsWith('mailto:') ? undefined : '_blank'}
+                            rel="noopener noreferrer"
+                            className="btn-primary"
+                            style={{
+                              textDecoration: 'none',
+                              padding: '8px 18px',
+                              borderRadius: 'var(--radius-md)',
+                              fontSize: '12.5px',
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              width: 'fit-content'
+                            }}
+                          >
+                            Apply Now
+                          </a>
+                        </div>
+                      )}
+
+                      {/* Dates footer */}
                       <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',

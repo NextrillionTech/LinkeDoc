@@ -43,6 +43,7 @@ export const jobSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters'),
   specialty: z.string().min(2, 'Specialty is required'),
   location: z.string().min(2, 'Location is required'),
+  applyUrl: z.string().optional().nullable(),
 });
 
 export const publicKeySchema = z.object({

@@ -14,5 +14,11 @@
       "source": "/((?!api|health).*)",
       "destination": "/index.html"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/jobs/scrape-cron",
+      "schedule": "0 0 1,15 * *"
+    }
   ]
 }

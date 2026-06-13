@@ -13,6 +13,7 @@ export const CreateJob: React.FC = () => {
   const [description, setDescription] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [location, setLocation] = useState('');
+  const [applyUrl, setApplyUrl] = useState('');
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -41,7 +42,7 @@ export const CreateJob: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = await api.createJob(title, description, specialty, location);
+      const res = await api.createJob(title, description, specialty, location, applyUrl || undefined);
       if (res.success) {
         navigate('/jobs');
       } else {
@@ -121,6 +122,20 @@ export const CreateJob: React.FC = () => {
                 required
               />
             </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label htmlFor="job-apply-url" style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-secondary)' }}>
+              Application Link or Email (Optional)
+            </label>
+            <input
+              id="job-apply-url"
+              type="text"
+              className="input-glass"
+              placeholder="e.g. https://hospital.com/careers or mailto:hr@hospital.com"
+              value={applyUrl}
+              onChange={(e) => setApplyUrl(e.target.value)}
+            />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

@@ -50,6 +50,13 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`🚀 LinkeDoc API Server is running on port ${PORT}`);
     // Run the scraper in the background asynchronously on server startup
     scrapeAndSeedJobs();
+
+    // Schedule background scraper run every 14 days (bi-weekly)
+    const BI_WEEKLY_MS = 14 * 24 * 60 * 60 * 1000;
+    setInterval(() => {
+      console.log('[Scheduler] Running bi-weekly job scraper/seeder...');
+      scrapeAndSeedJobs();
+    }, BI_WEEKLY_MS);
   });
 }
 

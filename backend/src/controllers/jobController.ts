@@ -5,7 +5,7 @@ import { AuthRequest } from '../middleware/auth';
 const prisma = new PrismaClient();
 
 export const createJob = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
-  const { title, description, specialty, location } = req.body;
+  const { title, description, specialty, location, applyUrl } = req.body;
   const recruiterId = req.user?.id;
 
   if (!recruiterId) {
@@ -24,6 +24,7 @@ export const createJob = async (req: AuthRequest, res: Response, next: NextFunct
         description,
         specialty,
         location,
+        applyUrl,
         expiresAt,
       },
     });
@@ -38,7 +39,7 @@ export const createJob = async (req: AuthRequest, res: Response, next: NextFunct
 };
 
 export const getJobs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { specialty, location } = req.query;
+  const { specialty, location, query, datePosted } = req.query;
 
   try {
     const whereClause: any = {
@@ -61,6 +62,25 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction): 
       };
     }
 
+    if (query && typeof query === 'string') {
+      whereClause.OR = [
+        { title: { contains: query, mode: 'insensitive' } },
+        { description: { contains: query, mode: 'insensitive' } },
+        { recruiter: { name: { contains: query, mode: 'insensitive' } } },
+      ];
+    }
+
+    if (datePosted && typeof datePosted === 'string') {
+      const days = parseInt(datePosted);
+      if (!isNaN(days)) {
+        const thresholdDate = new Date();
+        thresholdDate.setDate(thresholdDate.getDate() - days);
+        whereClause.createdAt = {
+          gte: thresholdDate,
+        };
+      }
+    }
+
     const jobs = await prisma.jobListing.findMany({
       where: whereClause,
       include: {
@@ -81,6 +101,7 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction): 
       description: job.description,
       specialty: job.specialty,
       location: job.location,
+      applyUrl: job.applyUrl,
       recruiterName: job.recruiter.name,
       createdAt: job.createdAt,
       expiresAt: job.expiresAt,

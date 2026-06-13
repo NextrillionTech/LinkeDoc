@@ -189,19 +189,21 @@ export const api = {
   },
 
   // Job Board
-  async createJob(title: string, description: string, specialty: string, location: string) {
+  async createJob(title: string, description: string, specialty: string, location: string, applyUrl?: string) {
     const res = await fetch(`${API_BASE_URL}/jobs`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ title, description, specialty, location }),
+      body: JSON.stringify({ title, description, specialty, location, applyUrl }),
     });
     return res.json();
   },
 
-  async getJobs(filters?: { specialty?: string; location?: string }) {
+  async getJobs(filters?: { specialty?: string; location?: string; query?: string; datePosted?: string }) {
     const params = new URLSearchParams();
     if (filters?.specialty) params.append('specialty', filters.specialty);
     if (filters?.location) params.append('location', filters.location);
+    if (filters?.query) params.append('query', filters.query);
+    if (filters?.datePosted) params.append('datePosted', filters.datePosted);
     const queryString = params.toString();
     const url = queryString ? `${API_BASE_URL}/jobs?${queryString}` : `${API_BASE_URL}/jobs`;
     const res = await fetch(url, {
