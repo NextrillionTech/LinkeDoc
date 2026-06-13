@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Shield, 
-  Users, 
-  Lock, 
-  Briefcase, 
-  FileText, 
-  CheckCircle, 
-  TrendingUp, 
+import {
+  Shield,
+  Users,
+  Lock,
+  Briefcase,
+  FileText,
+  CheckCircle,
+  TrendingUp,
   ArrowRight,
   HelpCircle,
   ChevronDown,
@@ -209,7 +209,7 @@ export const Landing: React.FC = () => {
 
         /* 2. Hero Section */
         .hero-outer-section {
-          background: radial-gradient(circle at top right, rgba(8, 145, 178, 0.07) 0%, rgba(255, 255, 255, 0) 60%), linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+          background: radial-gradient(circle at top right, rgba(8, 145, 178, 0.07) 100%, rgba(255, 255, 255, 0) 60%), linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
           width: 100%;
           display: flex;
           justify-content: center;
@@ -1071,10 +1071,10 @@ export const Landing: React.FC = () => {
           </div>
 
           <div className="hero-image-wrapper">
-            <img 
-              src="/smiling_doctor_hero.png" 
-              alt="Healthcare professional verified by LinkeDoc credentialing system" 
-              className="hero-img" 
+            <img
+              src="/smiling_doctor_hero.png"
+              alt="Healthcare professional verified by LinkeDoc credentialing system"
+              className="hero-img"
             />
             <div className="hero-floating-badge" role="status">
               <div className="badge-dot"></div>
@@ -1256,11 +1256,11 @@ export const Landing: React.FC = () => {
             {faqData.map((item, index) => {
               const isActive = activeFaq === index;
               return (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className={`faq-row-card ${isActive ? 'active' : ''}`}
                 >
-                  <button 
+                  <button
                     type="button"
                     className="faq-trigger-btn"
                     onClick={() => toggleFaq(index)}
