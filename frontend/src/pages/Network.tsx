@@ -193,6 +193,10 @@ export const Network: React.FC = () => {
           gap: 24px;
         }
 
+        .network-main-content {
+          min-width: 0;
+        }
+
         @media (max-width: 768px) {
           .network-page-container {
             grid-template-columns: 1fr;

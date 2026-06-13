@@ -318,6 +318,10 @@ export const JobBoard: React.FC = () => {
           gap: 24px;
         }
 
+        .jobs-main-content {
+          min-width: 0;
+        }
+
         .jobs-sidebar {
           position: sticky;
           top: 110px;
@@ -819,7 +823,15 @@ export const JobBoard: React.FC = () => {
                       </div>
 
                       {/* Description */}
-                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', marginBottom: '16px', lineHeight: 1.5 }}>
+                      <p style={{
+                        fontSize: '13px',
+                        color: 'var(--text-secondary)',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'anywhere',
+                        marginBottom: '16px',
+                        lineHeight: 1.5
+                      }}>
                         {job.description}
                       </p>
 
