@@ -676,7 +676,7 @@ export const Groups: React.FC = () => {
                             <div key={req.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-tertiary)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
                               <div>
                                 <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)' }}>
-                                  {req.user.role === 'ADMIN' ? req.user.name : req.user.role === 'RECRUITER' ? req.user.name : `Dr. ${req.user.name}`}
+                                  {req.user.role === 'DOCTOR' ? `Dr. ${req.user.name}` : req.user.name}
                                 </div>
                                 <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                                   {req.user.role} {req.user.specialty ? `• ${req.user.specialty}` : ''}
@@ -742,7 +742,7 @@ export const Groups: React.FC = () => {
                   ) : (
                     posts.map(post => {
                       const authorInitials = getInitials(post.author.name);
-                      const authorDisplayName = post.author.role === 'ADMIN' ? post.author.name : post.author.role === 'RECRUITER' ? post.author.name : `Dr. ${post.author.name}`;
+                      const authorDisplayName = post.author.role === 'DOCTOR' ? `Dr. ${post.author.name}` : post.author.name;
                       const postTimeStr = new Date(post.createdAt).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
@@ -823,7 +823,7 @@ export const Groups: React.FC = () => {
                               <div className="comment-list">
                                 {post.comments && post.comments.length > 0 ? (
                                   post.comments.map(c => {
-                                    const commentAuthorName = c.author.role === 'ADMIN' ? c.author.name : c.author.role === 'RECRUITER' ? c.author.name : `Dr. ${c.author.name}`;
+                                    const commentAuthorName = c.author.role === 'DOCTOR' ? `Dr. ${c.author.name}` : c.author.name;
                                     const commentTimeStr = new Date(c.createdAt).toLocaleDateString(undefined, {
                                       month: 'short',
                                       day: 'numeric',

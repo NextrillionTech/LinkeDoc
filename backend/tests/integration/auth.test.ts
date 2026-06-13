@@ -97,7 +97,7 @@ describe('Auth Integration Tests (TDD - Route validation)', () => {
   });
 
   describe('POST /api/auth/forgot-password', () => {
-    it('should return success and mockResetCode if user exists', async () => {
+    it('should return success and send reset token if user exists', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 'user-id-123',
         email: 'sarah@hospital.org',
@@ -112,12 +112,11 @@ describe('Auth Integration Tests (TDD - Route validation)', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.mockResetCode).toBeDefined();
-      expect(res.body.mockResetCode).toHaveLength(6);
+      expect(res.body.mockResetCode).toBeUndefined();
       expect(prisma.user.update).toHaveBeenCalled();
     });
 
-    it('should return success but no mockResetCode if user does not exist', async () => {
+    it('should return success but no db call if user does not exist', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
       const res = await request(app)

@@ -61,6 +61,7 @@ vi.mock('../../src/services/api', () => ({
       },
     }),
     getCategories: vi.fn().mockResolvedValue([]),
+    getConnections: vi.fn().mockResolvedValue({ success: true, connections: [] }),
   },
 }));
 

@@ -124,7 +124,7 @@ export const Network: React.FC = () => {
     try {
       const res = await api.sendConnection(receiverId);
       if (res.success) {
-        showToast(`Connection request sent to Dr. ${name}!`, 'success');
+        showToast(`Connection request sent to ${name}!`, 'success');
         fetchData();
       } else {
         showToast(res.error || 'Failed to send connection request', 'error');
@@ -141,8 +141,8 @@ export const Network: React.FC = () => {
       if (res.success) {
         showToast(
           action === 'ACCEPT'
-            ? `Successfully connected with Dr. ${name}!`
-            : `Declined connection request from Dr. ${name}`,
+            ? `Successfully connected with ${name}!`
+            : `Declined connection request from ${name}`,
           action === 'ACCEPT' ? 'success' : 'info'
         );
         fetchData();
@@ -599,9 +599,19 @@ export const Network: React.FC = () => {
                     return (
                       <div key={conn.id} className="pending-request-item">
                         <div className="pending-request-info">
-                          <div className="pending-avatar">{getInitials(requester.name)}</div>
+                          <Link to={`/profile?id=${requester.id}`} style={{ textDecoration: 'none' }}>
+                            <div className="pending-avatar" style={{ overflow: 'hidden' }}>
+                              {requester.avatarUrl ? (
+                                <img src={requester.avatarUrl} alt={requester.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                getInitials(requester.name)
+                              )}
+                            </div>
+                          </Link>
                           <div className="pending-details">
-                            <h4>Dr. {requester.name}</h4>
+                            <Link to={`/profile?id=${requester.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                              <h4>{requester.role === 'DOCTOR' ? 'Dr. ' : ''}{requester.name}</h4>
+                            </Link>
                             <p>{requester.specialty || 'General Practitioner'} • {requester.role}</p>
                           </div>
                         </div>
@@ -649,8 +659,18 @@ export const Network: React.FC = () => {
                     const conn = getConnectionStatus(user.id);
                     return (
                       <div key={user.id} className="recommendation-card card-glass">
-                        <div className="rec-avatar">{getInitials(user.name)}</div>
-                        <div className="rec-name">Dr. {user.name}</div>
+                        <Link to={`/profile?id=${user.id}`} style={{ textDecoration: 'none' }}>
+                          <div className="rec-avatar" style={{ overflow: 'hidden' }}>
+                            {user.avatarUrl ? (
+                              <img src={user.avatarUrl} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              getInitials(user.name)
+                            )}
+                          </div>
+                        </Link>
+                        <Link to={`/profile?id=${user.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                          <div className="rec-name">{user.role === 'DOCTOR' ? 'Dr. ' : ''}{user.name}</div>
+                        </Link>
                         <div className="rec-specialty">{user.specialty || 'General Practitioner'}</div>
                         <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '16px' }}>
                           {user.stateMedicalCouncil ? `${user.stateMedicalCouncil} Council` : 'NMC Registered'}
@@ -713,9 +733,19 @@ export const Network: React.FC = () => {
                     return (
                       <div key={conn.id} className="pending-request-item">
                         <div className="pending-request-info">
-                          <div className="pending-avatar">{getInitials(colleague.name)}</div>
+                          <Link to={`/profile?id=${colleague.id}`} style={{ textDecoration: 'none' }}>
+                            <div className="pending-avatar" style={{ overflow: 'hidden' }}>
+                              {colleague.avatarUrl ? (
+                                <img src={colleague.avatarUrl} alt={colleague.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                getInitials(colleague.name)
+                              )}
+                            </div>
+                          </Link>
                           <div className="pending-details">
-                            <h4>Dr. {colleague.name}</h4>
+                            <Link to={`/profile?id=${colleague.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                              <h4>{colleague.role === 'DOCTOR' ? 'Dr. ' : ''}{colleague.name}</h4>
+                            </Link>
                             <p>{colleague.specialty || 'General Practitioner'} • {colleague.role}</p>
                           </div>
                         </div>
@@ -763,9 +793,19 @@ export const Network: React.FC = () => {
                   return (
                     <div key={conn.id} className="pending-request-item">
                       <div className="pending-request-info">
-                        <div className="pending-avatar">{getInitials(colleague.name)}</div>
+                        <Link to={`/profile?id=${colleague.id}`} style={{ textDecoration: 'none' }}>
+                          <div className="pending-avatar" style={{ overflow: 'hidden' }}>
+                            {colleague.avatarUrl ? (
+                              <img src={colleague.avatarUrl} alt={colleague.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              getInitials(colleague.name)
+                            )}
+                          </div>
+                        </Link>
                         <div className="pending-details">
-                          <h4>Dr. {colleague.name}</h4>
+                          <Link to={`/profile?id=${colleague.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <h4>{colleague.role === 'DOCTOR' ? 'Dr. ' : ''}{colleague.name}</h4>
+                          </Link>
                           <p>{colleague.specialty || 'General Practitioner'} • {colleague.role}</p>
                         </div>
                       </div>

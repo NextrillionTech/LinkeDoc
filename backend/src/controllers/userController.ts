@@ -24,6 +24,9 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
         experience: true,
         skills: true,
         status: true,
+        avatarUrl: true,
+        bannerUrl: true,
+        location: true,
         createdAt: true,
       },
     });
@@ -33,7 +36,17 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       return;
     }
 
-    res.status(200).json(user);
+    const connectionsCount = await prisma.connection.count({
+      where: {
+        status: 'ACCEPTED',
+        OR: [
+          { requesterId: id },
+          { receiverId: id },
+        ],
+      },
+    });
+
+    res.status(200).json({ ...user, connectionsCount });
   } catch (err) {
     next(err);
   }
@@ -41,7 +54,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
 
 export const updateProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   const { id } = req.params;
-  const { specialty, education, experience, skills, licenseNumber, medicalRegistrationNumber, stateMedicalCouncil } = req.body;
+  const { specialty, education, experience, skills, licenseNumber, medicalRegistrationNumber, stateMedicalCouncil, avatarUrl, bannerUrl, location } = req.body;
 
   if (!req.user || req.user.id !== id) {
     res.status(403).json({ success: false, error: 'Access denied: can only update your own profile' });
@@ -59,6 +72,9 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
         licenseNumber,
         medicalRegistrationNumber,
         stateMedicalCouncil,
+        avatarUrl,
+        bannerUrl,
+        location,
       },
     });
 
@@ -74,6 +90,9 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
         licenseNumber: updatedUser.licenseNumber,
         medicalRegistrationNumber: updatedUser.medicalRegistrationNumber,
         stateMedicalCouncil: updatedUser.stateMedicalCouncil,
+        avatarUrl: updatedUser.avatarUrl,
+        bannerUrl: updatedUser.bannerUrl,
+        location: updatedUser.location,
       },
     });
   } catch (err) {
@@ -178,6 +197,7 @@ export const listUsers = async (req: AuthRequest, res: Response, next: NextFunct
     const users = await prisma.user.findMany({
       where: {
         id: currentUserId ? { not: currentUserId } : undefined,
+        role: { notIn: ['ADMIN', 'RECRUITER'] },
         OR: query ? [
           { name: { contains: query, mode: 'insensitive' } },
           { specialty: { contains: query, mode: 'insensitive' } },
@@ -194,6 +214,7 @@ export const listUsers = async (req: AuthRequest, res: Response, next: NextFunct
         medicalRegistrationNumber: true,
         stateMedicalCouncil: true,
         status: true,
+        avatarUrl: true,
       },
       take: 20,
     });
@@ -226,6 +247,7 @@ export const getConnections = async (req: AuthRequest, res: Response, next: Next
             role: true,
             specialty: true,
             status: true,
+            avatarUrl: true,
           },
         },
         receiver: {
@@ -235,6 +257,7 @@ export const getConnections = async (req: AuthRequest, res: Response, next: Next
             role: true,
             specialty: true,
             status: true,
+            avatarUrl: true,
           },
         },
       },

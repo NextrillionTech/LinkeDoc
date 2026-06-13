@@ -135,6 +135,9 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
         email: user.email,
         role: user.role,
         status: user.status,
+        avatarUrl: user.avatarUrl,
+        bannerUrl: user.bannerUrl,
+        location: user.location,
       },
     });
   } catch (err) {
@@ -166,12 +169,9 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
       },
     });
 
-    console.log(`[PASSWORD RESET SANDBOX] Email: ${email} | Verification Code: ${resetToken}`);
-
     res.status(200).json({
       success: true,
       message: 'If the email is registered in our database, a verification code was sent to it.',
-      mockResetCode: resetToken,
     });
   } catch (err) {
     next(err);

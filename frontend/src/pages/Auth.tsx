@@ -80,10 +80,6 @@ export const Auth: React.FC<AuthProps> = ({ initialView = 'LOGIN' }) => {
         const res = await api.forgotPassword(email);
         if (res.success) {
           setMessage(res.message || 'A verification code was dispatched to your email.');
-          if (res.mockResetCode) {
-            setToken(res.mockResetCode); // Auto-fill sandbox code for testing convenience
-            setMessage(`[SANDBOX MOCK] A secure 6-digit verification code (${res.mockResetCode}) has been generated for ${email}.`);
-          }
           setView('RESET');
         } else {
           setError(res.error || 'Password reset request failed');
@@ -367,15 +363,11 @@ export const Auth: React.FC<AuthProps> = ({ initialView = 'LOGIN' }) => {
                         fontWeight: 500,
                         color: /^\d{10}$/.test(licenseNumber.trim())
                           ? 'var(--success)'
-                          : licenseNumber.trim().toUpperCase().startsWith('NPI-')
-                            ? 'var(--accent)'
-                            : 'var(--text-muted)'
+                          : 'var(--text-muted)'
                       }}>
                         {/^\d{10}$/.test(licenseNumber.trim())
                           ? '✓ 10-Digit NPI detected: CMS NPPES automatic verification active.'
-                          : licenseNumber.trim().toUpperCase().startsWith('NPI-')
-                            ? '✓ Mock credentials detected: Sandbox instant verification active.'
-                            : 'ℹ State License format: Registration will require manual admin review.'}
+                          : 'ℹ State License format: Registration will require manual admin review.'}
                       </span>
                     )}
                   </div>

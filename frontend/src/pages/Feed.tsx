@@ -34,6 +34,7 @@ interface Author {
   name: string;
   role: string;
   specialty?: string | null;
+  avatarUrl?: string | null;
 }
 
 interface Comment {
@@ -72,6 +73,7 @@ export const Feed: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [connectionsCount, setConnectionsCount] = useState(0);
 
   // Create Post State
   const [content, setContent] = useState('');
@@ -183,11 +185,21 @@ export const Feed: React.FC = () => {
     }
   };
 
+  const fetchConnectionsCount = () => {
+    api.getConnections().then((res) => {
+      if (res.success && Array.isArray(res.connections)) {
+        const accepted = res.connections.filter((c: any) => c.status === 'ACCEPTED');
+        setConnectionsCount(accepted.length);
+      }
+    }).catch(err => console.error(err));
+  };
+
   useEffect(() => {
     if (currentUser) {
       fetchFeed();
       fetchJoinedGroups();
       fetchTrendingCategories();
+      fetchConnectionsCount();
     }
   }, []);
 
@@ -1266,7 +1278,14 @@ export const Feed: React.FC = () => {
       <aside className="left-sidebar">
         {/* Card 1: Profile Summary */}
         <div className="card-glass profile-summary-card" style={{ marginBottom: '16px' }}>
-          <div className="profile-card-banner"></div>
+          <div 
+            className="profile-card-banner"
+            style={{
+              background: currentUser.bannerUrl
+                ? `url(${currentUser.bannerUrl}) center/cover no-repeat`
+                : 'linear-gradient(135deg, var(--primary), var(--accent))'
+            }}
+          ></div>
           <div className="profile-card-avatar-wrapper">
             <div
               className="avatar-circle"
@@ -1282,15 +1301,20 @@ export const Feed: React.FC = () => {
                 fontSize: '20px',
                 fontWeight: 700,
                 color: 'var(--primary)',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                overflow: 'hidden'
               }}
             >
-              {getInitials(currentUser.name)}
+              {currentUser.avatarUrl ? (
+                <img src={currentUser.avatarUrl} alt={currentUser.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                getInitials(currentUser.name)
+              )}
             </div>
           </div>
           <div className="profile-card-info" style={{ textAlign: 'center', padding: '0 16px 16px 16px', borderBottom: '1px solid var(--border)' }}>
             <Link to="/profile" className="profile-card-name" style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', textDecoration: 'none', display: 'block', marginBottom: '4px' }}>
-              {currentUser.role === 'ADMIN' || currentUser.role === 'RECRUITER' ? currentUser.name : `Dr. ${currentUser.name}`}
+              {currentUser.role === 'DOCTOR' ? `Dr. ${currentUser.name}` : currentUser.name}
             </Link>
             <div className="profile-card-headline" style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
               {currentUser.role} {currentUser.specialty ? `• ${currentUser.specialty}` : ''}
@@ -1302,7 +1326,7 @@ export const Feed: React.FC = () => {
           <div className="profile-card-stats-section" style={{ display: 'flex', flexDirection: 'column' }}>
             <Link to="/network" className="profile-card-stats" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', fontSize: '12px', textDecoration: 'none', color: 'var(--text-secondary)', transition: 'background-color var(--transition-fast)' }}>
               <span>Connections</span>
-              <span style={{ fontWeight: 600, color: 'var(--primary)' }}>0</span>
+              <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{connectionsCount}</span>
             </Link>
             <div className="profile-card-divider" style={{ height: '1px', backgroundColor: 'var(--border)' }}></div>
             <Link to="/profile" className="profile-card-stats" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', fontSize: '12px', textDecoration: 'none', color: 'var(--text-secondary)', transition: 'background-color var(--transition-fast)' }}>
@@ -1507,10 +1531,15 @@ export const Feed: React.FC = () => {
                         justifyContent: 'center',
                         fontWeight: 700,
                         fontSize: '14px',
-                        border: '1px solid var(--border)'
+                        border: '1px solid var(--border)',
+                        overflow: 'hidden'
                       }}
                     >
-                      {getInitials(currentUser.name)}
+                      {currentUser.avatarUrl ? (
+                        <img src={currentUser.avatarUrl} alt={currentUser.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        getInitials(currentUser.name)
+                      )}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{currentUser.name}</span>
@@ -1782,7 +1811,7 @@ export const Feed: React.FC = () => {
             const isCommentsOpen = !!expandedComments[post.id];
             const isAbstractExpanded = !!expandedAbstracts[post.id];
             const authorInitials = getInitials(post.author.name);
-            const authorDisplayName = post.author.role === 'ADMIN' ? post.author.name : post.author.role === 'RECRUITER' ? post.author.name : `Dr. ${post.author.name}`;
+            const authorDisplayName = post.author.role === 'DOCTOR' ? `Dr. ${post.author.name}` : post.author.name;
             const timeFormatted = new Date(post.createdAt).toLocaleDateString(undefined, {
               month: 'short',
               day: 'numeric',
@@ -1797,12 +1826,20 @@ export const Feed: React.FC = () => {
             return (
               <div key={post.id} className="card-glass post-card">
                 {/* Author row */}
-                <div className="post-header">
-                  <div className="post-author-avatar">
-                    {authorInitials}
-                  </div>
+                <div className="post-header" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <Link to={`/profile?id=${post.author.id}`} style={{ textDecoration: 'none' }}>
+                    <div className="post-author-avatar" style={{ overflow: 'hidden' }}>
+                      {post.author.avatarUrl ? (
+                        <img src={post.author.avatarUrl} alt={post.author.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        authorInitials
+                      )}
+                    </div>
+                  </Link>
                   <div className="post-author-meta">
-                    <span className="post-author-name">{authorDisplayName}</span>
+                    <Link to={`/profile?id=${post.author.id}`} style={{ textDecoration: 'none' }}>
+                      <span className="post-author-name">{authorDisplayName}</span>
+                    </Link>
                     <span className="post-author-title">
                       {post.author.role} {post.author.specialty ? `• ${post.author.specialty}` : ''}
                     </span>
@@ -2041,7 +2078,7 @@ export const Feed: React.FC = () => {
                     <div className="comment-list">
                       {post.comments && post.comments.length > 0 ? (
                         post.comments.map(c => {
-                          const commentAuthorName = c.author.role === 'ADMIN' ? c.author.name : c.author.role === 'RECRUITER' ? c.author.name : `Dr. ${c.author.name}`;
+                          const commentAuthorName = c.author.role === 'DOCTOR' ? `Dr. ${c.author.name}` : c.author.name;
                           const commentTimeFormatted = new Date(c.createdAt).toLocaleDateString(undefined, {
                             month: 'short',
                             day: 'numeric',
@@ -2051,13 +2088,21 @@ export const Feed: React.FC = () => {
 
                           return (
                             <div key={c.id} className="comment-item">
-                              <div className="composer-avatar" style={{ width: '32px', height: '32px', fontSize: '12px' }}>
-                                {getInitials(c.author.name)}
-                              </div>
+                              <Link to={`/profile?id=${c.author.id}`} style={{ textDecoration: 'none' }}>
+                                <div className="composer-avatar" style={{ width: '32px', height: '32px', fontSize: '12px', overflow: 'hidden' }}>
+                                  {c.author.avatarUrl ? (
+                                    <img src={c.author.avatarUrl} alt={c.author.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  ) : (
+                                    getInitials(c.author.name)
+                                  )}
+                                </div>
+                              </Link>
                               <div className="comment-bubble">
                                 <div className="comment-author-meta">
                                   <div>
-                                    <span className="comment-author-name">{commentAuthorName}</span>
+                                    <Link to={`/profile?id=${c.author.id}`} style={{ textDecoration: 'none' }}>
+                                      <span className="comment-author-name">{commentAuthorName}</span>
+                                    </Link>
                                     <span className="comment-author-headline" style={{ marginLeft: '6px' }}>
                                       ({c.author.role} {c.author.specialty ? `• ${c.author.specialty}` : ''})
                                     </span>
