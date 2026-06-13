@@ -23,13 +23,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 
     if (role === 'DOCTOR') {
       if (medicalRegistrationNumber) {
-        const trimmedMRN = medicalRegistrationNumber.trim();
-        if (trimmedMRN.toUpperCase().startsWith('MRN-') || trimmedMRN.toUpperCase().startsWith('TEST-') || trimmedMRN === '12345') {
-          isVerified = true;
-          verificationMessageDetails = ' Verified via test mock credentials.';
-        } else {
-          verificationMessageDetails = ' Pending manual administrator review via NMC Database.';
-        }
+        verificationMessageDetails = ' Pending manual administrator review via NMC Database.';
       } else {
         verificationMessageDetails = ' Medical Registration Number (MRN) is required for doctor accounts.';
       }
@@ -58,9 +52,6 @@ export const register = async (req: Request, res: Response, next: NextFunction):
           isVerified = true; // Fallback
           verificationMessageDetails = ` Verification database connection issue. Verified by license format.`;
         }
-      } else if (trimmedLicense.toUpperCase().startsWith('NPI-')) {
-        isVerified = true;
-        verificationMessageDetails = ` Verified via test mock credentials.`;
       } else {
         verificationMessageDetails = ` Invalid NPI number format (must be 10 digits).`;
       }
