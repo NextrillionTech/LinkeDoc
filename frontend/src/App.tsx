@@ -487,18 +487,6 @@ const HeaderBar: React.FC<{ user: any; onLogout: () => void }> = ({ user, onLogo
             {/* Mobile navigation drawer/card */}
             {mobileMenuOpen && (
               <div className="linkedin-mobile-drawer card-glass">
-                <div className="mobile-drawer-header">
-                  <span className="mobile-drawer-title">Navigation</span>
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    onClick={() => setMobileMenuOpen(false)}
-                    style={{ padding: '4px', border: 'none', background: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-                
                 <div className="mobile-drawer-profile-summary">
                   <div className="me-dropdown-avatar" style={{
                     width: '36px',
