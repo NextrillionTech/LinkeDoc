@@ -394,6 +394,29 @@ export const Network: React.FC = () => {
           color: #ef4444;
           border-color: rgba(239, 68, 68, 0.3);
         }
+
+        @media (max-width: 480px) {
+          .network-page-container {
+            padding: 0 12px !important;
+            margin: 15px auto !important;
+          }
+          .network-main-card {
+            padding: 16px !important;
+          }
+          .pending-request-item {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+            padding: 12px !important;
+          }
+          .pending-actions {
+            width: 100% !important;
+            justify-content: flex-end !important;
+          }
+          .recommendations-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
       `}</style>
 
       {/* Left Sidebar */}

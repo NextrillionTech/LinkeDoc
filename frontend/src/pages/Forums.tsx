@@ -84,6 +84,54 @@ export const Forums: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+      <style>{`
+        .forums-grid-layout {
+          display: grid;
+          grid-template-columns: 300px 1fr;
+          gap: 30px;
+        }
+        .forums-sidebar {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .forum-back-btn {
+          align-self: flex-start;
+          background: var(--bg-tertiary) !important;
+          color: var(--text-primary) !important;
+          box-shadow: none !important;
+          padding: 8px 16px !important;
+          display: none;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 8px;
+          border: 1px solid var(--border) !important;
+          border-radius: var(--radius-sm);
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .forum-back-btn:hover {
+          background: var(--bg-secondary) !important;
+        }
+        @media (max-width: 768px) {
+          .forums-grid-layout {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+          .forums-sidebar.has-selection {
+            display: none !important;
+          }
+          .forums-main-content:not(.has-selection) {
+            display: none !important;
+          }
+          .forum-back-btn {
+            display: inline-flex;
+          }
+          h1 {
+            font-size: 24px !important;
+          }
+        }
+      `}</style>
       
       {/* Header */}
       <header>
@@ -98,10 +146,10 @@ export const Forums: React.FC = () => {
         )}
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '30px' }}>
+      <div className="forums-grid-layout">
         
         {/* Sidebar: Categories */}
-        <aside style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <aside className={`forums-sidebar ${selectedCategory ? 'has-selection' : ''}`}>
           <h3 style={{ fontSize: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Specialty Boards</h3>
           {categories.map((cat) => (
             <button
@@ -126,7 +174,7 @@ export const Forums: React.FC = () => {
         </aside>
 
         {/* Main Content Area */}
-        <section>
+        <section className={`forums-main-content ${selectedCategory ? 'has-selection' : ''}`}>
           {!selectedCategory ? (
             <div className="card-glass" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
               <svg width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ opacity: 0.5, marginBottom: '16px' }}>
@@ -138,6 +186,16 @@ export const Forums: React.FC = () => {
           ) : !selectedThread ? (
             /* Threads List View */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <button
+                type="button"
+                className="forum-back-btn"
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSelectedThread(null);
+                }}
+              >
+                <ArrowLeft size={16} /> Back to Specialties
+              </button>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ fontSize: '24px' }}>Category: {selectedCategory.name}</h3>
               </div>

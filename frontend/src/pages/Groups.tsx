@@ -494,6 +494,27 @@ export const Groups: React.FC = () => {
           outline: none;
           border-color: var(--primary);
         }
+
+        @media (max-width: 768px) {
+          .groups-layout-container {
+            padding: 0 12px !important;
+            margin: 15px auto !important;
+          }
+          .groups-main-panel .group-detail-banner button {
+            display: flex !important;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+          }
+          .group-detail-header-card {
+            padding: 16px !important;
+          }
+          .group-feed-container {
+            padding: 16px !important;
+          }
+        }
       `}</style>
 
       {/* Left Column: Sidebar with Group listing */}

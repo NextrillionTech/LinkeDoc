@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
-import { Bookmark, Bell, DollarSign, FileText, Plus, MapPin, Building, Trash2, Loader } from 'lucide-react';
+import { Bookmark, Bell, DollarSign, FileText, Plus, MapPin, Building, Trash2, Loader, Filter } from 'lucide-react';
 import { useSEO } from '../utils/seo';
 import { useToast } from '../components/ToastContext';
 
@@ -24,6 +24,7 @@ export const JobBoard: React.FC = () => {
   useSEO('Jobs Board', 'Browse medical residency options, clinical positions, healthcare recruiter posts, and professional roles.');
 
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [specialtyFilter, setSpecialtyFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -341,9 +342,49 @@ export const JobBoard: React.FC = () => {
         @media (max-width: 768px) {
           .jobs-page-container {
             grid-template-columns: 1fr;
+            padding: 0 12px !important;
+            margin: 15px auto !important;
           }
           .jobs-sidebar {
             display: none;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-height: 100vh !important;
+            background: var(--bg-primary) !important;
+            z-index: 9999 !important;
+            padding: 24px !important;
+            overflow-y: auto !important;
+            align-self: stretch !important;
+          }
+          .jobs-sidebar.mobile-open {
+            display: block !important;
+          }
+          .sidebar-mobile-header {
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+          }
+          .job-mobile-filter-toggle {
+            display: flex !important;
+          }
+          .jobs-header-row {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+          }
+          .jobs-header-row .btn-primary {
+            width: 100% !important;
+            text-align: center !important;
+            justify-content: center !important;
+          }
+          .job-card-item {
+            padding: 16px !important;
           }
         }
 
@@ -403,7 +444,20 @@ export const JobBoard: React.FC = () => {
       `}</style>
 
       {/* Left Sidebar Filters */}
-      <aside className="jobs-sidebar">
+      <aside className={`jobs-sidebar ${mobileFiltersOpen ? 'mobile-open' : ''}`}>
+        <div className="sidebar-mobile-header" style={{ display: 'none' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Filter size={18} /> Filters & Tools
+          </h2>
+          <button
+            type="button"
+            className="btn-ghost"
+            style={{ padding: '6px 12px', fontSize: '20px', cursor: 'pointer', background: 'none', border: 'none', color: 'var(--text-muted)' }}
+            onClick={() => setMobileFiltersOpen(false)}
+          >
+            &times;
+          </button>
+        </div>
         <div className="card-glass sidebar-jobs-card">
           <h3 style={{ fontSize: '15px', marginBottom: '16px', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
             Search Vacancies
@@ -651,6 +705,25 @@ export const JobBoard: React.FC = () => {
 
       {/* Right Main Panel */}
       <section className="jobs-main-content">
+        {/* Mobile Toggle Button */}
+        <button
+          type="button"
+          className="job-mobile-filter-toggle btn-primary"
+          onClick={() => setMobileFiltersOpen(true)}
+          style={{
+            display: 'none',
+            marginBottom: '16px',
+            width: '100%',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '12px',
+            borderRadius: 'var(--radius-md)',
+            fontWeight: 600
+          }}
+        >
+          <Filter size={16} /> Filters & Job Tools
+        </button>
         <div className="jobs-header-row">
           <div>
             <h1 style={{ fontSize: '28px', marginBottom: '4px' }}>Healthcare Job Board</h1>

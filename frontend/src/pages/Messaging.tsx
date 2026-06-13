@@ -16,7 +16,8 @@ import {
   Send,
   ShieldAlert,
   Compass,
-  Users
+  Users,
+  ArrowLeft
 } from 'lucide-react';
 
 
@@ -353,7 +354,48 @@ export const Messaging: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '10px 0' }}>
+    <div className="messaging-page-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '10px 0' }}>
+      <style>{`
+        .messaging-layout-container {
+          display: grid;
+          grid-template-columns: 320px 1fr;
+          gap: 20px;
+          height: calc(100vh - 220px);
+          min-height: 500px;
+        }
+        .messaging-back-btn {
+          display: none;
+        }
+        @media (max-width: 768px) {
+          .messaging-page-container {
+            padding: 0 12px !important;
+          }
+          .messaging-layout-container {
+            grid-template-columns: 1fr !important;
+            height: calc(100vh - 200px) !important;
+            min-height: 400px !important;
+            gap: 0 !important;
+          }
+          .messaging-sidebar {
+            display: flex !important;
+          }
+          .messaging-sidebar.has-active {
+            display: none !important;
+          }
+          .messaging-chat-area {
+            display: none !important;
+          }
+          .messaging-chat-area.has-active {
+            display: flex !important;
+          }
+          .messaging-back-btn {
+            display: inline-flex !important;
+          }
+          .message-bubble-wrapper {
+            max-width: 85% !important;
+          }
+        }
+      `}</style>
       {/* Encryption Badge & Status notifications */}
       <div
         style={{
@@ -424,17 +466,10 @@ export const Messaging: React.FC = () => {
         </div>
       )}
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '320px 1fr',
-          gap: '20px',
-          height: 'calc(100vh - 220px)',
-          minHeight: '500px',
-        }}
-      >
+      <div className="messaging-layout-container">
         {/* Left Side: Directory and Conversations */}
         <aside
+          className={`messaging-sidebar ${activeConv ? 'has-active' : ''}`}
           style={{
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(16px)',
@@ -547,6 +582,7 @@ export const Messaging: React.FC = () => {
 
         {/* Right Side: Active message thread view */}
         <section
+          className={`messaging-chat-area ${activeConv ? 'has-active' : ''}`}
           style={{
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(16px)',
@@ -571,10 +607,30 @@ export const Messaging: React.FC = () => {
                   alignItems: 'center',
                 }}
               >
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '16px' }}>{activeConv.participant.name}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                    {activeConv.participant.specialty || 'General Practitioner'}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="messaging-back-btn"
+                    onClick={() => setActiveConv(null)}
+                    style={{
+                      display: 'none',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      marginRight: '12px',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <ArrowLeft size={20} />
+                  </button>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '16px' }}>{activeConv.participant.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      {activeConv.participant.specialty || 'General Practitioner'}
+                    </div>
                   </div>
                 </div>
                   <div
@@ -623,6 +679,7 @@ export const Messaging: React.FC = () => {
                     return (
                       <div
                         key={m.id}
+                        className="message-bubble-wrapper"
                         style={{
                           alignSelf: isOwnMessage ? 'flex-end' : 'flex-start',
                           maxWidth: '65%',

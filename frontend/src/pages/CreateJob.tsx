@@ -56,7 +56,25 @@ export const CreateJob: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '650px', margin: '40px auto', padding: '0 20px' }}>
+    <div className="create-job-container" style={{ maxWidth: '650px', margin: '40px auto', padding: '0 20px' }}>
+      <style>{`
+        @media (max-width: 480px) {
+          .create-job-container {
+            margin: 15px auto !important;
+            padding: 0 12px !important;
+          }
+          .create-job-container .card-glass {
+            padding: 16px !important;
+          }
+          .create-job-container h1 {
+            font-size: 22px !important;
+          }
+          .create-job-grid-row {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+        }
+      `}</style>
       <div className="card-glass">
         <h1 style={{ fontSize: '28px', marginBottom: '8px', fontWeight: 700, marginTop: 0, color: 'var(--text-primary)' }}>Post a Healthcare Job</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
@@ -92,7 +110,7 @@ export const CreateJob: React.FC = () => {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="create-job-grid-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <label htmlFor="job-specialty" style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-secondary)' }}>
                 Specialty

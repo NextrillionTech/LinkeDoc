@@ -1272,6 +1272,48 @@ export const Feed: React.FC = () => {
           font-size: 11px;
           color: var(--text-muted);
         }
+
+        @media (max-width: 480px) {
+          .feed-layout-container {
+            padding: 0 12px !important;
+            margin: 15px auto !important;
+          }
+          .composer-quick-actions {
+            padding-left: 0 !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+          }
+          .btn-quick-media {
+            padding: 4px 10px !important;
+            font-size: 11.5px !important;
+          }
+          .composer-trigger-row {
+            gap: 8px !important;
+          }
+          .composer-avatar {
+            width: 36px !important;
+            height: 36px !important;
+          }
+          .post-card {
+            padding: 12px !important;
+          }
+          .post-header {
+            gap: 8px !important;
+          }
+          .post-author-avatar {
+            width: 36px !important;
+            height: 36px !important;
+            font-size: 13px !important;
+          }
+          .btn-post-action {
+            padding: 8px 4px !important;
+            font-size: 11px !important;
+            gap: 4px !important;
+          }
+          .media-attachments-container .carousel-view-wrapper {
+            min-height: 200px !important;
+          }
+        }
       `}</style>
 
       {/* Left Sidebar Profile Cards */}

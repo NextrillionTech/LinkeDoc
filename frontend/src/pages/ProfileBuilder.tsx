@@ -742,6 +742,43 @@ export const ProfileBuilder: React.FC = () => {
           }
         }
 
+        @media (max-width: 768px) {
+          .profile-page-container {
+            padding: 0 12px !important;
+            margin: 15px auto !important;
+          }
+          .profile-section-card {
+            padding: 16px !important;
+          }
+          .avatar-upload-overlay {
+            opacity: 0.85 !important;
+            height: 40px !important;
+            top: auto !important;
+            bottom: 0 !important;
+            background: rgba(0, 0, 0, 0.6) !important;
+            font-size: 11px !important;
+          }
+          .profile-intro-avatar-wrapper:hover .avatar-upload-overlay {
+            opacity: 0.85 !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .profile-intro-name {
+            font-size: 20px !important;
+          }
+          .profile-intro-headline {
+            font-size: 14px !important;
+          }
+          .profile-intro-meta-row {
+            font-size: 12px !important;
+          }
+          .profile-modal-grid-row {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+        }
+
         /* Section Cards */
         .profile-section-card {
           background: var(--bg-secondary);
@@ -1637,7 +1674,7 @@ export const ProfileBuilder: React.FC = () => {
                 </div>
 
                 {currentUser.role === 'DOCTOR' && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="profile-modal-grid-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     {/* Medical Registration Number */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <label htmlFor="modal-mrn" style={{ fontSize: '13px', fontWeight: 600 }}>Medical Registration Number (MRN)</label>

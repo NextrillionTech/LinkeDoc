@@ -63,7 +63,29 @@ export const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '40px auto', padding: '0 20px' }}>
+    <div className="admin-page-container" style={{ maxWidth: '900px', margin: '40px auto', padding: '0 20px' }}>
+      <style>{`
+        @media (max-width: 600px) {
+          .admin-page-container {
+            margin: 15px auto !important;
+            padding: 0 12px !important;
+          }
+          .admin-page-container .card-glass {
+            padding: 16px !important;
+          }
+          .admin-queue-item {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 16px !important;
+            padding: 16px !important;
+          }
+          .admin-queue-item > div:last-child {
+            width: 100% !important;
+            display: flex !important;
+            justify-content: flex-end !important;
+          }
+        }
+      `}</style>
       <div className="card-glass">
         <h1 style={{ fontSize: '28px', marginBottom: '24px', fontWeight: 700 }}>Admin Dashboard</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
@@ -81,6 +103,7 @@ export const AdminDashboard: React.FC = () => {
             {users.map((u) => (
               <div
                 key={u.id}
+                className="admin-queue-item"
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
